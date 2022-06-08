@@ -225,12 +225,26 @@ var tmplVersionFile = template.Must(template.New("versionfile").Parse(genHeader 
 package {{ .PackageName }}
 
 import (
+	"github.com/grafana/grafana/pkg/coremodel/{{ .Name }}"
+	"github.com/grafana/grafana/pkg/framework/coremodel/registry"
 	"github.com/grafana/thema"
 )
 
-// Version indicates the syntactic version of the schema from which the Go
+// Version is the syntactic version of the schema from which the Go
 // code in this package was generated.
-func Version() thema.SyntacticVersion {
-	return thema.SV({{ .Seqv }}, {{ .Schv }})
+//
+// This value will always be the same as calling Schema().Version().
+var Version thema.SyntacticVersion = [2]uint{ {{- .Seqv }}, {{ .Schv -}} }
+
+// Schema returns the schema from which the Go code in this package was generated.
+//
+// This uses the central thema.Library and cue.Context provided in github.com/grafana/grafana/pkg/cuectx.
+// If you must provide your own, call github.com/grafana/grafana/pkg/coremodel/{{ .Name }}.Lineage() directly.
+func Schema() thema.Schema {
+	reg, err := registry.ProvideStatic()
+	if err != nil {
+		panic(err)
+	}
+	return thema.SchemaP(reg.{{ .TitleName }}().Lineage(), thema.SV({{ .Seqv }}, {{ .Schv }}))
 }
 `))
