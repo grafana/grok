@@ -75,7 +75,7 @@ func schemaToTplVars(cm coremodel.Interface, sch thema.Schema) tplVars {
 	l := cm.Lineage()
 	vars := tplVars{
 		Name:        l.Name(),
-		PackageName: l.Name(),
+		PackageName: fmt.Sprintf("goschema%s", l.Name()),
 		TitleName:   strings.Title(l.Name()),
 		Seqv:        sch.Version()[0],
 		Schv:        sch.Version()[1],
@@ -87,7 +87,7 @@ func schemaToTplVars(cm coremodel.Interface, sch thema.Schema) tplVars {
 		pathv = "x"
 	}
 
-	vars.GenPath = filepath.Join(l.Name(), pathv, "model")
+	vars.GenPath = filepath.Join(l.Name(), pathv, "goschema")
 	return vars
 }
 
