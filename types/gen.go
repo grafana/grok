@@ -7,6 +7,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"go/ast"
 	"go/format"
 	"go/parser"
 	"go/token"
@@ -142,7 +143,7 @@ func generateCoremodel(cm coremodel.Interface) (codegen.WriteDiffer, error) {
 		}
 
 		path := filepath.Join(vars.GenPath, vars.ModelFile)
-		byt, err := postprocessGoFile([]byte(gostr), path)
+		byt, err := postprocessGoFile([]byte(gostr), path, prefixDropper(vars.TitleName))
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", vstr, err)
 		}
@@ -155,7 +156,7 @@ func generateCoremodel(cm coremodel.Interface) (codegen.WriteDiffer, error) {
 			return nil, fmt.Errorf("%s: version file gen failed: %w", vstr, err)
 		}
 		vpath := filepath.Join(vars.GenPath, "version_gen.go")
-		byt, err = postprocessGoFile(buf.Bytes(), vpath)
+		byt, err = postprocessGoFile(buf.Bytes(), vpath, nil)
 		if err != nil {
 			return nil, fmt.Errorf("%s, %w", vstr, err)
 		}
@@ -167,11 +168,32 @@ func generateCoremodel(cm coremodel.Interface) (codegen.WriteDiffer, error) {
 	return wd, nil
 }
 
-func postprocessGoFile(src []byte, path string) ([]byte, error) {
+type prefixDropper string
+
+func (m prefixDropper) Visit(n ast.Node) ast.Visitor {
+	switch x := n.(type) {
+	case *ast.Ident:
+		x.Name = m.dropPrefix(x.Name)
+	}
+	return m
+}
+
+func (m prefixDropper) dropPrefix(str string) string {
+	if len(str) > len(m) && str[:len(m)] == string(m) {
+		return str[len(m):]
+	}
+	return str
+}
+
+func postprocessGoFile(src []byte, path string, vis ast.Visitor) ([]byte, error) {
 	fset := token.NewFileSet()
 	gf, err := parser.ParseFile(fset, path, src, parser.ParseComments)
 	if err != nil {
 		return nil, fmt.Errorf("parsing generated %q failed: %w", path, err)
+	}
+
+	if vis != nil {
+		ast.Walk(vis, gf)
 	}
 
 	var buf bytes.Buffer
