@@ -12,4 +12,17 @@ less expressive.
 
 package static
 
+import (
+	_ "cuelang.org/go/cue/cuecontext"
+	_ "cuelang.org/go/pkg/encoding/yaml"
+	_ "github.com/deepmap/oapi-codegen/pkg/codegen"
+	_ "github.com/getkin/kin-openapi/openapi3"
+	_ "github.com/grafana/grafana/pkg/codegen"
+	_ "github.com/grafana/grafana/pkg/framework/coremodel"
+	_ "github.com/grafana/grafana/pkg/framework/coremodel/registry"
+	_ "github.com/grafana/thema"
+	_ "github.com/grafana/thema/encoding/openapi"
+	_ "golang.org/x/tools/imports"
+)
+
 //go:generate go run gen.go
