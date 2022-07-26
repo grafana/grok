@@ -7,7 +7,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.10.1
 	github.com/getkin/kin-openapi v0.94.0
 	github.com/grafana/grafana v1.9.2-0.20220602140448-9c4281c92db4
-	github.com/grafana/thema v0.0.0-20220523183731-72aebd14e751
+	github.com/grafana/thema v0.0.0-20220726124731-b8017e278cc1
 	golang.org/x/tools v0.1.11
 )
 
