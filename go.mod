@@ -2,11 +2,13 @@ module github.com/grafana/grok
 
 go 1.18
 
+replace github.com/grafana/grafana => ../grafana
+
 require (
 	cuelang.org/go v0.4.3
 	github.com/deepmap/oapi-codegen v1.10.1
 	github.com/getkin/kin-openapi v0.94.0
-	github.com/grafana/grafana v1.9.2-0.20220602140448-9c4281c92db4
+	github.com/grafana/grafana v1.9.2-0.20220803200454-b11f66b4bbeb
 	github.com/grafana/thema v0.0.0-20220726124731-b8017e278cc1
 	golang.org/x/tools v0.1.11
 )
@@ -37,7 +39,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/xlab/treeprint v1.1.0 // indirect
-	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
+	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20220615171555-694bf12d69de // indirect
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect

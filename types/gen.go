@@ -31,14 +31,9 @@ import (
 var lib = thema.NewLibrary(cuecontext.New())
 
 func main() {
-	reg, err := registry.ProvideGeneric()
-	if err != nil {
-		// Unreachable in any actual released version of Grafana
-		panic(err)
-	}
-
+	reg := registry.NewBase()
 	wd := codegen.NewWriteDiffer()
-	for _, cm := range reg.List() {
+	for _, cm := range reg.All() {
 		iwd, err := generateCoremodel(cm)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error while generating from %q coremodel: %s\n", cm.Lineage().Name(), err)
@@ -49,13 +44,13 @@ func main() {
 	}
 
 	if _, set := os.LookupEnv("CODEGEN_VERIFY"); set {
-		err = wd.Verify()
+		err := wd.Verify()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "generated code is not up to date:\n%s\nrun `go generate ./...` to regenerate\n\n", err)
 			os.Exit(1)
 		}
 	} else {
-		err = wd.Write()
+		err := wd.Write()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error while writing generated code to disk:\n%s\n", err)
 			os.Exit(1)
