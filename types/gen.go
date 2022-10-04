@@ -242,7 +242,6 @@ var tmplVersionFile = template.Must(template.New("versionfile").Parse(genHeader 
 package {{ .PackageName }}
 
 import (
-	"github.com/grafana/grafana/pkg/coremodel/{{ .Name }}"
 	"github.com/grafana/grafana/pkg/framework/coremodel/registry"
 	"github.com/grafana/thema"
 )
@@ -258,10 +257,7 @@ var Version thema.SyntacticVersion = [2]uint{ {{- .Seqv }}, {{ .Schv -}} }
 // This uses the central thema.Library and cue.Context provided in github.com/grafana/grafana/pkg/cuectx.
 // If you must provide your own, call github.com/grafana/grafana/pkg/coremodel/{{ .Name }}.Lineage() directly.
 func Schema() thema.Schema {
-	reg, err := registry.ProvideStatic()
-	if err != nil {
-		panic(err)
-	}
+	reg := registry.NewBase()
 	return thema.SchemaP(reg.{{ .TitleName }}().Lineage(), thema.SV({{ .Seqv }}, {{ .Schv }}))
 }
 `))
