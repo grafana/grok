@@ -3,7 +3,7 @@ Grok (**Gr**afana **O**bject development **K**it) is a CLI tool and Go library f
 
 Key goals include:
 
-* [ ] Provide a structured, stable interface to canonical Grafana object schemas in a preferred language (Go, CUE, Jsonnet)
+* [ ] Provide a structured, stable interface to canonical Grafana kind schemas in a preferred language (Go, CUE, Jsonnet)
   * [ ] Go
   * [ ] CUE
   * [ ] Jsonnet
