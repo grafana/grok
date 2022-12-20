@@ -63,8 +63,8 @@ github.com/grafana/codejen v0.0.4-0.20221122220907-a5e7cc5407b3 h1:XasADId/N6Jk8
 github.com/grafana/codejen v0.0.4-0.20221122220907-a5e7cc5407b3/go.mod h1:zmwwM/DRyQB7pfuBjTWII3CWtxcXh8LTwAYGfDfpR6s=
 github.com/grafana/cuetsy v0.1.1 h1:+1jaDDYCpvKlcOWJgBRbkc5+VZIClCEn5mbI+4PLZqM=
 github.com/grafana/cuetsy v0.1.1/go.mod h1:4KWkUOslwvRTpEv7wdQG0jDFTuJmU+0L9x0h4kWxa2A=
-github.com/grafana/grafana v1.9.2-0.20221122145911-c43e1a721fd7 h1:rgKWtx5DxoEBq8cKb6ztESA94YGcl7Xk/CZCREIVWbM=
-github.com/grafana/grafana v1.9.2-0.20221122145911-c43e1a721fd7/go.mod h1:UVkjkj9RRmlij7jCREAYBPp0HaMBQMGDcAJCegTUlNY=
+github.com/grafana/grafana v1.9.2-0.20221216200141-92d12fdefaf9 h1:kSuTDAQtmrkSzU6TJrqXAKcCeB5k3o+e+kBBJeogEFI=
+github.com/grafana/grafana v1.9.2-0.20221216200141-92d12fdefaf9/go.mod h1:7OIbgQV82qgCEV7ScsIXoefbQY3G6sIyVJp9WtwHvWI=
 github.com/grafana/thema v0.0.0-20221113112305-b441ed85a1fd h1:y6H9I5fy4sRKf2FJ7W94YWero4mXH50Ft8NAPZ9DapQ=
 github.com/grafana/thema v0.0.0-20221113112305-b441ed85a1fd/go.mod h1:ZJHKwNE86ngdQ7edJIFHepCiIg9YP9x+YZPEm3dlkL4=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
@@ -105,7 +105,7 @@ github.com/lestrrat-go/iter v1.0.2/go.mod h1:Momfcq3AnRlRjI5b5O8/G5/BvpzrhoFTZcn
 github.com/lestrrat-go/jwx v1.2.23/go.mod h1:sAXjRwzSvCN6soO4RLoWWm1bVPpb8iOuv0IYfH8OWd8=
 github.com/lestrrat-go/option v1.0.0/go.mod h1:5ZHFbivi4xwXxhxY9XHDe2FHo6/Z7WWmtT7T5nBBp3I=
 github.com/lib/pq v1.0.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
-github.com/lib/pq v1.10.4 h1:SO9z7FRPzA03QhHKJrH5BXA6HU1rS4V2nIVrrNC1iYk=
+github.com/lib/pq v1.10.7 h1:p7ZhMD+KsSRozJr34udlUrhboJwWAgCg34+/ZZNvZZw=
 github.com/mailru/easyjson v0.0.0-20190614124828-94de47d64c63/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
 github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
 github.com/mailru/easyjson v0.7.6/go.mod h1:xzfreul335JAWq5oZzymOObrkdz5UnU4kGfJJLY9Nlc=
@@ -156,7 +156,7 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PKk=
+github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
 github.com/ugorji/go v1.1.7/go.mod h1:kZn38zHttfInRq0xu/PH0az30d+z6vm202qpg1oXVMw=
 github.com/ugorji/go v1.2.7/go.mod h1:nF9osbDWLy6bDVv/Rtoh6QgnvNDpmCalQV5urGCCS6M=
 github.com/ugorji/go/codec v1.1.7/go.mod h1:Ax+UKWsSmolVDwsd+7N3ZtXu+yMGCf907BLYF3GoBXY=
