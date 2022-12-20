@@ -26,7 +26,32 @@ func JenniesForGo() jen.TargetJennies {
 		codegen.LatestMajorsOrXJenny(filepath.Join("kinds", "core"), TypedSchemaJenny{}),
 	)
 
-	// tgt.Composable.Append()
+	tgt.Composable.Append(
+		// oooonly need to inject the proper path interstitial to make this right
+		jen.ComposableLatestMajorsOrXJenny(filepath.Join("kinds", "composable"), GoTypesJenny{}),
+	)
 
 	return tgt
 }
+
+/*
+WITH IMPORT:
+-table
+stat E
+-status-history
+-state-timeline
+-timeseries
+piechart E
+bargauge E
+gauge E
+histogram
+barchart
+
+WITHOUT IMPORT:
+news
+text
+-heatmap
+dashlist
+-canvas
+annolist
+*/

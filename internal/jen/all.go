@@ -24,7 +24,7 @@ type TargetJennies struct {
 func NewTargetJennies() TargetJennies {
 	return TargetJennies{
 		Core: codejen.JennyListWithNamer[*codegen.DeclForGen](func(decl *codegen.DeclForGen) string {
-			return decl.Meta.Common().MachineName
+			return decl.Properties.Common().MachineName
 		}),
 		Composable: codejen.JennyListWithNamer[*ComposableForGen](func(cfg *ComposableForGen) string {
 			return fmt.Sprintf("%s-%s", cfg.Info.Meta().Id, cfg.Slot.Name())

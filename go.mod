@@ -2,11 +2,8 @@ module github.com/grafana/grok
 
 go 1.19
 
-// replace github.com/grafana/grafana => ../grafana
-//replace github.com/grafana/codejen => ../codejen
-
 require (
-	cuelang.org/go v0.4.3
+	cuelang.org/go v0.5.0-beta.2
 	github.com/grafana/codejen v0.0.4-0.20221122220907-a5e7cc5407b3
 	github.com/grafana/grafana v1.9.2-0.20221122145911-c43e1a721fd7
 	github.com/grafana/thema v0.0.0-20221113112305-b441ed85a1fd
@@ -42,12 +39,22 @@ require (
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/xlab/treeprint v1.1.0 // indirect
 	github.com/yalue/merged_fs v1.2.2 // indirect
-	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
+	golang.org/x/crypto v0.3.0 // indirect
 	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
+	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
+	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
-	golang.org/x/tools v0.1.12 // indirect
+	golang.org/x/tools v0.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+// replace github.com/grafana/grafana => ../grafana
+
+// replace github.com/grafana/codejen => ../codejen
+
+// replace github.com/grafana/thema => ../thema
+
+replace cuelang.org/go => github.com/sdboyer/cue v0.5.0-beta.2.0.20221218111347-341999f48bdb
+
+// replace k8s.io/client-go => k8s.io/client-go v0.25.0
