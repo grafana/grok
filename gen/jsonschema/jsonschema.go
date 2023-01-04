@@ -11,17 +11,6 @@ import (
 	"github.com/grafana/thema/encoding/jsonschema"
 )
 
-// Key things
-// - create a dashboard, raw
-// - create a dashboard, with a builder
-// - take that object, translate to target grafana version
-
-// go/kinds/core/<machineName>/<v>
-// go/kinds/custom/<pluginName>/<machineName>
-// go/kinds/composable/<pluginName>/<slot>/<v>
-// go/byrelease/{c,c,c}
-// go/builder
-
 func JenniesForJsonSchema() jen.TargetJennies {
 	tgt := jen.NewTargetJennies()
 
@@ -57,25 +46,3 @@ func (j JsonSchemaJenny) Generate(sfg codegen.SchemaForGen) (*codejen.File, erro
 
 	return codejen.NewFile(sfg.Schema.Lineage().Name()+"_types_gen.json", []byte(str), j), nil
 }
-
-/*
-WITH IMPORT:
--table
-stat E
--status-history
--state-timeline
--timeseries
-piechart E
-bargauge E
-gauge E
-histogram
-barchart
-
-WITHOUT IMPORT:
-news
-text
--heatmap
-dashlist
--canvas
-annolist
-*/
