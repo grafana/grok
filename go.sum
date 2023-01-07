@@ -67,6 +67,8 @@ github.com/grafana/grafana v1.9.2-0.20221216200141-92d12fdefaf9 h1:kSuTDAQtmrkSz
 github.com/grafana/grafana v1.9.2-0.20221216200141-92d12fdefaf9/go.mod h1:7OIbgQV82qgCEV7ScsIXoefbQY3G6sIyVJp9WtwHvWI=
 github.com/grafana/thema v0.0.0-20221113112305-b441ed85a1fd h1:y6H9I5fy4sRKf2FJ7W94YWero4mXH50Ft8NAPZ9DapQ=
 github.com/grafana/thema v0.0.0-20221113112305-b441ed85a1fd/go.mod h1:ZJHKwNE86ngdQ7edJIFHepCiIg9YP9x+YZPEm3dlkL4=
+github.com/grafana/thema v0.0.0-20221219163827-8dee2bc442ba h1:kD9ID99cllsWPkAW4q94/rQ78QvhqjuiZG/udneSVic=
+github.com/grafana/thema v0.0.0-20221219163827-8dee2bc442ba/go.mod h1:8wmENx19kzNI+5De7889AVRJ3T4OnOb5I1bSJLcj1t4=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 github.com/hashicorp/errwrap v1.1.0 h1:OxrOeh75EUXMY8TBjag2fzXGZ40LB6IKw45YeGUDY2I=
 github.com/hashicorp/errwrap v1.1.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=

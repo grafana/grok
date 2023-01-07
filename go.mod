@@ -6,7 +6,7 @@ require (
 	cuelang.org/go v0.5.0-beta.2
 	github.com/grafana/codejen v0.0.4-0.20221122220907-a5e7cc5407b3
 	github.com/grafana/grafana v1.9.2-0.20221216200141-92d12fdefaf9
-	github.com/grafana/thema v0.0.0-20221113112305-b441ed85a1fd
+	github.com/grafana/thema v0.0.0-20221219163827-8dee2bc442ba
 )
 
 require (
