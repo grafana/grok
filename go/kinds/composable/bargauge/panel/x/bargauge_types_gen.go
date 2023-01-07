@@ -43,7 +43,7 @@ type ReduceDataOptions struct {
 	Fields *string `json:"fields,omitempty"`
 
 	// if showing all values limit
-	Limit *int32 `json:"limit,omitempty"`
+	Limit *float32 `json:"limit,omitempty"`
 
 	// If true show each row value
 	Values *bool `json:"values,omitempty"`
@@ -62,8 +62,8 @@ type VizOrientation string
 // TODO docs
 type VizTextDisplayOptions struct {
 	// Explicit title text size
-	TitleSize *int32 `json:"titleSize,omitempty"`
+	TitleSize *float32 `json:"titleSize,omitempty"`
 
 	// Explicit value text size
-	ValueSize *int32 `json:"valueSize,omitempty"`
+	ValueSize *float32 `json:"valueSize,omitempty"`
 }

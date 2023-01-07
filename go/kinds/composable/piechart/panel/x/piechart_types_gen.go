@@ -108,9 +108,9 @@ type PanelOptions struct {
 }
 
 // Select labels to display on the pie chart.
-//   - Name - The series or field name.
-//   - Percent - The percentage of the whole.
-//   - Value - The raw numerical value.
+//  - Name - The series or field name.
+//  - Percent - The percentage of the whole.
+//  - Value - The raw numerical value.
 type PieChartLabels string
 
 // PieChartLegendOptions defines model for PieChartLegendOptions.
@@ -121,8 +121,8 @@ type PieChartLegendOptions struct {
 }
 
 // Select values to display in the legend.
-//   - Percent: The percentage of the whole.
-//   - Value: The raw numerical value.
+//  - Percent: The percentage of the whole.
+//  - Value: The raw numerical value.
 type PieChartLegendValues string
 
 // Select the pie chart display style.
@@ -137,7 +137,7 @@ type ReduceDataOptions struct {
 	Fields *string `json:"fields,omitempty"`
 
 	// if showing all values limit
-	Limit *int32 `json:"limit,omitempty"`
+	Limit *float32 `json:"limit,omitempty"`
 
 	// If true show each row value
 	Values *bool `json:"values,omitempty"`
@@ -171,7 +171,7 @@ type VizLegendOptions struct {
 	ShowLegend bool            `json:"showLegend"`
 	SortBy     *string         `json:"sortBy,omitempty"`
 	SortDesc   *bool           `json:"sortDesc,omitempty"`
-	Width      *int32          `json:"width,omitempty"`
+	Width      *float32        `json:"width,omitempty"`
 }
 
 // TODO docs
@@ -180,10 +180,10 @@ type VizOrientation string
 // TODO docs
 type VizTextDisplayOptions struct {
 	// Explicit title text size
-	TitleSize *int32 `json:"titleSize,omitempty"`
+	TitleSize *float32 `json:"titleSize,omitempty"`
 
 	// Explicit value text size
-	ValueSize *int32 `json:"valueSize,omitempty"`
+	ValueSize *float32 `json:"valueSize,omitempty"`
 }
 
 // TODO docs
