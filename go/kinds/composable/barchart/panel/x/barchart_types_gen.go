@@ -221,8 +221,8 @@ type ScaleDistribution string
 
 // TODO docs
 type ScaleDistributionConfig struct {
-	LinearThreshold *int `json:"linearThreshold,omitempty"`
-	Log             *int `json:"log,omitempty"`
+	LinearThreshold *float32 `json:"linearThreshold,omitempty"`
+	Log             *float32 `json:"log,omitempty"`
 
 	// TODO docs
 	Type ScaleDistribution `json:"type"`
@@ -255,7 +255,7 @@ type VizLegendOptions struct {
 	ShowLegend bool            `json:"showLegend"`
 	SortBy     *string         `json:"sortBy,omitempty"`
 	SortDesc   *bool           `json:"sortDesc,omitempty"`
-	Width      *int32          `json:"width,omitempty"`
+	Width      *float32        `json:"width,omitempty"`
 }
 
 // TODO docs
@@ -264,10 +264,10 @@ type VizOrientation string
 // TODO docs
 type VizTextDisplayOptions struct {
 	// Explicit title text size
-	TitleSize *int32 `json:"titleSize,omitempty"`
+	TitleSize *float32 `json:"titleSize,omitempty"`
 
 	// Explicit value text size
-	ValueSize *int32 `json:"valueSize,omitempty"`
+	ValueSize *float32 `json:"valueSize,omitempty"`
 }
 
 // TODO docs
