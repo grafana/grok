@@ -1,0 +1,92 @@
+[
+  {
+    "Name": "annolist",
+    "Versions": [
+      {
+        "Name": "0.0",
+        "Filename": "annolist_types_gen.json"
+      }
+    ]
+  },
+  {
+    "Name": "barchart",
+    "Versions": [
+      {
+        "Name": "0.0",
+        "Filename": "barchart_types_gen.json"
+      }
+    ]
+  },
+  {
+    "Name": "bargauge",
+    "Versions": [
+      {
+        "Name": "0.0",
+        "Filename": "bargauge_types_gen.json"
+      }
+    ]
+  },
+  {
+    "Name": "dashlist",
+    "Versions": [
+      {
+        "Name": "0.0",
+        "Filename": "dashlist_types_gen.json"
+      }
+    ]
+  },
+  {
+    "Name": "gauge",
+    "Versions": [
+      {
+        "Name": "0.0",
+        "Filename": "gauge_types_gen.json"
+      }
+    ]
+  },
+  {
+    "Name": "histogram",
+    "Versions": [
+      {
+        "Name": "0.0",
+        "Filename": "histogram_types_gen.json"
+      }
+    ]
+  },
+  {
+    "Name": "news",
+    "Versions": [
+      {
+        "Name": "0.0",
+        "Filename": "news_types_gen.json"
+      }
+    ]
+  },
+  {
+    "Name": "piechart",
+    "Versions": [
+      {
+        "Name": "0.0",
+        "Filename": "piechart_types_gen.json"
+      }
+    ]
+  },
+  {
+    "Name": "stat",
+    "Versions": [
+      {
+        "Name": "0.0",
+        "Filename": "stat_types_gen.json"
+      }
+    ]
+  },
+  {
+    "Name": "text",
+    "Versions": [
+      {
+        "Name": "0.0",
+        "Filename": "text_types_gen.json"
+      }
+    ]
+  }
+]

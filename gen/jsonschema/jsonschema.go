@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"encoding/json"
+	"log"
 	"path/filepath"
 
 	"cuelang.org/go/cue/cuecontext"
@@ -17,13 +18,13 @@ func JenniesForJsonSchema() jen.TargetJennies {
 
 	tgt.Core.Append(
 		codegen.LatestMajorsOrXJenny(filepath.Join("kinds", "core"), JsonSchemaJenny{}),
-		&JsonSchemaIndexJenny{},
+		&JsonSchemaCoreIndexJenny{},
 	)
 
 	tgt.Composable.Append(
 		// oooonly need to inject the proper path interstitial to make this right
 		jen.ComposableLatestMajorsOrXJenny(filepath.Join("kinds", "composable"), JsonSchemaJenny{}),
-		&JsonSchemaIndexJenny{},
+		&JsonSchemaComposableIndexJenny{},
 	)
 
 	return tgt
@@ -54,13 +55,13 @@ func (j JsonSchemaJenny) Generate(sfg codegen.SchemaForGen) (*codejen.File, erro
 	return codejen.NewFile(jsonSchemaFilename(sfg.Schema), []byte(str), j), nil
 }
 
-type JsonSchemaIndexJenny struct{}
+type JsonSchemaCoreIndexJenny struct{}
 
-func (j *JsonSchemaIndexJenny) JennyName() string {
+func (j *JsonSchemaCoreIndexJenny) JennyName() string {
 	return "JsonSchemaIndexJenny"
 }
 
-func (j *JsonSchemaIndexJenny) Generate(decls ...codegen.DeclForGen) (*codejen.File, error) {
+func (j *JsonSchemaCoreIndexJenny) Generate(decls ...*codegen.DeclForGen) (*codejen.File, error) {
 
 	type version struct {
 		Name     string
@@ -68,7 +69,6 @@ func (j *JsonSchemaIndexJenny) Generate(decls ...codegen.DeclForGen) (*codejen.F
 	}
 	type schema struct {
 		Name     string
-		Decl     codegen.DeclForGen
 		Versions []version
 	}
 
@@ -76,11 +76,18 @@ func (j *JsonSchemaIndexJenny) Generate(decls ...codegen.DeclForGen) (*codejen.F
 
 	for _, decl := range decls {
 		versions := []version{}
+		var previous thema.Schema
 		for sch := decl.Lineage().First(); sch != nil; sch.Successor() {
+			log.Printf("Core: %s, %s", decl.Lineage().Name(), sch.Version().String())
+			if previous == sch {
+				log.Printf("QUITTING, LOOP FOUND")
+				break
+			}
 			versions = append(versions, version{
 				Name:     sch.Version().String(),
 				Filename: jsonSchemaFilename(sch),
 			})
+			previous = sch
 		}
 		schemas = append(schemas, schema{
 			Name:     decl.Lineage().Name(),
@@ -91,5 +98,51 @@ func (j *JsonSchemaIndexJenny) Generate(decls ...codegen.DeclForGen) (*codejen.F
 	if err != nil {
 		return nil, err
 	}
-	return codejen.NewFile("index.json", []byte(str), j), nil
+	return codejen.NewFile("core.json", []byte(str), j), nil
+}
+
+type JsonSchemaComposableIndexJenny struct{}
+
+func (j *JsonSchemaComposableIndexJenny) JennyName() string {
+	return "JsonSchemaIndexJenny"
+}
+
+func (j *JsonSchemaComposableIndexJenny) Generate(comps ...*jen.ComposableForGen) (*codejen.File, error) {
+
+	type version struct {
+		Name     string
+		Filename string
+	}
+	type schema struct {
+		Name     string
+		Versions []version
+	}
+
+	schemas := []schema{}
+
+	for _, comp := range comps {
+		versions := []version{}
+		var previous thema.Schema
+		for sch := comp.Lineage.First(); sch != nil; sch.Successor() {
+			log.Printf("Composable: %s, %s", comp.Lineage.Name(), sch.Version().String())
+			if previous == sch {
+				log.Printf("QUITTING, LOOP FOUND")
+				break
+			}
+			versions = append(versions, version{
+				Name:     sch.Version().String(),
+				Filename: jsonSchemaFilename(sch),
+			})
+			previous = sch
+		}
+		schemas = append(schemas, schema{
+			Name:     comp.Lineage.Name(),
+			Versions: versions,
+		})
+	}
+	str, err := json.MarshalIndent(schemas, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return codejen.NewFile("composables.json", []byte(str), j), nil
 }
