@@ -2,7 +2,6 @@ package jsonschema
 
 import (
 	"encoding/json"
-	"log"
 	"path/filepath"
 
 	"cuelang.org/go/cue/cuecontext"
@@ -76,18 +75,11 @@ func (j *JsonSchemaCoreIndexJenny) Generate(decls ...*codegen.DeclForGen) (*code
 
 	for _, decl := range decls {
 		versions := []version{}
-		var previous thema.Schema
-		for sch := decl.Lineage().First(); sch != nil; sch.Successor() {
-			log.Printf("Core: %s, %s", decl.Lineage().Name(), sch.Version().String())
-			if previous == sch {
-				log.Printf("QUITTING, LOOP FOUND")
-				break
-			}
+		for sch := decl.Lineage().First(); sch != nil; sch = sch.Successor() {
 			versions = append(versions, version{
 				Name:     sch.Version().String(),
 				Filename: jsonSchemaFilename(sch),
 			})
-			previous = sch
 		}
 		schemas = append(schemas, schema{
 			Name:     decl.Lineage().Name(),
@@ -122,18 +114,11 @@ func (j *JsonSchemaComposableIndexJenny) Generate(comps ...*jen.ComposableForGen
 
 	for _, comp := range comps {
 		versions := []version{}
-		var previous thema.Schema
-		for sch := comp.Lineage.First(); sch != nil; sch.Successor() {
-			log.Printf("Composable: %s, %s", comp.Lineage.Name(), sch.Version().String())
-			if previous == sch {
-				log.Printf("QUITTING, LOOP FOUND")
-				break
-			}
+		for sch := comp.Lineage.First(); sch != nil; sch = sch.Successor() {
 			versions = append(versions, version{
 				Name:     sch.Version().String(),
 				Filename: jsonSchemaFilename(sch),
 			})
-			previous = sch
 		}
 		schemas = append(schemas, schema{
 			Name:     comp.Lineage.Name(),
