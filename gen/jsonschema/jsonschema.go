@@ -106,8 +106,9 @@ func (j *JsonSchemaComposableIndexJenny) Generate(comps ...*jen.ComposableForGen
 		Filename string
 	}
 	type schema struct {
-		Name     string
-		Versions []version
+		Name      string
+		Interface string
+		Versions  []version
 	}
 
 	schemas := []schema{}
@@ -121,8 +122,9 @@ func (j *JsonSchemaComposableIndexJenny) Generate(comps ...*jen.ComposableForGen
 			})
 		}
 		schemas = append(schemas, schema{
-			Name:     comp.Lineage.Name(),
-			Versions: versions,
+			Name:      comp.Lineage.Name(),
+			Interface: comp.Slot.Name(),
+			Versions:  versions,
 		})
 	}
 	str, err := json.MarshalIndent(schemas, "", "  ")
