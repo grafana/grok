@@ -1,0 +1,15 @@
+[
+  import "github.com/grafana/grok/jsonschema/kinds/core/dashboard/x/dashboard_types_gen.json",
+  import "github.com/grafana/grok/jsonschema/kinds/core/playlist/x/playlist_types_gen.json",
+  import "github.com/grafana/grok/jsonschema/kinds/core/team/x/team_types_gen.json",
+  import "github.com/grafana/grok/jsonschema/kinds/composable/annolist/panel/x/annolist_types_gen.json",
+  import "github.com/grafana/grok/jsonschema/kinds/composable/barchart/panel/x/barchart_types_gen.json",
+  import "github.com/grafana/grok/jsonschema/kinds/composable/bargauge/panel/x/bargauge_types_gen.json",
+  import "github.com/grafana/grok/jsonschema/kinds/composable/dashlist/panel/x/dashlist_types_gen.json",
+  import "github.com/grafana/grok/jsonschema/kinds/composable/gauge/panel/x/gauge_types_gen.json",
+  import "github.com/grafana/grok/jsonschema/kinds/composable/histogram/panel/x/histogram_types_gen.json",
+  import "github.com/grafana/grok/jsonschema/kinds/composable/news/panel/x/news_types_gen.json",
+  import "github.com/grafana/grok/jsonschema/kinds/composable/piechart/panel/x/piechart_types_gen.json",
+  import "github.com/grafana/grok/jsonschema/kinds/composable/stat/panel/x/stat_types_gen.json",
+  import "github.com/grafana/grok/jsonschema/kinds/composable/text/panel/x/text_types_gen.json",
+]

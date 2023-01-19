@@ -1,0 +1,137 @@
+
+{
+	"version": 1,
+	"dependencies": [
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/core/dashboard/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/core/playlist/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/core/team/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/annolist/panel/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/barchart/panel/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/bargauge/panel/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/dashlist/panel/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/gauge/panel/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/histogram/panel/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/news/panel/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/piechart/panel/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/stat/panel/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/text/panel/x"
+		  }
+		},
+		"version": "main"
+	}
+	],
+	"legacyImports": false
+  }
