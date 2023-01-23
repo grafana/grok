@@ -81,8 +81,8 @@ func lineUpJennies() jen.TargetJennies {
 	}
 
 	for path, tj := range tgtmap {
-		tj.Core.AddPostprocessors(jen.Prefixer(path))
-		tj.Composable.AddPostprocessors(jen.Prefixer(path))
+		tj.Core.AddPostprocessors(jen.Prefixer(path), jen.SlashHeaderMapper(path))
+		tj.Composable.AddPostprocessors(jen.Prefixer(path), jen.SlashHeaderMapper(path))
 		tgt.Core.AppendManyToMany(tj.Core)
 		tgt.Composable.AppendManyToMany(tj.Composable)
 	}
