@@ -1,14 +1,11 @@
 package jen
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"github.com/grafana/codejen"
 	"github.com/grafana/grafana/pkg/codegen"
 	"github.com/grafana/grafana/pkg/kindsys"
-	"github.com/grafana/grafana/pkg/plugins/pfs"
-	"github.com/grafana/thema"
 )
 
 // TargetJennies is a set of jennies for a particular target language or
@@ -16,7 +13,7 @@ import (
 type TargetJennies struct {
 	Core *codejen.JennyList[*codegen.DeclForGen]
 	// TODO replace pfs.PluginInfo with type from kindsys once implemented
-	Composable *codejen.JennyList[*ComposableForGen]
+	Composable *codejen.JennyList[kindsys.Composable]
 }
 
 // NewTargetJennies initializes a new TargetJennies with appropriate namers for
@@ -26,36 +23,10 @@ func NewTargetJennies() TargetJennies {
 		Core: codejen.JennyListWithNamer[*codegen.DeclForGen](func(decl *codegen.DeclForGen) string {
 			return decl.Properties.Common().MachineName
 		}),
-		Composable: codejen.JennyListWithNamer[*ComposableForGen](func(cfg *ComposableForGen) string {
-			return fmt.Sprintf("%s-%s", cfg.Info.Meta().Id, cfg.Slot.Name())
+		Composable: codejen.JennyListWithNamer[kindsys.Composable](func(k kindsys.Composable) string {
+			return k.Name()
 		}),
 	}
-}
-
-// ComposablesFromTree gives a ComposableForGen from a pfs.Tree.
-//
-// Temporary until we have proper types for this in grafana/grafana itself.
-func ComposablesFromTree(ptree *pfs.Tree) []*ComposableForGen {
-	allslots := kindsys.AllSlots(nil)
-	info := ptree.RootPlugin()
-	var compok []*ComposableForGen
-	for slot, lin := range info.SlotImplementations() {
-		compok = append(compok, &ComposableForGen{
-			Info:    info,
-			Slot:    *allslots[slot],
-			Lineage: lin,
-		})
-	}
-
-	return compok
-}
-
-// ComposableForGen is a codegen-friendly representation of a Grafana
-// ComposableKind.
-type ComposableForGen struct {
-	Info    pfs.PluginInfo
-	Slot    kindsys.Slot
-	Lineage thema.Lineage
 }
 
 // Prefixer returns a FileMapper that injects the provided path prefix to files

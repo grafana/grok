@@ -13,6 +13,7 @@ import (
 	"cuelang.org/go/cue/cuecontext"
 	"github.com/grafana/codejen"
 	"github.com/grafana/grafana/pkg/codegen"
+	"github.com/grafana/grafana/pkg/kindsys"
 	"github.com/grafana/grafana/pkg/plugins/pfs/corelist"
 	"github.com/grafana/grafana/pkg/registry/corekind"
 	_go "github.com/grafana/grok/gen/go"
@@ -30,13 +31,21 @@ func main() {
 	// there they are all standing in a row
 	coco := lineUpJennies()
 
+	// var corek []kindsys.Core // TODO this is the type we actually want to use, once grafana core switches
 	var corek []*codegen.DeclForGen
-	var compok []*jen.ComposableForGen
-	for _, kind := range corekind.NewBase(nil).AllStructured() {
-		corek = append(corek, codegen.StructuredForGen(kind))
+	var compok []kindsys.Composable
+
+	for _, kind := range corekind.NewBase(nil).All() {
+		dk, err := codegen.ForGen(nil, kind.Decl().Some())
+		if err != nil {
+			panic(err)
+		}
+		corek = append(corek, dk)
 	}
-	for _, ptree := range corelist.New(nil) {
-		compok = append(compok, jen.ComposablesFromTree(ptree)...)
+	for _, pp := range corelist.New(nil) {
+		for _, kind := range pp.ComposableKinds {
+			compok = append(compok, kind)
+		}
 	}
 
 	ckfs, err := coco.Core.GenerateFS(corek...)

@@ -1,10 +1,5 @@
 package dashboard
 
-import (
-	"encoding/json"
-	"fmt"
-)
-
 // Defines values for CursorSync.
 const (
 	CursorSyncN0 CursorSync = 0
@@ -51,6 +46,19 @@ const (
 // Defines values for HeatmapPanelType.
 const (
 	HeatmapPanelTypeHeatmap HeatmapPanelType = "heatmap"
+)
+
+// Defines values for LoadingState.
+const (
+	LoadingStateDone LoadingState = "Done"
+
+	LoadingStateError LoadingState = "Error"
+
+	LoadingStateLoading LoadingState = "Loading"
+
+	LoadingStateNotStarted LoadingState = "NotStarted"
+
+	LoadingStateStreaming LoadingState = "Streaming"
 )
 
 // Defines values for MappingType.
@@ -103,6 +111,15 @@ const (
 	ThresholdsModeAbsolute ThresholdsMode = "absolute"
 
 	ThresholdsModePercentage ThresholdsMode = "percentage"
+)
+
+// Defines values for VariableHide.
+const (
+	VariableHideN0 VariableHide = 0
+
+	VariableHideN1 VariableHide = 1
+
+	VariableHideN2 VariableHide = 2
 )
 
 // Defines values for VariableType.
@@ -189,21 +206,30 @@ type CursorSync int
 // TODO docs
 type Link struct {
 	AsDropdown  bool     `json:"asDropdown"`
-	Icon        *string  `json:"icon,omitempty"`
+	Icon        string   `json:"icon"`
 	IncludeVars bool     `json:"includeVars"`
 	KeepTime    bool     `json:"keepTime"`
 	Tags        []string `json:"tags"`
 	TargetBlank bool     `json:"targetBlank"`
 	Title       string   `json:"title"`
-	Tooltip     *string  `json:"tooltip,omitempty"`
+	Tooltip     string   `json:"tooltip"`
 
 	// TODO docs
 	Type LinkType `json:"type"`
-	Url  *string  `json:"url,omitempty"`
+	Url  string   `json:"url"`
 }
 
 // TODO docs
 type LinkType string
+
+// Ref to a DataSource instance
+type DataSourceRef struct {
+	// The plugin type-id
+	Type *string `json:"type,omitempty"`
+
+	// Specific datasource instance
+	Uid *string `json:"uid,omitempty"`
+}
 
 // DynamicConfigValue defines model for DynamicConfigValue.
 type DynamicConfigValue struct {
@@ -291,6 +317,12 @@ type FieldConfigSource struct {
 
 // Support for legacy graph and heatmap panels.
 type GraphPanel struct {
+	// @deprecated this is part of deprecated graph panel
+	Legend *struct {
+		Show     bool    `json:"show"`
+		Sort     *string `json:"sort,omitempty"`
+		SortDesc *bool   `json:"sortDesc,omitempty"`
+	} `json:"legend,omitempty"`
 	Type GraphPanelType `json:"type"`
 }
 
@@ -322,6 +354,9 @@ type HeatmapPanel struct {
 
 // HeatmapPanelType defines model for HeatmapPanel.Type.
 type HeatmapPanelType string
+
+// LoadingState defines model for LoadingState.
+type LoadingState string
 
 // TODO docs
 type MappingType string
@@ -373,7 +408,11 @@ type Panel struct {
 
 	// Direction to repeat in if 'repeat' is set.
 	// "h" for horizontal, "v" for vertical.
+	// TODO this is probably optional
 	RepeatDirection PanelRepeatDirection `json:"repeatDirection"`
+
+	// Id of the repeating panel.
+	RepeatPanelId *int64 `json:"repeatPanelId,omitempty"`
 
 	// TODO docs
 	Tags *[]string `json:"tags,omitempty"`
@@ -408,6 +447,7 @@ type Panel struct {
 
 // Direction to repeat in if 'repeat' is set.
 // "h" for horizontal, "v" for vertical.
+// TODO this is probably optional
 type PanelRepeatDirection string
 
 // TODO docs
@@ -463,6 +503,42 @@ type RowPanel struct {
 
 // RowPanelType defines model for RowPanel.Type.
 type RowPanelType string
+
+// TODO docs
+type Snapshot struct {
+	// TODO docs
+	Created string `json:"created"`
+
+	// TODO docs
+	Expires string `json:"expires"`
+
+	// TODO docs
+	External bool `json:"external"`
+
+	// TODO docs
+	ExternalUrl string `json:"externalUrl"`
+
+	// TODO docs
+	Id int `json:"id"`
+
+	// TODO docs
+	Key string `json:"key"`
+
+	// TODO docs
+	Name string `json:"name"`
+
+	// TODO docs
+	OrgId int `json:"orgId"`
+
+	// TODO docs
+	Updated string `json:"updated"`
+
+	// TODO docs
+	Url *string `json:"url,omitempty"`
+
+	// TODO docs
+	UserId int `json:"userId"`
+}
 
 // TODO docs
 type SpecialValueMap struct {
@@ -530,17 +606,12 @@ type Transformation struct {
 
 // TODO docs
 type ValueMap struct {
-	Options ValueMap_Options `json:"options"`
+	Options map[string]ValueMappingResult `json:"options"`
 	Type    struct {
 		// Embedded struct due to allOf(#/components/schemas/MappingType)
 		MappingType `yaml:",inline"`
 		// Embedded fields due to inline allOf schema
 	} `json:"type"`
-}
-
-// ValueMap_Options defines model for ValueMap.Options.
-type ValueMap_Options struct {
-	AdditionalProperties map[string]ValueMappingResult `json:"-"`
 }
 
 // TODO docs
@@ -554,13 +625,30 @@ type ValueMappingResult struct {
 	Text  *string `json:"text,omitempty"`
 }
 
+// VariableHide defines model for VariableHide.
+type VariableHide int
+
 // FROM: packages/grafana-data/src/types/templateVars.ts
 // TODO docs
 // TODO what about what's in public/app/features/types.ts?
 // TODO there appear to be a lot of different kinds of [template] vars here? if so need a disjunction
 type VariableModel struct {
-	Label *string `json:"label,omitempty"`
-	Name  string  `json:"name"`
+	// Ref to a DataSource instance
+	Datasource  *DataSourceRef          `json:"datasource,omitempty"`
+	Description *string                 `json:"description,omitempty"`
+	Error       *map[string]interface{} `json:"error,omitempty"`
+	Global      bool                    `json:"global"`
+	Hide        VariableHide            `json:"hide"`
+	Id          string                  `json:"id"`
+	Index       int                     `json:"index"`
+	Label       *string                 `json:"label,omitempty"`
+	Name        string                  `json:"name"`
+
+	// TODO: Move this into a separated QueryVariableModel type
+	Query        *interface{} `json:"query,omitempty"`
+	RootStateKey *string      `json:"rootStateKey,omitempty"`
+	SkipUrlSync  bool         `json:"skipUrlSync"`
+	State        LoadingState `json:"state"`
 
 	// FROM: packages/grafana-data/src/types/templateVars.ts
 	// TODO docs
@@ -577,7 +665,7 @@ type VariableType string
 type Dashboard struct {
 	// TODO docs
 	Annotations *struct {
-		List []AnnotationQuery `json:"list"`
+		List *[]AnnotationQuery `json:"list,omitempty"`
 	} `json:"annotations,omitempty"`
 
 	// Description of dashboard.
@@ -609,10 +697,16 @@ type Dashboard struct {
 	// TODO docs
 	Refresh *interface{} `json:"refresh,omitempty"`
 
+	// Version of the current dashboard data
+	Revision int `json:"revision"`
+
 	// Version of the JSON schema, incremented each time a Grafana update brings
 	// changes to said schema.
 	// TODO this is the existing schema numbering system. It will be replaced by Thema's themaVersion
 	SchemaVersion int `json:"schemaVersion"`
+
+	// TODO docs
+	Snapshot *Snapshot `json:"snapshot,omitempty"`
 
 	// Theme of dashboard.
 	Style Style `json:"style"`
@@ -622,7 +716,7 @@ type Dashboard struct {
 
 	// TODO docs
 	Templating *struct {
-		List []VariableModel `json:"list"`
+		List *[]VariableModel `json:"list,omitempty"`
 	} `json:"templating,omitempty"`
 
 	// Time range for dashboard, e.g. last 6 hours, last 7 days, etc
@@ -671,56 +765,3 @@ type Style string
 
 // Timezone of dashboard,
 type Timezone string
-
-// Getter for additional properties for ValueMap_Options. Returns the specified
-// element and whether it was found
-func (a ValueMap_Options) Get(fieldName string) (value ValueMappingResult, found bool) {
-	if a.AdditionalProperties != nil {
-		value, found = a.AdditionalProperties[fieldName]
-	}
-	return
-}
-
-// Setter for additional properties for ValueMap_Options
-func (a *ValueMap_Options) Set(fieldName string, value ValueMappingResult) {
-	if a.AdditionalProperties == nil {
-		a.AdditionalProperties = make(map[string]ValueMappingResult)
-	}
-	a.AdditionalProperties[fieldName] = value
-}
-
-// Override default JSON handling for ValueMap_Options to handle AdditionalProperties
-func (a *ValueMap_Options) UnmarshalJSON(b []byte) error {
-	object := make(map[string]json.RawMessage)
-	err := json.Unmarshal(b, &object)
-	if err != nil {
-		return err
-	}
-
-	if len(object) != 0 {
-		a.AdditionalProperties = make(map[string]ValueMappingResult)
-		for fieldName, fieldBuf := range object {
-			var fieldVal ValueMappingResult
-			err := json.Unmarshal(fieldBuf, &fieldVal)
-			if err != nil {
-				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
-			}
-			a.AdditionalProperties[fieldName] = fieldVal
-		}
-	}
-	return nil
-}
-
-// Override default JSON handling for ValueMap_Options to handle AdditionalProperties
-func (a ValueMap_Options) MarshalJSON() ([]byte, error) {
-	var err error
-	object := make(map[string]json.RawMessage)
-
-	for fieldName, field := range a.AdditionalProperties {
-		object[fieldName], err = json.Marshal(field)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
-		}
-	}
-	return json.Marshal(object)
-}
