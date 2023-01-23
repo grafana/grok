@@ -36,6 +36,9 @@ func main() {
 	var compok []kindsys.Composable
 
 	for _, kind := range corekind.NewBase(nil).All() {
+		if kind.Maturity().Less(kindsys.MaturityExperimental) {
+			continue
+		}
 		dk, err := codegen.ForGen(nil, kind.Decl().Some())
 		if err != nil {
 			panic(err)
@@ -44,6 +47,9 @@ func main() {
 	}
 	for _, pp := range corelist.New(nil) {
 		for _, kind := range pp.ComposableKinds {
+			if kind.Maturity().Less(kindsys.MaturityExperimental) {
+				continue
+			}
 			compok = append(compok, kind)
 		}
 	}
