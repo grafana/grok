@@ -6,14 +6,13 @@ import (
 	"path/filepath"
 
 	"github.com/grafana/codejen"
-	"github.com/grafana/grafana/pkg/codegen"
 	"github.com/grafana/grafana/pkg/kindsys"
 )
 
 // TargetJennies is a set of jennies for a particular target language or
 // tool that perform all necessary code generation steps.
 type TargetJennies struct {
-	Core       *codejen.JennyList[*codegen.DeclForGen]
+	Core       *codejen.JennyList[kindsys.Kind]
 	Composable *codejen.JennyList[kindsys.Composable]
 }
 
@@ -21,8 +20,8 @@ type TargetJennies struct {
 // each JennyList.
 func NewTargetJennies() TargetJennies {
 	return TargetJennies{
-		Core: codejen.JennyListWithNamer[*codegen.DeclForGen](func(decl *codegen.DeclForGen) string {
-			return decl.Properties.Common().MachineName
+		Core: codejen.JennyListWithNamer[kindsys.Kind](func(k kindsys.Kind) string {
+			return k.Props().Common().MachineName
 		}),
 		Composable: codejen.JennyListWithNamer[kindsys.Composable](func(k kindsys.Composable) string {
 			return k.Name()
