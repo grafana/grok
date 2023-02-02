@@ -10,6 +10,7 @@
       "Permission": {
         "type": "integer",
         "enum": [
+          0,
           1,
           2,
           4
@@ -23,7 +24,6 @@
           "name",
           "memberCount",
           "permission",
-          "accessControl",
           "created",
           "updated"
         ],

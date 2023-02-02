@@ -120,6 +120,9 @@
         "required": [
           "title",
           "type",
+          "icon",
+          "tooltip",
+          "url",
           "tags",
           "asDropdown",
           "targetBlank",
@@ -174,6 +177,46 @@
           "link",
           "dashboards"
         ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "DataSourceRef": {
+        "description": "Ref to a DataSource instance",
+        "type": "object",
+        "properties": {
+          "type": {
+            "description": "The plugin type-id",
+            "type": "string"
+          },
+          "uid": {
+            "description": "Specific datasource instance",
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "DataTransformerConfig": {
+        "description": "TODO docs",
+        "type": "object",
+        "required": [
+          "id",
+          "options"
+        ],
+        "properties": {
+          "id": {
+            "description": "Unique identifier of transformer",
+            "type": "string"
+          },
+          "disabled": {
+            "description": "Disabled transformations are skipped",
+            "type": "boolean"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/MatcherConfig"
+          },
+          "options": {
+            "description": "Options to be passed to the transformer\nValid options depend on the transformer id"
+          }
+        },
         "$schema": "http://json-schema.org/draft-04/schema#"
       },
       "DynamicConfigValue": {
@@ -361,6 +404,25 @@
             "enum": [
               "graph"
             ]
+          },
+          "legend": {
+            "description": "@deprecated this is part of deprecated graph panel",
+            "type": "object",
+            "required": [
+              "show"
+            ],
+            "properties": {
+              "show": {
+                "type": "boolean",
+                "default": true
+              },
+              "sort": {
+                "type": "string"
+              },
+              "sortDesc": {
+                "type": "boolean"
+              }
+            }
           }
         },
         "$schema": "http://json-schema.org/draft-04/schema#"
@@ -425,6 +487,33 @@
             ]
           }
         },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "LibraryPanelRef": {
+        "type": "object",
+        "required": [
+          "name",
+          "uid"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "uid": {
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "LoadingState": {
+        "type": "string",
+        "enum": [
+          "NotStarted",
+          "Loading",
+          "Streaming",
+          "Done",
+          "Error"
+        ],
         "$schema": "http://json-schema.org/draft-04/schema#"
       },
       "MappingType": {
@@ -533,13 +622,18 @@
             "type": "string"
           },
           "repeatDirection": {
-            "description": "Direction to repeat in if 'repeat' is set.\n\"h\" for horizontal, \"v\" for vertical.",
+            "description": "Direction to repeat in if 'repeat' is set.\n\"h\" for horizontal, \"v\" for vertical.\nTODO this is probably optional",
             "type": "string",
             "enum": [
               "h",
               "v"
             ],
             "default": "h"
+          },
+          "repeatPanelId": {
+            "description": "Id of the repeating panel.",
+            "type": "integer",
+            "format": "int64"
           },
           "maxDataPoints": {
             "description": "TODO docs",
@@ -558,7 +652,7 @@
           "transformations": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Transformation"
+              "$ref": "#/components/schemas/DataTransformerConfig"
             }
           },
           "interval": {
@@ -572,6 +666,9 @@
           "timeShift": {
             "description": "TODO docs\nTODO tighter constraint",
             "type": "string"
+          },
+          "libraryPanel": {
+            "$ref": "#/components/schemas/LibraryPanelRef"
           },
           "options": {
             "description": "options is specified by the PanelOptions field in panel\nplugin schemas.",
@@ -735,6 +832,75 @@
         },
         "$schema": "http://json-schema.org/draft-04/schema#"
       },
+      "Snapshot": {
+        "description": "TODO docs",
+        "type": "object",
+        "required": [
+          "created",
+          "expires",
+          "external",
+          "externalUrl",
+          "id",
+          "key",
+          "name",
+          "orgId",
+          "updated",
+          "userId"
+        ],
+        "properties": {
+          "created": {
+            "description": "TODO docs",
+            "type": "string"
+          },
+          "expires": {
+            "description": "TODO docs",
+            "type": "string"
+          },
+          "external": {
+            "description": "TODO docs",
+            "type": "boolean"
+          },
+          "externalUrl": {
+            "description": "TODO docs",
+            "type": "string"
+          },
+          "id": {
+            "description": "TODO docs",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "key": {
+            "description": "TODO docs",
+            "type": "string"
+          },
+          "name": {
+            "description": "TODO docs",
+            "type": "string"
+          },
+          "orgId": {
+            "description": "TODO docs",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "updated": {
+            "description": "TODO docs",
+            "type": "string"
+          },
+          "url": {
+            "description": "TODO docs",
+            "type": "string"
+          },
+          "userId": {
+            "description": "TODO docs",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
       "SpecialValueMap": {
         "description": "TODO docs",
         "type": "object",
@@ -850,23 +1016,6 @@
         ],
         "$schema": "http://json-schema.org/draft-04/schema#"
       },
-      "Transformation": {
-        "description": "TODO docs\nFIXME this is extremely underspecfied; wasn't obvious which typescript types corresponded to it",
-        "type": "object",
-        "required": [
-          "id",
-          "options"
-        ],
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "options": {
-            "type": "object"
-          }
-        },
-        "$schema": "http://json-schema.org/draft-04/schema#"
-      },
       "ValueMap": {
         "description": "TODO docs",
         "type": "object",
@@ -936,14 +1085,33 @@
         },
         "$schema": "http://json-schema.org/draft-04/schema#"
       },
+      "VariableHide": {
+        "type": "integer",
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
       "VariableModel": {
         "description": "FROM: packages/grafana-data/src/types/templateVars.ts\nTODO docs\nTODO what about what's in public/app/features/types.ts?\nTODO there appear to be a lot of different kinds of [template] vars here? if so need a disjunction",
         "type": "object",
         "required": [
+          "id",
           "type",
-          "name"
+          "name",
+          "global",
+          "hide",
+          "skipUrlSync",
+          "index",
+          "state"
         ],
         "properties": {
+          "id": {
+            "type": "string",
+            "default": "00000000-0000-0000-0000-000000000000"
+          },
           "type": {
             "$ref": "#/components/schemas/VariableType"
           },
@@ -952,6 +1120,49 @@
           },
           "label": {
             "type": "string"
+          },
+          "rootStateKey": {
+            "type": "string"
+          },
+          "global": {
+            "type": "boolean",
+            "default": false
+          },
+          "hide": {
+            "$ref": "#/components/schemas/VariableHide"
+          },
+          "skipUrlSync": {
+            "type": "boolean",
+            "default": false
+          },
+          "index": {
+            "type": "integer",
+            "minimum": -2147483648,
+            "maximum": 2147483647,
+            "default": -1
+          },
+          "state": {
+            "$ref": "#/components/schemas/LoadingState"
+          },
+          "error": {
+            "type": "object"
+          },
+          "description": {
+            "type": "string"
+          },
+          "query": {
+            "description": "TODO: Move this into a separated QueryVariableModel type",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object"
+              }
+            ]
+          },
+          "datasource": {
+            "$ref": "#/components/schemas/DataSourceRef"
           }
         },
         "$schema": "http://json-schema.org/draft-04/schema#"
@@ -974,6 +1185,7 @@
       "dashboard": {
         "type": "object",
         "required": [
+          "revision",
           "style",
           "editable",
           "graphTooltip",
@@ -997,6 +1209,13 @@
             "description": "Description of dashboard.",
             "type": "string"
           },
+          "revision": {
+            "description": "Version of the current dashboard data",
+            "type": "integer",
+            "minimum": -9223372036854775808,
+            "maximum": 9223372036854775807,
+            "default": -1
+          },
           "gnetId": {
             "type": "string"
           },
@@ -1017,13 +1236,8 @@
             "default": "dark"
           },
           "timezone": {
-            "description": "Timezone of dashboard,",
+            "description": "Timezone of dashboard. Accepts IANA TZDB zone ID or \"browser\" or \"utc\".",
             "type": "string",
-            "enum": [
-              "browser",
-              "utc",
-              ""
-            ],
             "default": "browser"
           },
           "editable": {
@@ -1118,11 +1332,12 @@
             }
           },
           "fiscalYearStartMonth": {
-            "description": "TODO docs",
+            "description": "The month that the fiscal year starts on.  0 = January, 11 = December",
             "type": "integer",
             "minimum": 0,
-            "maximum": 13,
-            "exclusiveMaximum": true
+            "maximum": 12,
+            "exclusiveMaximum": true,
+            "default": 0
           },
           "liveNow": {
             "description": "TODO docs",
@@ -1133,7 +1348,7 @@
             "type": "string"
           },
           "refresh": {
-            "description": "TODO docs",
+            "description": "Refresh rate of dashboard. Represented via interval string, e.g. \"5s\", \"1m\", \"1h\", \"1d\".",
             "oneOf": [
               {
                 "enum": [
@@ -1181,9 +1396,6 @@
           "templating": {
             "description": "TODO docs",
             "type": "object",
-            "required": [
-              "list"
-            ],
             "properties": {
               "list": {
                 "type": "array",
@@ -1196,9 +1408,6 @@
           "annotations": {
             "description": "TODO docs",
             "type": "object",
-            "required": [
-              "list"
-            ],
             "properties": {
               "list": {
                 "type": "array",
@@ -1214,6 +1423,9 @@
             "items": {
               "$ref": "#/components/schemas/DashboardLink"
             }
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/Snapshot"
           }
         },
         "$schema": "http://json-schema.org/draft-04/schema#"

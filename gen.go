@@ -12,7 +12,7 @@ import (
 
 	"cuelang.org/go/cue/cuecontext"
 	"github.com/grafana/codejen"
-	"github.com/grafana/grafana/pkg/codegen"
+	"github.com/grafana/grafana/pkg/kindsys"
 	"github.com/grafana/grafana/pkg/plugins/pfs/corelist"
 	"github.com/grafana/grafana/pkg/registry/corekind"
 	_go "github.com/grafana/grok/gen/go"
@@ -30,13 +30,22 @@ func main() {
 	// there they are all standing in a row
 	coco := lineUpJennies()
 
-	var corek []*codegen.DeclForGen
-	var compok []*jen.ComposableForGen
-	for _, kind := range corekind.NewBase(nil).AllStructured() {
-		corek = append(corek, codegen.StructuredForGen(kind))
+	var corek []kindsys.Kind
+	var compok []kindsys.Composable
+
+	for _, kind := range corekind.NewBase(nil).All() {
+		if kind.Maturity().Less(kindsys.MaturityExperimental) {
+			continue
+		}
+		corek = append(corek, kind)
 	}
-	for _, ptree := range corelist.New(nil) {
-		compok = append(compok, jen.ComposablesFromTree(ptree)...)
+	for _, pp := range corelist.New(nil) {
+		for _, kind := range pp.ComposableKinds {
+			if kind.Maturity().Less(kindsys.MaturityExperimental) {
+				continue
+			}
+			compok = append(compok, kind)
+		}
 	}
 
 	ckfs, err := coco.Core.GenerateFS(corek...)
@@ -66,8 +75,8 @@ func lineUpJennies() jen.TargetJennies {
 	}
 
 	for path, tj := range tgtmap {
-		tj.Core.AddPostprocessors(jen.Prefixer(path))
-		tj.Composable.AddPostprocessors(jen.Prefixer(path))
+		tj.Core.AddPostprocessors(jen.Prefixer(path), jen.SlashHeaderMapper(path))
+		tj.Composable.AddPostprocessors(jen.Prefixer(path), jen.SlashHeaderMapper(path))
 		tgt.Core.AppendManyToMany(tj.Core)
 		tgt.Composable.AppendManyToMany(tj.Composable)
 	}
