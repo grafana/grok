@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/grafana/codejen"
-	"github.com/grafana/grafana/pkg/codegen"
 	"github.com/grafana/grafana/pkg/kindsys"
 	"github.com/grafana/grok/internal/jen"
 )
@@ -35,22 +34,22 @@ func (j JsonnetImportsCoreJenny) JennyName() string {
 
 var tempGlobalImports strings.Builder
 
-func (j *JsonnetImportsCoreJenny) Generate(decls ...*codegen.DeclForGen) (*codejen.File, error) {
+func (j *JsonnetImportsCoreJenny) Generate(k ...kindsys.Kind) (*codejen.File, error) {
 	grafanaVersion := os.Getenv("GRAFANA_VERSION")
 	if grafanaVersion == "" {
 		return nil, nil
 	}
 	buf := strings.Builder{}
 	buf.WriteString("[\n")
-	for _, decl := range decls {
+	for _, kind := range k {
 		var schemaVersion string
-		if decl.Properties.Common().Maturity.Less(kindsys.MaturityStable) {
+		if kind.Maturity().Less(kindsys.MaturityStable) {
 			schemaVersion = "x"
 		} else {
-			schemaVersion = decl.ForLatestSchema().Schema.Version().String()
+			schemaVersion = kind.Lineage().Latest().Version().String()
 		}
 		importStatement := fmt.Sprintf("  import \"github.com/grafana/grok/jsonschema/kinds/core/%s/%s/%s_types_gen.json\",\n",
-			decl.Lineage().Name(), schemaVersion, decl.Lineage().Name())
+			kind.Lineage().Name(), schemaVersion, kind.Lineage().Name())
 		buf.WriteString(importStatement)
 		tempGlobalImports.WriteString(importStatement)
 	}
@@ -64,7 +63,7 @@ func (j JsonnetImportsComposableJenny) JennyName() string {
 	return "JsonnetImportsComposableJenny"
 }
 
-func (j *JsonnetImportsComposableJenny) Generate(comps ...*jen.ComposableForGen) (*codejen.File, error) {
+func (j *JsonnetImportsComposableJenny) Generate(k ...kindsys.Composable) (*codejen.File, error) {
 	grafanaVersion := os.Getenv("GRAFANA_VERSION")
 	if grafanaVersion == "" {
 		return nil, nil
@@ -72,18 +71,15 @@ func (j *JsonnetImportsComposableJenny) Generate(comps ...*jen.ComposableForGen)
 	buf := strings.Builder{}
 	buf.WriteString("[\n")
 	buf.WriteString(tempGlobalImports.String())
-	for _, comp := range comps {
+	for _, kind := range k {
 		var schemaVersion string
-		// Hardwiring maturity, as composables/plugins don't fully support kind system yet
-		// see also internal/jen/jenny_eachmajorcomposable.go:
-		maturity := kindsys.MaturityExperimental
-		if maturity.Less(kindsys.MaturityStable) {
+		if kind.Maturity().Less(kindsys.MaturityStable) {
 			schemaVersion = "x"
 		} else {
-			schemaVersion = comp.Lineage.Latest().Version().String()
+			schemaVersion = kind.Lineage().Latest().Version().String()
 		}
 		importStatement := fmt.Sprintf("  import \"github.com/grafana/grok/jsonschema/kinds/composable/%s/%s/%s_types_gen.json\",\n",
-			comp.Lineage.Name()+"/"+strings.ToLower(comp.Slot.Name()), schemaVersion, comp.Lineage.Name())
+			kind.Lineage().Name()+"/"+strings.ToLower(kind.Def().Properties.SchemaInterface), schemaVersion, kind.Lineage().Name())
 		buf.WriteString(importStatement)
 	}
 	buf.WriteString("]\n")
@@ -122,19 +118,19 @@ func (j JsonnetFileCoreJenny) JennyName() string {
 
 var tempGlobalJsonnetFileEntries []string
 
-func (j *JsonnetFileCoreJenny) Generate(decls ...*codegen.DeclForGen) (*codejen.File, error) {
+func (j *JsonnetFileCoreJenny) Generate(k ...kindsys.Kind) (*codejen.File, error) {
 	grafanaVersion := os.Getenv("GRAFANA_VERSION")
 	if grafanaVersion == "" {
 		return nil, nil
 	}
-	for _, decl := range decls {
+	for _, kind := range k {
 		var schemaVersion string
-		if decl.Properties.Common().Maturity.Less(kindsys.MaturityStable) {
+		if kind.Maturity().Less(kindsys.MaturityStable) {
 			schemaVersion = "x"
 		} else {
-			schemaVersion = decl.ForLatestSchema().Schema.Version().String()
+			schemaVersion = kind.Lineage().Latest().Version().String()
 		}
-		entry := fmt.Sprintf(jsonnetfileEntry, "core", decl.Lineage().Name(), schemaVersion)
+		entry := fmt.Sprintf(jsonnetfileEntry, "core", kind.Lineage().Name(), schemaVersion)
 		tempGlobalJsonnetFileEntries = append(tempGlobalJsonnetFileEntries, entry)
 	}
 	return nil, nil
@@ -146,7 +142,7 @@ func (j JsonnetFileComposableJenny) JennyName() string {
 	return "JsonnetFileComposableJenny"
 }
 
-func (j *JsonnetFileComposableJenny) Generate(comps ...*jen.ComposableForGen) (*codejen.File, error) {
+func (j *JsonnetFileComposableJenny) Generate(k ...kindsys.Composable) (*codejen.File, error) {
 	grafanaVersion := os.Getenv("GRAFANA_VERSION")
 	if grafanaVersion == "" {
 		return nil, nil
@@ -155,17 +151,14 @@ func (j *JsonnetFileComposableJenny) Generate(comps ...*jen.ComposableForGen) (*
 	buf.WriteString(jsonnetfilePre)
 	entries := []string{}
 	entries = append(entries, tempGlobalJsonnetFileEntries...)
-	for _, comp := range comps {
+	for _, kind := range k {
 		var schemaVersion string
-		// Hardwiring maturity, as composables/plugins don't fully support kind system yet
-		// see also internal/jen/jenny_eachmajorcomposable.go:
-		maturity := kindsys.MaturityExperimental
-		if maturity.Less(kindsys.MaturityStable) {
+		if kind.Maturity().Less(kindsys.MaturityStable) {
 			schemaVersion = "x"
 		} else {
-			schemaVersion = comp.Lineage.Latest().Version().String()
+			schemaVersion = kind.Lineage().Latest().Version().String()
 		}
-		entry := fmt.Sprintf(jsonnetfileEntry, "composable", comp.Lineage.Name()+"/"+strings.ToLower(comp.Slot.Name()), schemaVersion)
+		entry := fmt.Sprintf(jsonnetfileEntry, "composable", kind.Lineage().Name()+"/"+strings.ToLower(kind.Def().Properties.SchemaInterface), schemaVersion)
 		entries = append(entries, entry)
 	}
 	buf.WriteString(strings.Join(entries, ",\n"))
