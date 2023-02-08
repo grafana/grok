@@ -17,7 +17,7 @@
 		"source": {
 		  "git": {
 			"remote": "https://github.com/grafana/grok.git",
-			"subdir": "jsonschema/kinds/core/playlist/x"
+			"subdir": "jsonschema/kinds/core/librarypanel/x"
 		  }
 		},
 		"version": "main"
@@ -27,7 +27,7 @@
 		"source": {
 		  "git": {
 			"remote": "https://github.com/grafana/grok.git",
-			"subdir": "jsonschema/kinds/core/team/x"
+			"subdir": "jsonschema/kinds/composable/PhlareDataQuery/dataquery/x"
 		  }
 		},
 		"version": "main"
@@ -37,7 +37,7 @@
 		"source": {
 		  "git": {
 			"remote": "https://github.com/grafana/grok.git",
-			"subdir": "jsonschema/kinds/composable/annolist/panel/x"
+			"subdir": "jsonschema/kinds/composable/TempoDataQuery/dataquery/x"
 		  }
 		},
 		"version": "main"
@@ -47,7 +47,7 @@
 		"source": {
 		  "git": {
 			"remote": "https://github.com/grafana/grok.git",
-			"subdir": "jsonschema/kinds/composable/barchart/panel/x"
+			"subdir": "jsonschema/kinds/composable/TestDataDataQuery/dataquery/x"
 		  }
 		},
 		"version": "main"
@@ -57,7 +57,7 @@
 		"source": {
 		  "git": {
 			"remote": "https://github.com/grafana/grok.git",
-			"subdir": "jsonschema/kinds/composable/bargauge/panel/x"
+			"subdir": "jsonschema/kinds/composable/AnnotationsListPanelCfg/panelcfg/x"
 		  }
 		},
 		"version": "main"
@@ -67,7 +67,7 @@
 		"source": {
 		  "git": {
 			"remote": "https://github.com/grafana/grok.git",
-			"subdir": "jsonschema/kinds/composable/dashlist/panel/x"
+			"subdir": "jsonschema/kinds/composable/BarChartPanelCfg/panelcfg/x"
 		  }
 		},
 		"version": "main"
@@ -77,7 +77,7 @@
 		"source": {
 		  "git": {
 			"remote": "https://github.com/grafana/grok.git",
-			"subdir": "jsonschema/kinds/composable/gauge/panel/x"
+			"subdir": "jsonschema/kinds/composable/BarGaugePanelCfg/panelcfg/x"
 		  }
 		},
 		"version": "main"
@@ -87,7 +87,7 @@
 		"source": {
 		  "git": {
 			"remote": "https://github.com/grafana/grok.git",
-			"subdir": "jsonschema/kinds/composable/histogram/panel/x"
+			"subdir": "jsonschema/kinds/composable/DashboardListPanelCfg/panelcfg/x"
 		  }
 		},
 		"version": "main"
@@ -97,7 +97,7 @@
 		"source": {
 		  "git": {
 			"remote": "https://github.com/grafana/grok.git",
-			"subdir": "jsonschema/kinds/composable/news/panel/x"
+			"subdir": "jsonschema/kinds/composable/GaugePanelCfg/panelcfg/x"
 		  }
 		},
 		"version": "main"
@@ -107,7 +107,7 @@
 		"source": {
 		  "git": {
 			"remote": "https://github.com/grafana/grok.git",
-			"subdir": "jsonschema/kinds/composable/piechart/panel/x"
+			"subdir": "jsonschema/kinds/composable/HistogramPanelCfg/panelcfg/x"
 		  }
 		},
 		"version": "main"
@@ -117,7 +117,7 @@
 		"source": {
 		  "git": {
 			"remote": "https://github.com/grafana/grok.git",
-			"subdir": "jsonschema/kinds/composable/stat/panel/x"
+			"subdir": "jsonschema/kinds/composable/NewsPanelCfg/panelcfg/x"
 		  }
 		},
 		"version": "main"
@@ -127,7 +127,67 @@
 		"source": {
 		  "git": {
 			"remote": "https://github.com/grafana/grok.git",
-			"subdir": "jsonschema/kinds/composable/text/panel/x"
+			"subdir": "jsonschema/kinds/composable/NodeGraphPanelCfg/panelcfg/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/PieChartPanelCfg/panelcfg/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/StatPanelCfg/panelcfg/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/StateTimelinePanelCfg/panelcfg/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/StatusHistoryPanelCfg/panelcfg/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/TextPanelCfg/panelcfg/x"
+		  }
+		},
+		"version": "main"
+	},
+
+	{
+		"source": {
+		  "git": {
+			"remote": "https://github.com/grafana/grok.git",
+			"subdir": "jsonschema/kinds/composable/XYChartPanelCfg/panelcfg/x"
 		  }
 		},
 		"version": "main"
