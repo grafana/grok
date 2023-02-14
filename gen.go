@@ -15,9 +15,9 @@ import (
 	"github.com/grafana/grafana/pkg/kindsys"
 	"github.com/grafana/grafana/pkg/plugins/pfs/corelist"
 	"github.com/grafana/grafana/pkg/registry/corekind"
-	_go "github.com/grafana/grok/gen/go"
+	//_go "github.com/grafana/grok/gen/go"
 	"github.com/grafana/grok/gen/jsonnet"
-	"github.com/grafana/grok/gen/jsonschema"
+	//"github.com/grafana/grok/gen/jsonschema"
 	"github.com/grafana/grok/internal/jen"
 	"github.com/grafana/thema"
 )
@@ -35,16 +35,16 @@ func main() {
 	var compok []kindsys.Composable
 
 	for _, kind := range corekind.NewBase(nil).All() {
-		if kind.Maturity().Less(kindsys.MaturityExperimental) {
-			continue
-		}
+		//if kind.Maturity().Less(kindsys.MaturityExperimental) {
+		//	continue
+		//}
 		corek = append(corek, kind)
 	}
 	for _, pp := range corelist.New(nil) {
 		for _, kind := range pp.ComposableKinds {
-			if kind.Maturity().Less(kindsys.MaturityExperimental) {
-				continue
-			}
+			//if kind.Maturity().Less(kindsys.MaturityExperimental) {
+			//	continue
+			//}
 			compok = append(compok, kind)
 		}
 	}
@@ -71,8 +71,8 @@ func lineUpJennies() jen.TargetJennies {
 	tgt := jen.NewTargetJennies()
 
 	tgtmap := map[string]jen.TargetJennies{
-		"go":         _go.JenniesForGo(),
-		"jsonschema": jsonschema.JenniesForJsonSchema(),
+	//	"go":         _go.JenniesForGo(),
+	//	"jsonschema": jsonschema.JenniesForJsonSchema(),
 		"jsonnet":    jsonnet.JenniesForJsonnet(),
 	}
 

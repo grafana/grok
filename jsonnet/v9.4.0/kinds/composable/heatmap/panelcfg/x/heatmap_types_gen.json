@@ -1,0 +1,28 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "HeatmapPanelCfg",
+    "version": "0.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "HeatmapPanelCfg": {
+        "type": "object",
+        "required": [
+          "PanelOptions",
+          "PanelFieldConfig"
+        ],
+        "properties": {
+          "PanelOptions": {
+            "type": "object"
+          },
+          "PanelFieldConfig": {
+            "type": "object"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      }
+    }
+  }
+}

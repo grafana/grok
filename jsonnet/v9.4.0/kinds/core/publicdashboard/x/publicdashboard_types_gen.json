@@ -1,0 +1,49 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "publicdashboard",
+    "version": "0.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "publicdashboard": {
+        "type": "object",
+        "required": [
+          "uid",
+          "dashboardUid",
+          "isEnabled",
+          "annotationsEnabled",
+          "timeSelectionEnabled"
+        ],
+        "properties": {
+          "uid": {
+            "description": "Unique public dashboard identifier",
+            "type": "string"
+          },
+          "dashboardUid": {
+            "description": "Dashboard unique identifier referenced by this public dashboard",
+            "type": "string"
+          },
+          "accessToken": {
+            "description": "Unique public access token",
+            "type": "string"
+          },
+          "isEnabled": {
+            "description": "Flag that indicates if the public dashboard is enabled",
+            "type": "boolean"
+          },
+          "annotationsEnabled": {
+            "description": "Flag that indicates if annotations are enabled",
+            "type": "boolean"
+          },
+          "timeSelectionEnabled": {
+            "description": "Flag that indicates if the time range picker is enabled",
+            "type": "boolean"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      }
+    }
+  }
+}
