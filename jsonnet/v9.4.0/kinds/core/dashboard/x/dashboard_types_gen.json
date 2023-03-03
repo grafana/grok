@@ -1185,7 +1185,6 @@
       "dashboard": {
         "type": "object",
         "required": [
-          "revision",
           "style",
           "editable",
           "graphTooltip",
@@ -1210,13 +1209,12 @@
             "type": "string"
           },
           "revision": {
-            "description": "Version of the current dashboard data",
+            "description": "This property should only be used in dashboards defined by plugins.  It is a quick check\nto see if the version has changed since the last time.  Unclear why using the version property\nis insufficient.",
             "type": "integer",
-            "minimum": -9223372036854775808,
-            "maximum": 9223372036854775807,
-            "default": -1
+            "format": "int64"
           },
           "gnetId": {
+            "description": "For dashboards imported from the https://grafana.com/grafana/dashboards/ portal",
             "type": "string"
           },
           "tags": {
@@ -1340,7 +1338,7 @@
             "default": 0
           },
           "liveNow": {
-            "description": "TODO docs",
+            "description": "When set to true, the dashboard will redraw panels at an interval matching the pixel width.\nThis will keep data \"moving left\" regardless of the query refresh rate.  This setting helps\navoid dashboards presenting stale live data",
             "type": "boolean"
           },
           "weekStart": {

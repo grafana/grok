@@ -12,81 +12,49 @@ package testdatadataquery
 
 // Defines values for NodesQueryType.
 const (
-	NodesQueryTypeRandom NodesQueryType = "random"
-
+	NodesQueryTypeRandom      NodesQueryType = "random"
 	NodesQueryTypeRandomEdges NodesQueryType = "random edges"
-
-	NodesQueryTypeResponse NodesQueryType = "response"
+	NodesQueryTypeResponse    NodesQueryType = "response"
 )
 
 // Defines values for StreamingQueryType.
 const (
-	StreamingQueryTypeFetch StreamingQueryType = "fetch"
-
-	StreamingQueryTypeLogs StreamingQueryType = "logs"
-
+	StreamingQueryTypeFetch  StreamingQueryType = "fetch"
+	StreamingQueryTypeLogs   StreamingQueryType = "logs"
 	StreamingQueryTypeSignal StreamingQueryType = "signal"
 )
 
 // Defines values for TestDataQueryType.
 const (
-	TestDataQueryTypeAnnotations TestDataQueryType = "annotations"
-
-	TestDataQueryTypeArrow TestDataQueryType = "arrow"
-
-	TestDataQueryTypeCsvContent TestDataQueryType = "csv_content"
-
-	TestDataQueryTypeCsvFile TestDataQueryType = "csv_file"
-
-	TestDataQueryTypeCsvMetricValues TestDataQueryType = "csv_metric_values"
-
-	TestDataQueryTypeDatapointsOutsideRange TestDataQueryType = "datapoints_outside_range"
-
+	TestDataQueryTypeAnnotations                  TestDataQueryType = "annotations"
+	TestDataQueryTypeArrow                        TestDataQueryType = "arrow"
+	TestDataQueryTypeCsvContent                   TestDataQueryType = "csv_content"
+	TestDataQueryTypeCsvFile                      TestDataQueryType = "csv_file"
+	TestDataQueryTypeCsvMetricValues              TestDataQueryType = "csv_metric_values"
+	TestDataQueryTypeDatapointsOutsideRange       TestDataQueryType = "datapoints_outside_range"
 	TestDataQueryTypeExponentialHeatmapBucketData TestDataQueryType = "exponential_heatmap_bucket_data"
-
-	TestDataQueryTypeFlameGraph TestDataQueryType = "flame_graph"
-
-	TestDataQueryTypeGrafanaApi TestDataQueryType = "grafana_api"
-
-	TestDataQueryTypeLinearHeatmapBucketData TestDataQueryType = "linear_heatmap_bucket_data"
-
-	TestDataQueryTypeLive TestDataQueryType = "live"
-
-	TestDataQueryTypeLogs TestDataQueryType = "logs"
-
-	TestDataQueryTypeManualEntry TestDataQueryType = "manual_entry"
-
-	TestDataQueryTypeNoDataPoints TestDataQueryType = "no_data_points"
-
-	TestDataQueryTypeNodeGraph TestDataQueryType = "node_graph"
-
-	TestDataQueryTypePredictableCsvWave TestDataQueryType = "predictable_csv_wave"
-
-	TestDataQueryTypePredictablePulse TestDataQueryType = "predictable_pulse"
-
-	TestDataQueryTypeRandomWalk TestDataQueryType = "random_walk"
-
-	TestDataQueryTypeRandomWalkTable TestDataQueryType = "random_walk_table"
-
-	TestDataQueryTypeRandomWalkWithError TestDataQueryType = "random_walk_with_error"
-
-	TestDataQueryTypeRawFrame TestDataQueryType = "raw_frame"
-
-	TestDataQueryTypeServerError500 TestDataQueryType = "server_error_500"
-
-	TestDataQueryTypeSimulation TestDataQueryType = "simulation"
-
-	TestDataQueryTypeSlowQuery TestDataQueryType = "slow_query"
-
-	TestDataQueryTypeStreamingClient TestDataQueryType = "streaming_client"
-
-	TestDataQueryTypeTableStatic TestDataQueryType = "table_static"
-
-	TestDataQueryTypeTrace TestDataQueryType = "trace"
-
-	TestDataQueryTypeUsa TestDataQueryType = "usa"
-
-	TestDataQueryTypeVariablesQuery TestDataQueryType = "variables-query"
+	TestDataQueryTypeFlameGraph                   TestDataQueryType = "flame_graph"
+	TestDataQueryTypeGrafanaApi                   TestDataQueryType = "grafana_api"
+	TestDataQueryTypeLinearHeatmapBucketData      TestDataQueryType = "linear_heatmap_bucket_data"
+	TestDataQueryTypeLive                         TestDataQueryType = "live"
+	TestDataQueryTypeLogs                         TestDataQueryType = "logs"
+	TestDataQueryTypeManualEntry                  TestDataQueryType = "manual_entry"
+	TestDataQueryTypeNoDataPoints                 TestDataQueryType = "no_data_points"
+	TestDataQueryTypeNodeGraph                    TestDataQueryType = "node_graph"
+	TestDataQueryTypePredictableCsvWave           TestDataQueryType = "predictable_csv_wave"
+	TestDataQueryTypePredictablePulse             TestDataQueryType = "predictable_pulse"
+	TestDataQueryTypeRandomWalk                   TestDataQueryType = "random_walk"
+	TestDataQueryTypeRandomWalkTable              TestDataQueryType = "random_walk_table"
+	TestDataQueryTypeRandomWalkWithError          TestDataQueryType = "random_walk_with_error"
+	TestDataQueryTypeRawFrame                     TestDataQueryType = "raw_frame"
+	TestDataQueryTypeServerError500               TestDataQueryType = "server_error_500"
+	TestDataQueryTypeSimulation                   TestDataQueryType = "simulation"
+	TestDataQueryTypeSlowQuery                    TestDataQueryType = "slow_query"
+	TestDataQueryTypeStreamingClient              TestDataQueryType = "streaming_client"
+	TestDataQueryTypeTableStatic                  TestDataQueryType = "table_static"
+	TestDataQueryTypeTrace                        TestDataQueryType = "trace"
+	TestDataQueryTypeUsa                          TestDataQueryType = "usa"
+	TestDataQueryTypeVariablesQuery               TestDataQueryType = "variables-query"
 )
 
 // CSVWave defines model for CSVWave.
@@ -107,7 +75,7 @@ type DataQuery struct {
 	// TODO this shouldn't be unknown but DataSourceRef | null
 	Datasource *interface{} `json:"datasource,omitempty"`
 
-	// true if query is disabled (ie should not be returned to the dashboard)
+	// Hide true if query is disabled (ie should not be returned to the dashboard)
 	Hide *bool `json:"hide,omitempty"`
 
 	// Unique, guid like, string used in explore mode
@@ -150,7 +118,7 @@ type Scenario struct {
 
 // SimulationQuery defines model for SimulationQuery.
 type SimulationQuery struct {
-	Config *map[string]interface{} `json:"config,omitempty"`
+	Config map[string]interface{} `json:"config,omitempty"`
 	Key    struct {
 		Tick float64 `json:"tick"`
 		Type string  `json:"type"`
@@ -173,19 +141,18 @@ type StreamingQuery struct {
 // StreamingQueryType defines model for StreamingQuery.Type.
 type StreamingQueryType string
 
-// TestDataDataQuery defines model for TestDataDataQuery.
-type TestDataDataQuery struct {
-	// Embedded struct due to allOf(#/components/schemas/DataQuery)
-	DataQuery `yaml:",inline"`
-}
+// These are the common properties available to all queries in all datasources.
+// Specific implementations will *extend* this interface, adding the required
+// properties for the given context.
+type TestDataDataQuery = DataQuery
 
 // TestDataQueryType defines model for TestDataQueryType.
 type TestDataQueryType string
 
 // USAQuery defines model for USAQuery.
 type USAQuery struct {
-	Fields *[]string `json:"fields,omitempty"`
-	Mode   *string   `json:"mode,omitempty"`
-	Period *string   `json:"period,omitempty"`
-	States *[]string `json:"states,omitempty"`
+	Fields []string `json:"fields,omitempty"`
+	Mode   *string  `json:"mode,omitempty"`
+	Period *string  `json:"period,omitempty"`
+	States []string `json:"states,omitempty"`
 }

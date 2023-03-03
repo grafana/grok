@@ -34,15 +34,31 @@ func main() {
 	var corek []kindsys.Kind
 	var compok []kindsys.Composable
 
+	minMaturity :=
+		func() kindsys.Maturity {
+			switch os.Getenv("MIN_MATURITY") {
+			case "merged":
+				return kindsys.MaturityMerged
+			case "experimental":
+				return kindsys.MaturityExperimental
+			case "stable":
+				return kindsys.MaturityStable
+			case "mature":
+				return kindsys.MaturityMature
+			default:
+				return kindsys.MaturityExperimental
+			}
+		}()
+
 	for _, kind := range corekind.NewBase(nil).All() {
-		if kind.Maturity().Less(kindsys.MaturityExperimental) {
+		if kind.Maturity().Less(minMaturity) {
 			continue
 		}
 		corek = append(corek, kind)
 	}
 	for _, pp := range corelist.New(nil) {
 		for _, kind := range pp.ComposableKinds {
-			if kind.Maturity().Less(kindsys.MaturityExperimental) {
+			if kind.Maturity().Less(minMaturity) {
 				continue
 			}
 			compok = append(compok, kind)

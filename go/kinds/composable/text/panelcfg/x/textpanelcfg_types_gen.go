@@ -12,31 +12,21 @@ package textpanelcfg
 
 // Defines values for CodeLanguage.
 const (
-	CodeLanguageGo CodeLanguage = "go"
-
-	CodeLanguageHtml CodeLanguage = "html"
-
-	CodeLanguageJson CodeLanguage = "json"
-
-	CodeLanguageMarkdown CodeLanguage = "markdown"
-
-	CodeLanguagePlaintext CodeLanguage = "plaintext"
-
-	CodeLanguageSql CodeLanguage = "sql"
-
+	CodeLanguageGo         CodeLanguage = "go"
+	CodeLanguageHtml       CodeLanguage = "html"
+	CodeLanguageJson       CodeLanguage = "json"
+	CodeLanguageMarkdown   CodeLanguage = "markdown"
+	CodeLanguagePlaintext  CodeLanguage = "plaintext"
+	CodeLanguageSql        CodeLanguage = "sql"
 	CodeLanguageTypescript CodeLanguage = "typescript"
-
-	CodeLanguageXml CodeLanguage = "xml"
-
-	CodeLanguageYaml CodeLanguage = "yaml"
+	CodeLanguageXml        CodeLanguage = "xml"
+	CodeLanguageYaml       CodeLanguage = "yaml"
 )
 
 // Defines values for TextMode.
 const (
-	TextModeCode TextMode = "code"
-
-	TextModeHtml TextMode = "html"
-
+	TextModeCode     TextMode = "code"
+	TextModeHtml     TextMode = "html"
 	TextModeMarkdown TextMode = "markdown"
 )
 
