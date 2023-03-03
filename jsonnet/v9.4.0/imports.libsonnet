@@ -27,6 +27,8 @@
   import "./kinds/composable/annotationslist/panelcfg/x/annotationslist_types_gen.json",
   import "./kinds/composable/barchart/panelcfg/x/barchart_types_gen.json",
   import "./kinds/composable/bargauge/panelcfg/x/bargauge_types_gen.json",
+  import "./kinds/composable/candlestick/panelcfg/x/candlestick_types_gen.json",
+  import "./kinds/composable/canvas/panelcfg/x/canvas_types_gen.json",
   import "./kinds/composable/dashboardlist/panelcfg/x/dashboardlist_types_gen.json",
   import "./kinds/composable/debug/panelcfg/x/debug_types_gen.json",
   import "./kinds/composable/gauge/panelcfg/x/gauge_types_gen.json",
@@ -42,5 +44,6 @@
   import "./kinds/composable/statushistory/panelcfg/x/statushistory_types_gen.json",
   import "./kinds/composable/table/panelcfg/x/table_types_gen.json",
   import "./kinds/composable/text/panelcfg/x/text_types_gen.json",
+  import "./kinds/composable/timeseries/panelcfg/x/timeseries_types_gen.json",
   import "./kinds/composable/xychart/panelcfg/x/xychart_types_gen.json",
 ]
