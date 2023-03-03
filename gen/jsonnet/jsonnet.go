@@ -1,7 +1,6 @@
 package jsonnet
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,12 +16,10 @@ func JenniesForJsonnet() jen.TargetJennies {
 	if grafanaVersion == "" {
 		return tgt
 	}
-	log.Print("CORE")
 	tgt.Core.Append(
 		&JsonnetCoreImportsJenny{},
 		codegen.LatestMajorsOrXJenny(filepath.Join(grafanaVersion, "kinds", "core"), JsonnetSchemaJenny{}),
 	)
-	log.Print("COMP")
 	tgt.Composable.Append(
 		// oooonly need to inject the proper path interstitial to make this right
 		&JsonnetComposableImportsJenny{},

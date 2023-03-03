@@ -13,48 +13,37 @@ package statpanelcfg
 // Defines values for BigValueColorMode.
 const (
 	BigValueColorModeBackground BigValueColorMode = "background"
-
-	BigValueColorModeNone BigValueColorMode = "none"
-
-	BigValueColorModeValue BigValueColorMode = "value"
+	BigValueColorModeNone       BigValueColorMode = "none"
+	BigValueColorModeValue      BigValueColorMode = "value"
 )
 
 // Defines values for BigValueGraphMode.
 const (
 	BigValueGraphModeArea BigValueGraphMode = "area"
-
 	BigValueGraphModeLine BigValueGraphMode = "line"
-
 	BigValueGraphModeNone BigValueGraphMode = "none"
 )
 
 // Defines values for BigValueJustifyMode.
 const (
-	BigValueJustifyModeAuto BigValueJustifyMode = "auto"
-
+	BigValueJustifyModeAuto   BigValueJustifyMode = "auto"
 	BigValueJustifyModeCenter BigValueJustifyMode = "center"
 )
 
 // Defines values for BigValueTextMode.
 const (
-	BigValueTextModeAuto BigValueTextMode = "auto"
-
-	BigValueTextModeName BigValueTextMode = "name"
-
-	BigValueTextModeNone BigValueTextMode = "none"
-
-	BigValueTextModeValue BigValueTextMode = "value"
-
+	BigValueTextModeAuto         BigValueTextMode = "auto"
+	BigValueTextModeName         BigValueTextMode = "name"
+	BigValueTextModeNone         BigValueTextMode = "none"
+	BigValueTextModeValue        BigValueTextMode = "value"
 	BigValueTextModeValueAndName BigValueTextMode = "value_and_name"
 )
 
 // Defines values for VizOrientation.
 const (
-	VizOrientationAuto VizOrientation = "auto"
-
+	VizOrientationAuto       VizOrientation = "auto"
 	VizOrientationHorizontal VizOrientation = "horizontal"
-
-	VizOrientationVertical VizOrientation = "vertical"
+	VizOrientationVertical   VizOrientation = "vertical"
 )
 
 // TODO docs
@@ -77,9 +66,8 @@ type OptionsWithTextFormatting struct {
 
 // PanelOptions defines model for PanelOptions.
 type PanelOptions struct {
-	// Embedded struct due to allOf(#/components/schemas/SingleStatBaseOptions)
-	SingleStatBaseOptions `yaml:",inline"`
-	// Embedded fields due to inline allOf schema
+	// TODO docs
+	Text *VizTextDisplayOptions `json:"text,omitempty"`
 }
 
 // TODO docs
@@ -90,7 +78,7 @@ type ReduceDataOptions struct {
 	// Which fields to show.  By default this is only numeric fields
 	Fields *string `json:"fields,omitempty"`
 
-	// if showing all values limit
+	// Limit if showing all values limit
 	Limit *float32 `json:"limit,omitempty"`
 
 	// If true show each row value
@@ -99,9 +87,8 @@ type ReduceDataOptions struct {
 
 // SingleStatBaseOptions defines model for SingleStatBaseOptions.
 type SingleStatBaseOptions struct {
-	// Embedded struct due to allOf(#/components/schemas/OptionsWithTextFormatting)
-	OptionsWithTextFormatting `yaml:",inline"`
-	// Embedded fields due to inline allOf schema
+	// TODO docs
+	Text *VizTextDisplayOptions `json:"text,omitempty"`
 }
 
 // TODO docs

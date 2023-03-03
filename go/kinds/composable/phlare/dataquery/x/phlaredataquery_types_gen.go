@@ -12,10 +12,8 @@ package phlaredataquery
 
 // Defines values for PhlareQueryType.
 const (
-	PhlareQueryTypeBoth PhlareQueryType = "both"
-
+	PhlareQueryTypeBoth    PhlareQueryType = "both"
 	PhlareQueryTypeMetrics PhlareQueryType = "metrics"
-
 	PhlareQueryTypeProfile PhlareQueryType = "profile"
 )
 
@@ -29,7 +27,7 @@ type DataQuery struct {
 	// TODO this shouldn't be unknown but DataSourceRef | null
 	Datasource *interface{} `json:"datasource,omitempty"`
 
-	// true if query is disabled (ie should not be returned to the dashboard)
+	// Hide true if query is disabled (ie should not be returned to the dashboard)
 	Hide *bool `json:"hide,omitempty"`
 
 	// Unique, guid like, string used in explore mode
@@ -45,9 +43,24 @@ type DataQuery struct {
 
 // PhlareDataQuery defines model for PhlareDataQuery.
 type PhlareDataQuery struct {
-	// Embedded struct due to allOf(#/components/schemas/DataQuery)
-	DataQuery `yaml:",inline"`
-	// Embedded fields due to inline allOf schema
+	// For mixed data sources the selected datasource is on the query level.
+	// For non mixed scenarios this is undefined.
+	// TODO find a better way to do this ^ that's friendly to schema
+	// TODO this shouldn't be unknown but DataSourceRef | null
+	Datasource *interface{} `json:"datasource,omitempty"`
+
+	// Hide true if query is disabled (ie should not be returned to the dashboard)
+	Hide *bool `json:"hide,omitempty"`
+
+	// Unique, guid like, string used in explore mode
+	Key *string `json:"key,omitempty"`
+
+	// Specify the query flavor
+	// TODO make this required and give it a default
+	QueryType *string `json:"queryType,omitempty"`
+
+	// A - Z
+	RefId string `json:"refId"`
 }
 
 // PhlareQueryType defines model for PhlareQueryType.

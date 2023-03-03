@@ -13,44 +13,35 @@ package statushistorypanelcfg
 // Defines values for LegendDisplayMode.
 const (
 	LegendDisplayModeHidden LegendDisplayMode = "hidden"
-
-	LegendDisplayModeList LegendDisplayMode = "list"
-
-	LegendDisplayModeTable LegendDisplayMode = "table"
+	LegendDisplayModeList   LegendDisplayMode = "list"
+	LegendDisplayModeTable  LegendDisplayMode = "table"
 )
 
 // Defines values for LegendPlacement.
 const (
 	LegendPlacementBottom LegendPlacement = "bottom"
-
-	LegendPlacementRight LegendPlacement = "right"
+	LegendPlacementRight  LegendPlacement = "right"
 )
 
 // Defines values for SortOrder.
 const (
-	SortOrderAsc SortOrder = "asc"
-
+	SortOrderAsc  SortOrder = "asc"
 	SortOrderDesc SortOrder = "desc"
-
 	SortOrderNone SortOrder = "none"
 )
 
 // Defines values for TooltipDisplayMode.
 const (
-	TooltipDisplayModeMulti TooltipDisplayMode = "multi"
-
-	TooltipDisplayModeNone TooltipDisplayMode = "none"
-
+	TooltipDisplayModeMulti  TooltipDisplayMode = "multi"
+	TooltipDisplayModeNone   TooltipDisplayMode = "none"
 	TooltipDisplayModeSingle TooltipDisplayMode = "single"
 )
 
 // Defines values for VisibilityMode.
 const (
 	VisibilityModeAlways VisibilityMode = "always"
-
-	VisibilityModeAuto VisibilityMode = "auto"
-
-	VisibilityModeNever VisibilityMode = "never"
+	VisibilityModeAuto   VisibilityMode = "auto"
+	VisibilityModeNever  VisibilityMode = "never"
 )
 
 // TODO docs
@@ -81,7 +72,7 @@ type OptionsWithLegend struct {
 
 // TODO docs
 type OptionsWithTimezones struct {
-	Timezone *[]TimeZone `json:"timezone,omitempty"`
+	Timezone []TimeZone `json:"timezone,omitempty"`
 }
 
 // TODO docs
@@ -90,28 +81,24 @@ type OptionsWithTooltip struct {
 	Tooltip VizTooltipOptions `json:"tooltip"`
 }
 
-// PanelFieldConfig defines model for PanelFieldConfig.
-type PanelFieldConfig struct {
-	// Embedded struct due to allOf(#/components/schemas/HideableFieldConfig)
-	HideableFieldConfig `yaml:",inline"`
-}
+// TODO docs
+type PanelFieldConfig = HideableFieldConfig
 
 // PanelOptions defines model for PanelOptions.
 type PanelOptions struct {
-	// Embedded struct due to allOf(#/components/schemas/OptionsWithLegend)
-	OptionsWithLegend `yaml:",inline"`
-	// Embedded struct due to allOf(#/components/schemas/OptionsWithTooltip)
-	OptionsWithTooltip `yaml:",inline"`
-	// Embedded struct due to allOf(#/components/schemas/OptionsWithTimezones)
-	OptionsWithTimezones `yaml:",inline"`
-	// Embedded fields due to inline allOf schema
+	// TODO docs
+	Legend   VizLegendOptions `json:"legend"`
+	Timezone []TimeZone       `json:"timezone,omitempty"`
+
+	// TODO docs
+	Tooltip VizTooltipOptions `json:"tooltip"`
 }
 
 // TODO docs
 type SortOrder string
 
 // A specific timezone from https://en.wikipedia.org/wiki/Tz_database
-type TimeZone interface{}
+type TimeZone = string
 
 // TODO docs
 type TooltipDisplayMode string

@@ -31,7 +31,7 @@ type EdgeOptions struct {
 // NodeOptions defines model for NodeOptions.
 type NodeOptions struct {
 	// Define which fields are shown as part of the node arc (colored circle around the node).
-	Arcs *[]ArcOption `json:"arcs,omitempty"`
+	Arcs []ArcOption `json:"arcs,omitempty"`
 
 	// Unit for the main stat to override what ever is set in the data frame.
 	MainStatUnit *string `json:"mainStatUnit,omitempty"`

@@ -13,113 +13,87 @@ package xychartpanelcfg
 // Defines values for AxisColorMode.
 const (
 	AxisColorModeSeries AxisColorMode = "series"
-
-	AxisColorModeText AxisColorMode = "text"
+	AxisColorModeText   AxisColorMode = "text"
 )
 
 // Defines values for AxisPlacement.
 const (
-	AxisPlacementAuto AxisPlacement = "auto"
-
+	AxisPlacementAuto   AxisPlacement = "auto"
 	AxisPlacementBottom AxisPlacement = "bottom"
-
 	AxisPlacementHidden AxisPlacement = "hidden"
-
-	AxisPlacementLeft AxisPlacement = "left"
-
-	AxisPlacementRight AxisPlacement = "right"
-
-	AxisPlacementTop AxisPlacement = "top"
+	AxisPlacementLeft   AxisPlacement = "left"
+	AxisPlacementRight  AxisPlacement = "right"
+	AxisPlacementTop    AxisPlacement = "top"
 )
 
 // Defines values for LegendDisplayMode.
 const (
 	LegendDisplayModeHidden LegendDisplayMode = "hidden"
-
-	LegendDisplayModeList LegendDisplayMode = "list"
-
-	LegendDisplayModeTable LegendDisplayMode = "table"
+	LegendDisplayModeList   LegendDisplayMode = "list"
+	LegendDisplayModeTable  LegendDisplayMode = "table"
 )
 
 // Defines values for LegendPlacement.
 const (
 	LegendPlacementBottom LegendPlacement = "bottom"
-
-	LegendPlacementRight LegendPlacement = "right"
+	LegendPlacementRight  LegendPlacement = "right"
 )
 
 // Defines values for LineStyleFill.
 const (
-	LineStyleFillDash LineStyleFill = "dash"
-
-	LineStyleFillDot LineStyleFill = "dot"
-
-	LineStyleFillSolid LineStyleFill = "solid"
-
+	LineStyleFillDash   LineStyleFill = "dash"
+	LineStyleFillDot    LineStyleFill = "dot"
+	LineStyleFillSolid  LineStyleFill = "solid"
 	LineStyleFillSquare LineStyleFill = "square"
 )
 
 // Defines values for ScaleDistribution.
 const (
-	ScaleDistributionLinear ScaleDistribution = "linear"
-
-	ScaleDistributionLog ScaleDistribution = "log"
-
+	ScaleDistributionLinear  ScaleDistribution = "linear"
+	ScaleDistributionLog     ScaleDistribution = "log"
 	ScaleDistributionOrdinal ScaleDistribution = "ordinal"
-
-	ScaleDistributionSymlog ScaleDistribution = "symlog"
+	ScaleDistributionSymlog  ScaleDistribution = "symlog"
 )
 
 // Defines values for ScatterShow.
 const (
-	ScatterShowLines ScatterShow = "lines"
-
-	ScatterShowPoints ScatterShow = "points"
-
+	ScatterShowLines       ScatterShow = "lines"
+	ScatterShowPoints      ScatterShow = "points"
 	ScatterShowPointsLines ScatterShow = "points+lines"
 )
 
 // Defines values for SeriesMapping.
 const (
-	SeriesMappingAuto SeriesMapping = "auto"
-
+	SeriesMappingAuto   SeriesMapping = "auto"
 	SeriesMappingManual SeriesMapping = "manual"
 )
 
 // Defines values for SortOrder.
 const (
-	SortOrderAsc SortOrder = "asc"
-
+	SortOrderAsc  SortOrder = "asc"
 	SortOrderDesc SortOrder = "desc"
-
 	SortOrderNone SortOrder = "none"
 )
 
 // Defines values for TextDimensionMode.
 const (
-	TextDimensionModeField TextDimensionMode = "field"
-
-	TextDimensionModeFixed TextDimensionMode = "fixed"
-
+	TextDimensionModeField    TextDimensionMode = "field"
+	TextDimensionModeFixed    TextDimensionMode = "fixed"
 	TextDimensionModeTemplate TextDimensionMode = "template"
 )
 
 // Defines values for TooltipDisplayMode.
 const (
-	TooltipDisplayModeMulti TooltipDisplayMode = "multi"
-
-	TooltipDisplayModeNone TooltipDisplayMode = "none"
-
+	TooltipDisplayModeMulti  TooltipDisplayMode = "multi"
+	TooltipDisplayModeNone   TooltipDisplayMode = "none"
 	TooltipDisplayModeSingle TooltipDisplayMode = "single"
 )
 
 // Defines values for VisibilityMode.
 const (
 	VisibilityModeAlways VisibilityMode = "always"
-
-	VisibilityModeAuto VisibilityMode = "auto"
-
-	VisibilityModeNever VisibilityMode = "never"
+	VisibilityModeAuto   VisibilityMode = "auto"
+	VisibilityModeNever  VisibilityMode = "never"
 )
 
 // TODO docs
@@ -154,10 +128,7 @@ type BaseDimensionConfig struct {
 }
 
 // ColorDimensionConfig defines model for ColorDimensionConfig.
-type ColorDimensionConfig struct {
-	// Embedded struct due to allOf(#/components/schemas/BaseDimensionConfig)
-	BaseDimensionConfig `yaml:",inline"`
-}
+type ColorDimensionConfig = BaseDimensionConfig
 
 // TODO docs
 type HideSeriesConfig struct {
@@ -181,7 +152,7 @@ type LegendPlacement string
 
 // TODO docs
 type LineStyle struct {
-	Dash *[]float32     `json:"dash,omitempty"`
+	Dash []float32      `json:"dash,omitempty"`
 	Fill *LineStyleFill `json:"fill,omitempty"`
 }
 
@@ -202,18 +173,17 @@ type OptionsWithTooltip struct {
 
 // PanelOptions defines model for PanelOptions.
 type PanelOptions struct {
-	// Embedded struct due to allOf(#/components/schemas/OptionsWithLegend)
-	OptionsWithLegend `yaml:",inline"`
-	// Embedded struct due to allOf(#/components/schemas/OptionsWithTooltip)
-	OptionsWithTooltip `yaml:",inline"`
-	// Embedded fields due to inline allOf schema
+	// TODO docs
+	Legend VizLegendOptions `json:"legend"`
+
+	// TODO docs
+	Tooltip VizTooltipOptions `json:"tooltip"`
 }
 
 // ScaleDimensionConfig defines model for ScaleDimensionConfig.
 type ScaleDimensionConfig struct {
-	// Embedded struct due to allOf(#/components/schemas/BaseDimensionConfig)
-	BaseDimensionConfig `yaml:",inline"`
-	// Embedded fields due to inline allOf schema
+	Field *string     `json:"field,omitempty"`
+	Fixed interface{} `json:"fixed"`
 }
 
 // TODO docs
@@ -230,17 +200,28 @@ type ScaleDistributionConfig struct {
 
 // ScatterFieldConfig defines model for ScatterFieldConfig.
 type ScatterFieldConfig struct {
-	// Embedded struct due to allOf(#/components/schemas/HideableFieldConfig)
-	HideableFieldConfig `yaml:",inline"`
-	// Embedded struct due to allOf(#/components/schemas/AxisConfig)
-	AxisConfig `yaml:",inline"`
+	AxisCenteredZero *bool `json:"axisCenteredZero,omitempty"`
+
+	// TODO docs
+	AxisColorMode *AxisColorMode `json:"axisColorMode,omitempty"`
+	AxisGridShow  *bool          `json:"axisGridShow,omitempty"`
+	AxisLabel     *string        `json:"axisLabel,omitempty"`
+
+	// TODO docs
+	AxisPlacement *AxisPlacement `json:"axisPlacement,omitempty"`
+	AxisSoftMax   *float32       `json:"axisSoftMax,omitempty"`
+	AxisSoftMin   *float32       `json:"axisSoftMin,omitempty"`
+	AxisWidth     *float32       `json:"axisWidth,omitempty"`
+
+	// TODO docs
+	HideFrom *HideSeriesConfig `json:"hideFrom,omitempty"`
+
+	// TODO docs
+	ScaleDistribution *ScaleDistributionConfig `json:"scaleDistribution,omitempty"`
 }
 
 // ScatterSeriesConfig defines model for ScatterSeriesConfig.
-type ScatterSeriesConfig struct {
-	// Embedded struct due to allOf(#/components/schemas/ScatterFieldConfig)
-	ScatterFieldConfig `yaml:",inline"`
-}
+type ScatterSeriesConfig = ScatterFieldConfig
 
 // ScatterShow defines model for ScatterShow.
 type ScatterShow string
@@ -253,9 +234,8 @@ type SortOrder string
 
 // TextDimensionConfig defines model for TextDimensionConfig.
 type TextDimensionConfig struct {
-	// Embedded struct due to allOf(#/components/schemas/BaseDimensionConfig)
-	BaseDimensionConfig `yaml:",inline"`
-	// Embedded fields due to inline allOf schema
+	Field *string     `json:"field,omitempty"`
+	Fixed interface{} `json:"fixed"`
 }
 
 // TextDimensionMode defines model for TextDimensionMode.
@@ -296,7 +276,7 @@ type VizTooltipOptions struct {
 
 // XYDimensionConfig defines model for XYDimensionConfig.
 type XYDimensionConfig struct {
-	Exclude *[]string `json:"exclude,omitempty"`
-	Frame   int       `json:"frame"`
-	X       *string   `json:"x,omitempty"`
+	Exclude []string `json:"exclude,omitempty"`
+	Frame   int      `json:"frame"`
+	X       *string  `json:"x,omitempty"`
 }

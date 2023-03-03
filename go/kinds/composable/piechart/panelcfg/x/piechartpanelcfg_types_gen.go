@@ -13,67 +13,54 @@ package piechartpanelcfg
 // Defines values for LegendDisplayMode.
 const (
 	LegendDisplayModeHidden LegendDisplayMode = "hidden"
-
-	LegendDisplayModeList LegendDisplayMode = "list"
-
-	LegendDisplayModeTable LegendDisplayMode = "table"
+	LegendDisplayModeList   LegendDisplayMode = "list"
+	LegendDisplayModeTable  LegendDisplayMode = "table"
 )
 
 // Defines values for LegendPlacement.
 const (
 	LegendPlacementBottom LegendPlacement = "bottom"
-
-	LegendPlacementRight LegendPlacement = "right"
+	LegendPlacementRight  LegendPlacement = "right"
 )
 
 // Defines values for PieChartLabels.
 const (
-	PieChartLabelsName PieChartLabels = "name"
-
+	PieChartLabelsName    PieChartLabels = "name"
 	PieChartLabelsPercent PieChartLabels = "percent"
-
-	PieChartLabelsValue PieChartLabels = "value"
+	PieChartLabelsValue   PieChartLabels = "value"
 )
 
 // Defines values for PieChartLegendValues.
 const (
 	PieChartLegendValuesPercent PieChartLegendValues = "percent"
-
-	PieChartLegendValuesValue PieChartLegendValues = "value"
+	PieChartLegendValuesValue   PieChartLegendValues = "value"
 )
 
 // Defines values for PieChartType.
 const (
 	PieChartTypeDonut PieChartType = "donut"
-
-	PieChartTypePie PieChartType = "pie"
+	PieChartTypePie   PieChartType = "pie"
 )
 
 // Defines values for SortOrder.
 const (
-	SortOrderAsc SortOrder = "asc"
-
+	SortOrderAsc  SortOrder = "asc"
 	SortOrderDesc SortOrder = "desc"
-
 	SortOrderNone SortOrder = "none"
 )
 
 // Defines values for TooltipDisplayMode.
 const (
-	TooltipDisplayModeMulti TooltipDisplayMode = "multi"
-
-	TooltipDisplayModeNone TooltipDisplayMode = "none"
-
+	TooltipDisplayModeMulti  TooltipDisplayMode = "multi"
+	TooltipDisplayModeNone   TooltipDisplayMode = "none"
 	TooltipDisplayModeSingle TooltipDisplayMode = "single"
 )
 
 // Defines values for VizOrientation.
 const (
-	VizOrientationAuto VizOrientation = "auto"
-
+	VizOrientationAuto       VizOrientation = "auto"
 	VizOrientationHorizontal VizOrientation = "horizontal"
-
-	VizOrientationVertical VizOrientation = "vertical"
+	VizOrientationVertical   VizOrientation = "vertical"
 )
 
 // TODO docs
@@ -110,11 +97,11 @@ type PanelFieldConfig struct {
 
 // PanelOptions defines model for PanelOptions.
 type PanelOptions struct {
-	// Embedded struct due to allOf(#/components/schemas/OptionsWithTooltip)
-	OptionsWithTooltip `yaml:",inline"`
-	// Embedded struct due to allOf(#/components/schemas/SingleStatBaseOptions)
-	SingleStatBaseOptions `yaml:",inline"`
-	// Embedded fields due to inline allOf schema
+	// TODO docs
+	Text *VizTextDisplayOptions `json:"text,omitempty"`
+
+	// TODO docs
+	Tooltip VizTooltipOptions `json:"tooltip"`
 }
 
 // Select labels to display on the pie chart.
@@ -125,9 +112,20 @@ type PieChartLabels string
 
 // PieChartLegendOptions defines model for PieChartLegendOptions.
 type PieChartLegendOptions struct {
-	// Embedded struct due to allOf(#/components/schemas/VizLegendOptions)
-	VizLegendOptions `yaml:",inline"`
-	// Embedded fields due to inline allOf schema
+	AsTable *bool    `json:"asTable,omitempty"`
+	Calcs   []string `json:"calcs"`
+
+	// TODO docs
+	// Note: "hidden" needs to remain as an option for plugins compatibility
+	DisplayMode LegendDisplayMode `json:"displayMode"`
+	IsVisible   *bool             `json:"isVisible,omitempty"`
+
+	// TODO docs
+	Placement  LegendPlacement `json:"placement"`
+	ShowLegend bool            `json:"showLegend"`
+	SortBy     *string         `json:"sortBy,omitempty"`
+	SortDesc   *bool           `json:"sortDesc,omitempty"`
+	Width      *float32        `json:"width,omitempty"`
 }
 
 // Select values to display in the legend.
@@ -146,7 +144,7 @@ type ReduceDataOptions struct {
 	// Which fields to show.  By default this is only numeric fields
 	Fields *string `json:"fields,omitempty"`
 
-	// if showing all values limit
+	// Limit if showing all values limit
 	Limit *float32 `json:"limit,omitempty"`
 
 	// If true show each row value
@@ -155,9 +153,8 @@ type ReduceDataOptions struct {
 
 // SingleStatBaseOptions defines model for SingleStatBaseOptions.
 type SingleStatBaseOptions struct {
-	// Embedded struct due to allOf(#/components/schemas/OptionsWithTextFormatting)
-	OptionsWithTextFormatting `yaml:",inline"`
-	// Embedded fields due to inline allOf schema
+	// TODO docs
+	Text *VizTextDisplayOptions `json:"text,omitempty"`
 }
 
 // TODO docs

@@ -12,8 +12,7 @@ package dashboardlistpanelcfg
 
 // Defines values for PanelLayout.
 const (
-	PanelLayoutList PanelLayout = "list"
-
+	PanelLayoutList     PanelLayout = "list"
 	PanelLayoutPreviews PanelLayout = "previews"
 )
 

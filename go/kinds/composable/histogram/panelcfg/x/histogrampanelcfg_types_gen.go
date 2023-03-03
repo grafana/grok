@@ -13,78 +13,59 @@ package histogrampanelcfg
 // Defines values for AxisColorMode.
 const (
 	AxisColorModeSeries AxisColorMode = "series"
-
-	AxisColorModeText AxisColorMode = "text"
+	AxisColorModeText   AxisColorMode = "text"
 )
 
 // Defines values for AxisPlacement.
 const (
-	AxisPlacementAuto AxisPlacement = "auto"
-
+	AxisPlacementAuto   AxisPlacement = "auto"
 	AxisPlacementBottom AxisPlacement = "bottom"
-
 	AxisPlacementHidden AxisPlacement = "hidden"
-
-	AxisPlacementLeft AxisPlacement = "left"
-
-	AxisPlacementRight AxisPlacement = "right"
-
-	AxisPlacementTop AxisPlacement = "top"
+	AxisPlacementLeft   AxisPlacement = "left"
+	AxisPlacementRight  AxisPlacement = "right"
+	AxisPlacementTop    AxisPlacement = "top"
 )
 
 // Defines values for GraphGradientMode.
 const (
-	GraphGradientModeHue GraphGradientMode = "hue"
-
-	GraphGradientModeNone GraphGradientMode = "none"
-
+	GraphGradientModeHue     GraphGradientMode = "hue"
+	GraphGradientModeNone    GraphGradientMode = "none"
 	GraphGradientModeOpacity GraphGradientMode = "opacity"
-
-	GraphGradientModeScheme GraphGradientMode = "scheme"
+	GraphGradientModeScheme  GraphGradientMode = "scheme"
 )
 
 // Defines values for LegendDisplayMode.
 const (
 	LegendDisplayModeHidden LegendDisplayMode = "hidden"
-
-	LegendDisplayModeList LegendDisplayMode = "list"
-
-	LegendDisplayModeTable LegendDisplayMode = "table"
+	LegendDisplayModeList   LegendDisplayMode = "list"
+	LegendDisplayModeTable  LegendDisplayMode = "table"
 )
 
 // Defines values for LegendPlacement.
 const (
 	LegendPlacementBottom LegendPlacement = "bottom"
-
-	LegendPlacementRight LegendPlacement = "right"
+	LegendPlacementRight  LegendPlacement = "right"
 )
 
 // Defines values for ScaleDistribution.
 const (
-	ScaleDistributionLinear ScaleDistribution = "linear"
-
-	ScaleDistributionLog ScaleDistribution = "log"
-
+	ScaleDistributionLinear  ScaleDistribution = "linear"
+	ScaleDistributionLog     ScaleDistribution = "log"
 	ScaleDistributionOrdinal ScaleDistribution = "ordinal"
-
-	ScaleDistributionSymlog ScaleDistribution = "symlog"
+	ScaleDistributionSymlog  ScaleDistribution = "symlog"
 )
 
 // Defines values for SortOrder.
 const (
-	SortOrderAsc SortOrder = "asc"
-
+	SortOrderAsc  SortOrder = "asc"
 	SortOrderDesc SortOrder = "desc"
-
 	SortOrderNone SortOrder = "none"
 )
 
 // Defines values for TooltipDisplayMode.
 const (
-	TooltipDisplayModeMulti TooltipDisplayMode = "multi"
-
-	TooltipDisplayModeNone TooltipDisplayMode = "none"
-
+	TooltipDisplayModeMulti  TooltipDisplayMode = "multi"
+	TooltipDisplayModeNone   TooltipDisplayMode = "none"
 	TooltipDisplayModeSingle TooltipDisplayMode = "single"
 )
 
@@ -150,18 +131,33 @@ type OptionsWithTooltip struct {
 
 // PanelFieldConfig defines model for PanelFieldConfig.
 type PanelFieldConfig struct {
-	// Embedded struct due to allOf(#/components/schemas/AxisConfig)
-	AxisConfig `yaml:",inline"`
-	// Embedded struct due to allOf(#/components/schemas/HideableFieldConfig)
-	HideableFieldConfig `yaml:",inline"`
+	AxisCenteredZero *bool `json:"axisCenteredZero,omitempty"`
+
+	// TODO docs
+	AxisColorMode *AxisColorMode `json:"axisColorMode,omitempty"`
+	AxisGridShow  *bool          `json:"axisGridShow,omitempty"`
+	AxisLabel     *string        `json:"axisLabel,omitempty"`
+
+	// TODO docs
+	AxisPlacement *AxisPlacement `json:"axisPlacement,omitempty"`
+	AxisSoftMax   *float32       `json:"axisSoftMax,omitempty"`
+	AxisSoftMin   *float32       `json:"axisSoftMin,omitempty"`
+	AxisWidth     *float32       `json:"axisWidth,omitempty"`
+
+	// TODO docs
+	HideFrom *HideSeriesConfig `json:"hideFrom,omitempty"`
+
+	// TODO docs
+	ScaleDistribution *ScaleDistributionConfig `json:"scaleDistribution,omitempty"`
 }
 
 // PanelOptions defines model for PanelOptions.
 type PanelOptions struct {
-	// Embedded struct due to allOf(#/components/schemas/OptionsWithLegend)
-	OptionsWithLegend `yaml:",inline"`
-	// Embedded struct due to allOf(#/components/schemas/OptionsWithTooltip)
-	OptionsWithTooltip `yaml:",inline"`
+	// TODO docs
+	Legend VizLegendOptions `json:"legend"`
+
+	// TODO docs
+	Tooltip VizTooltipOptions `json:"tooltip"`
 }
 
 // TODO docs
