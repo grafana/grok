@@ -34,5 +34,6 @@ type (
 		Description   string
 		AttributeType string
 		Computed      bool
+		Optional      bool
 	}
 )
