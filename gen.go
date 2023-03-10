@@ -15,9 +15,7 @@ import (
 	"github.com/grafana/grafana/pkg/kindsys"
 	"github.com/grafana/grafana/pkg/plugins/pfs/corelist"
 	"github.com/grafana/grafana/pkg/registry/corekind"
-	_go "github.com/grafana/grok/gen/go"
-	"github.com/grafana/grok/gen/jsonnet"
-	"github.com/grafana/grok/gen/jsonschema"
+	"github.com/grafana/grok/gen/terraform"
 	"github.com/grafana/grok/internal/jen"
 	"github.com/grafana/thema"
 )
@@ -87,9 +85,10 @@ func lineUpJennies() jen.TargetJennies {
 	tgt := jen.NewTargetJennies()
 
 	tgtmap := map[string]jen.TargetJennies{
-		"go":         _go.JenniesForGo(),
-		"jsonschema": jsonschema.JenniesForJsonSchema(),
-		"jsonnet":    jsonnet.JenniesForJsonnet(),
+		// "go":         _go.JenniesForGo(),
+		// "jsonschema": jsonschema.JenniesForJsonSchema(),
+		// "jsonnet":    jsonnet.JenniesForJsonnet(),
+		"terraform": terraform.JenniesForTerraform(),
 	}
 
 	for path, tj := range tgtmap {

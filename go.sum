@@ -74,8 +74,8 @@ github.com/grafana/codejen v0.0.4-0.20221122220907-a5e7cc5407b3 h1:XasADId/N6Jk8
 github.com/grafana/codejen v0.0.4-0.20221122220907-a5e7cc5407b3/go.mod h1:zmwwM/DRyQB7pfuBjTWII3CWtxcXh8LTwAYGfDfpR6s=
 github.com/grafana/cuetsy v0.1.5 h1:mnFwAXdbqCsyL8r7kkdUMJ4kOAR26cxIPmrZj7JzTeY=
 github.com/grafana/cuetsy v0.1.5/go.mod h1:4KWkUOslwvRTpEv7wdQG0jDFTuJmU+0L9x0h4kWxa2A=
-github.com/grafana/grafana v1.9.2-0.20230202155234-99a16d27c19b h1:Wg5zlunhMDelqNlfbzqoeIFer7uGrTW6nx38B/fuYHE=
-github.com/grafana/grafana v1.9.2-0.20230202155234-99a16d27c19b/go.mod h1:Hbrjux0RAUDn8ifejZMc57rrZlzaIWpPmFJlcrn33ao=
+github.com/grafana/grafana v1.9.2-0.20230207163036-a5786bb9cf45 h1:5xQgYYETnUxXFr+fK6x/9MzObF5CPjbydJ9VW+/+yLs=
+github.com/grafana/grafana v1.9.2-0.20230207163036-a5786bb9cf45/go.mod h1:wVDBmBhdWgHARjkedti+36erGZKM3IgdLrySFBBgN84=
 github.com/grafana/thema v0.0.0-20230122235053-b4b6714dd1c9 h1:nAdsZkvPYNH6wDPkAi9JaDSIf5i2iVz4+Rqk4AOt6sE=
 github.com/grafana/thema v0.0.0-20230122235053-b4b6714dd1c9/go.mod h1:5j2nf4xmWhKr+1vyGouML8eJ8xERS5Jw/lhjs0eyz78=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
