@@ -24,5 +24,5 @@ func (j TerraformDataSourceJenny) Generate(sfg codegen.SchemaForGen) (*codejen.F
 	name := sfg.Schema.Lineage().Name()
 	fmt.Println(sfg.Schema.Lineage().Name())
 
-	return codejen.NewFile("datasource_"+name+".go", bytes, j), nil
+	return codejen.NewFile("zzz_datasource_"+name+".go", bytes, j), nil
 }

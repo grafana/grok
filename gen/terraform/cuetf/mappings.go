@@ -8,6 +8,6 @@ var TypeMappings = map[cue.Kind]string{
 	cue.FloatKind:  "Float64",
 	cue.NumberKind: "Number",
 	cue.StringKind: "String",
-	cue.StructKind: "Object",
-	cue.ListKind:   "List",
+	// cue.StructKind: "Object",
+	// cue.ListKind:   "List",
 }

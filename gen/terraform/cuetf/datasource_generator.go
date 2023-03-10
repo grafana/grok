@@ -4,11 +4,21 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
+	"regexp"
 	"strings"
 
 	"cuelang.org/go/cue"
 	"github.com/grafana/thema"
 )
+
+var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
+var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
+
+func ToSnakeCase(str string) string {
+	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
+	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
+	return strings.ToLower(snake)
+}
 
 // GenerateDataSource takes a cue.Value and generates the corresponding Terraform data source
 func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
@@ -61,6 +71,10 @@ func GenerateSchemaAttributes(val cue.Value) (string, error) {
 			return "", err
 		}
 
+		if attr == "" {
+			continue
+		}
+
 		attributes = append(attributes, attr)
 	}
 
@@ -69,9 +83,10 @@ func GenerateSchemaAttributes(val cue.Value) (string, error) {
 
 func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (string, error) {
 	vars := TVarsSchemaAttribute{
-		Name:     name,
+		Name:     ToSnakeCase(name),
 		Computed: false,
 		Optional: isOptional,
+		Required: !isOptional,
 	}
 
 	for _, comment := range value.Doc() {
@@ -81,6 +96,10 @@ func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (st
 
 	// TODO: handle special cases (struct, list, bottom, null, top)
 	vars.AttributeType = TypeMappings[value.IncompleteKind()]
+	// TODO: jduchesne, empty attribute type fails
+	if vars.AttributeType == "" {
+		return "", nil
+	}
 
 	buf := new(bytes.Buffer)
 	if err := tmpls.Lookup("schema_attribute.tmpl").Execute(buf, vars); err != nil {
@@ -110,6 +129,11 @@ func GenerateModelFields(val cue.Value) (string, error) {
 		}
 
 		field := genSingleModelField(iter.Selector().String(), iter.Value())
+
+		if field == "" {
+			continue
+		}
+
 		fields = append(fields, field)
 	}
 
@@ -120,10 +144,10 @@ func genSingleModelField(name string, value cue.Value) string {
 	goName := strings.Title(name)
 	typeStr := TypeMappings[value.IncompleteKind()]
 
-	// TODO remove
+	// TODO: jduchesne, empty attribute type fails
 	if typeStr == "" {
-		typeStr = "String"
+		return ""
 	}
 
-	return fmt.Sprintf("%s types.%s `tfsdk:\"%s\", json:\"%s\"`", goName, typeStr, name, name)
+	return fmt.Sprintf("%s types.%s `tfsdk:\"%s\" json:\"%s\"`", goName, typeStr, ToSnakeCase(name), name)
 }
