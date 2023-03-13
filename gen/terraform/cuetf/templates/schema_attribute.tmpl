@@ -2,4 +2,14 @@
     MarkdownDescription: `{{.Description}}`,
     Computed: {{.Computed}},
     Optional: {{.Optional}},
+    Required: {{.Required}},
+    {{ if .ElementType }}ElementType: {{.ElementType}},{{ end }}
+    {{- if .NestedAttributes }}Attributes: map[string]schema.Attribute{
+        {{.NestedAttributes}}
+    },{{ end }}
+    {{- if .NestedObjectAttributes }}NestedObject: schema.NestedAttributeObject{
+        Attributes: map[string]schema.Attribute{
+            {{.NestedObjectAttributes}}
+        },
+    },{{ end }}
 },

@@ -30,10 +30,14 @@ type (
 	}
 
 	TVarsSchemaAttribute struct {
-		Name          string
-		Description   string
-		AttributeType string
-		Computed      bool
-		Optional      bool
+		Name                   string
+		Description            string
+		AttributeType          string
+		Computed               bool
+		Optional               bool
+		Required               bool
+		ElementType            string // Used for simple lists
+		NestedAttributes       string // Used for objects
+		NestedObjectAttributes string // Used for complex lists
 	}
 )

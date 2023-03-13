@@ -2,13 +2,24 @@ package cuetf
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"go/format"
+	"regexp"
 	"strings"
 
 	"cuelang.org/go/cue"
 	"github.com/grafana/thema"
 )
+
+var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
+var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
+
+func ToSnakeCase(str string) string {
+	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
+	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
+	return strings.ToLower(snake)
+}
 
 // GenerateDataSource takes a cue.Value and generates the corresponding Terraform data source
 func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
@@ -23,7 +34,7 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 	}
 
 	vars := TVarsDataSource{
-		Name:             schema.Lineage().Name(),
+		Name:             strings.Title(schema.Lineage().Name()),
 		Description:      "TODO description",
 		ModelFields:      modelFields,
 		SchemaAttributes: string(schemaAttributes),
@@ -61,6 +72,10 @@ func GenerateSchemaAttributes(val cue.Value) (string, error) {
 			return "", err
 		}
 
+		if attr == "" {
+			continue
+		}
+
 		attributes = append(attributes, attr)
 	}
 
@@ -68,10 +83,15 @@ func GenerateSchemaAttributes(val cue.Value) (string, error) {
 }
 
 func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (string, error) {
+	if name == "panels" {
+		return "", nil
+	}
+
 	vars := TVarsSchemaAttribute{
-		Name:     name,
+		Name:     ToSnakeCase(name),
 		Computed: false,
 		Optional: isOptional,
+		Required: !isOptional,
 	}
 
 	for _, comment := range value.Doc() {
@@ -80,7 +100,67 @@ func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (st
 	vars.Description = strings.Trim(vars.Description, "\n ")
 
 	// TODO: handle special cases (struct, list, bottom, null, top)
-	vars.AttributeType = TypeMappings[value.IncompleteKind()]
+	kind := value.IncompleteKind()
+	vars.AttributeType = TypeMappings[kind]
+	switch kind {
+	case cue.ListKind:
+		defv, _ := value.Default()
+		if !defv.Equals(value) {
+			_, v := value.Expr()
+			value = v[0]
+		}
+
+		e := value.LookupPath(cue.MakePath(cue.AnyIndex))
+		if e.Exists() {
+			subType := TypeMappings[e.IncompleteKind()]
+
+			if subType != "" {
+				// "example_attribute": schema.ListAttribute{
+				// 		ElementType: types.StringType,
+				// 	    // ... other fields ...
+				// },
+				vars.AttributeType = "List"
+				vars.ElementType = fmt.Sprintf("types.%sType", subType)
+			} else {
+				// "nested_attribute": schema.ListNestedAttribute{
+				//     NestedObject: schema.NestedAttributeObject{
+				//         Attributes: map[string]schema.Attribute{
+				//             "hello": schema.StringAttribute{
+				//                 /* ... */
+				//             },
+				//         },
+				//     },
+				// },
+				vars.AttributeType = "ListNested"
+				nestedObjectAttributes, err := GenerateSchemaAttributes(e)
+				if err != nil {
+					return "", err
+				}
+				vars.NestedObjectAttributes = nestedObjectAttributes
+			}
+		} else {
+			return "", errors.New("unreachable - open list must have a type")
+		}
+	case cue.StructKind:
+		// "nested_attribute": schema.SingleNestedAttribute{
+		//     Attributes: map[string]schema.Attribute{
+		//         "hello": schema.StringAttribute{
+		//             /* ... */
+		//         },
+		//     },
+		// },
+		vars.AttributeType = "SingleNested"
+		nestedAttributes, err := GenerateSchemaAttributes(value.Value())
+		if err != nil {
+			return "", err
+		}
+		vars.NestedAttributes = nestedAttributes
+	}
+
+	// TODO Remove
+	if vars.AttributeType == "" {
+		return "", nil
+	}
 
 	buf := new(bytes.Buffer)
 	if err := tmpls.Lookup("schema_attribute.tmpl").Execute(buf, vars); err != nil {
@@ -109,21 +189,67 @@ func GenerateModelFields(val cue.Value) (string, error) {
 			continue
 		}
 
-		field := genSingleModelField(iter.Selector().String(), iter.Value())
+		field, err := genSingleModelField(iter.Selector().String(), iter.Value())
+		if err != nil {
+			return "", err
+		}
+
+		if field == "" {
+			continue
+		}
+
 		fields = append(fields, field)
 	}
 
 	return strings.Join(fields, "\n"), nil
 }
 
-func genSingleModelField(name string, value cue.Value) string {
-	goName := strings.Title(name)
-	typeStr := TypeMappings[value.IncompleteKind()]
-
-	// TODO remove
-	if typeStr == "" {
-		typeStr = "String"
+func genSingleModelField(name string, value cue.Value) (string, error) {
+	if name == "panels" {
+		return "", nil
 	}
 
-	return fmt.Sprintf("%s types.%s `tfsdk:\"%s\", json:\"%s\"`", goName, typeStr, name, name)
+	goName := strings.Title(name)
+
+	kind := value.IncompleteKind()
+	typeStr := "types." + TypeMappings[kind]
+	switch kind {
+	case cue.ListKind:
+		defv, _ := value.Default()
+		if !defv.Equals(value) {
+			_, v := value.Expr()
+			value = v[0]
+		}
+
+		e := value.LookupPath(cue.MakePath(cue.AnyIndex))
+		if e.Exists() {
+			subType := TypeMappings[e.IncompleteKind()]
+			if subType != "" {
+				typeStr = "types.List"
+			} else {
+				typeStr = "[]struct{\n"
+				nestedAttributes, err := GenerateModelFields(e)
+				if err != nil {
+					return "", err
+				}
+				typeStr += nestedAttributes + "\n}"
+			}
+		} else {
+			return "", errors.New("unreachable - open list must have a type")
+		}
+	case cue.StructKind:
+		typeStr = "*struct{\n"
+		nestedAttributes, err := GenerateModelFields(value.Value())
+		if err != nil {
+			return "", err
+		}
+		typeStr += nestedAttributes + "\n}"
+	}
+
+	// TODO remove
+	if typeStr == "" || typeStr == "types." {
+		return "", nil
+	}
+
+	return fmt.Sprintf("%s %s `tfsdk:\"%s\" json:\"%s\"`", goName, typeStr, ToSnakeCase(name), name), nil
 }
