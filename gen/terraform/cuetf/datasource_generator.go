@@ -5,30 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"go/format"
-	"regexp"
 	"strings"
 
 	"cuelang.org/go/cue"
 	"github.com/grafana/thema"
 )
-
-var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
-var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
-
-func ToSnakeCase(str string) string {
-	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
-	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
-	return strings.ToLower(snake)
-}
-
-func ToCamelCase(str string) string {
-	words := strings.Split(str, "_")
-	camelCase := ""
-	for _, s := range words {
-		camelCase += strings.Title(s)
-	}
-	return camelCase
-}
 
 func GetStructName(kindName string) string {
 	return strings.Title(kindName) + "DataSource"
