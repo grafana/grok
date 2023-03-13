@@ -158,6 +158,7 @@ func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (st
 	}
 
 	// TODO Remove
+	// TODO: jduchesne, empty attribute type fails
 	if vars.AttributeType == "" {
 		return "", nil
 	}
@@ -246,7 +247,7 @@ func genSingleModelField(name string, value cue.Value) (string, error) {
 		typeStr += nestedAttributes + "\n}"
 	}
 
-	// TODO remove
+	// TODO: jduchesne, empty attribute type fails
 	if typeStr == "" || typeStr == "types." {
 		return "", nil
 	}
