@@ -12,6 +12,7 @@ import (
 // LatestJenny returns a jenny that runs another jenny for only the latest
 // schema in a DefForGen, and prefixes the resulting file with the provided
 // parentdir (e.g. "pkg/kinds/").
+// TODO remove this once there's a standard jenny for this...somewhere in core
 func LatestJenny(parentdir string, inner codejen.OneToOne[codegen.SchemaForGen]) codegen.OneToOne {
 	if inner == nil {
 		panic("inner jenny must not be nil")

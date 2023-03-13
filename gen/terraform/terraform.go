@@ -31,12 +31,11 @@ func JenniesForTerraform() jen.TargetJennies {
 	dataSourcePath := filepath.Join(grafanaVersion, "data_sources")
 	tgt.Core.Append(
 		jen.LatestJenny(dataSourcePath, TerraformDataSourceJenny{}),
-		// codegen.LatestMajorsOrXJenny(filepath.Join("kinds", "core"), TypedSchemaJenny{}),
 	)
 
-	// tgt.Composable.Append(
-	// 	jen.ComposableLatestMajorsOrXJenny(dataSourcePath, TerraformDataSourceJenny{}),
-	// )
+	tgt.Composable.Append(
+		jen.ComposableLatestMajorsOrXJenny(dataSourcePath, true, TerraformDataSourceJenny{}),
+	)
 
 	return tgt
 }

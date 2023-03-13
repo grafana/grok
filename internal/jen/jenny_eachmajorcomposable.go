@@ -11,20 +11,22 @@ import (
 )
 
 // TODO remove this once there's a standard jenny for this...somewhere in core
-func ComposableLatestMajorsOrXJenny(parentdir string, inner codejen.OneToOne[codegen.SchemaForGen]) codejen.OneToMany[kindsys.Composable] {
+func ComposableLatestMajorsOrXJenny(parentdir string, useParentDirOnly bool, inner codejen.OneToOne[codegen.SchemaForGen]) codejen.OneToMany[kindsys.Composable] {
 	if inner == nil {
 		panic("inner jenny must not be nil")
 	}
 
 	return &clmox{
-		parentdir: parentdir,
-		inner:     inner,
+		parentdir:        parentdir,
+		useParentDirOnly: useParentDirOnly,
+		inner:            inner,
 	}
 }
 
 type clmox struct {
-	parentdir string
-	inner     codejen.OneToOne[codegen.SchemaForGen]
+	parentdir        string
+	useParentDirOnly bool // Do not create sub folders in parentdir
+	inner            codejen.OneToOne[codegen.SchemaForGen]
 }
 
 func (j *clmox) JennyName() string {
@@ -54,7 +56,11 @@ func (j *clmox) Generate(k kindsys.Composable) (codejen.Files, error) {
 			return nil, nil
 		}
 
-		f.RelativePath = filepath.Join(j.parentdir, strings.ToLower(strings.TrimSuffix(sfg.Name, si.Name())), strings.ToLower(si.Name()), infix, strings.ToLower(f.RelativePath))
+		if j.useParentDirOnly {
+			f.RelativePath = filepath.Join(j.parentdir, strings.ToLower(f.RelativePath))
+		} else {
+			f.RelativePath = filepath.Join(j.parentdir, strings.ToLower(strings.TrimSuffix(sfg.Name, si.Name())), strings.ToLower(si.Name()), infix, strings.ToLower(f.RelativePath))
+		}
 		f.From = append(f.From, j)
 		return codejen.Files{*f}, nil
 	}

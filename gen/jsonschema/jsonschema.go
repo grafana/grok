@@ -20,7 +20,7 @@ func JenniesForJsonSchema() jen.TargetJennies {
 
 	tgt.Composable.Append(
 		// oooonly need to inject the proper path interstitial to make this right
-		jen.ComposableLatestMajorsOrXJenny(filepath.Join("kinds", "composable"), JsonSchemaJenny{}),
+		jen.ComposableLatestMajorsOrXJenny(filepath.Join("kinds", "composable"), false, JsonSchemaJenny{}),
 	)
 
 	return tgt

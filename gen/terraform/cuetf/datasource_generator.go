@@ -21,6 +21,15 @@ func ToSnakeCase(str string) string {
 	return strings.ToLower(snake)
 }
 
+func ToCamelCase(str string) string {
+	words := strings.Split(str, "_")
+	camelCase := ""
+	for _, s := range words {
+		camelCase += strings.Title(s)
+	}
+	return camelCase
+}
+
 // GenerateDataSource takes a cue.Value and generates the corresponding Terraform data source
 func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 	schemaAttributes, err := GenerateSchemaAttributes(schema.Underlying())
@@ -50,7 +59,7 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 
 func GenerateSchemaAttributes(val cue.Value) (string, error) {
 	if err := val.Validate(); err != nil {
-		return "", err
+		return "", fmt.Errorf("error validating value: %w", err)
 	}
 
 	iter, err := val.Fields(
@@ -58,7 +67,7 @@ func GenerateSchemaAttributes(val cue.Value) (string, error) {
 		cue.Optional(true),
 	)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error retrieving value fields: %w", err)
 	}
 
 	attributes := make([]string, 0)
@@ -83,7 +92,7 @@ func GenerateSchemaAttributes(val cue.Value) (string, error) {
 }
 
 func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (string, error) {
-	if name == "panels" {
+	if name == "panels" || name == "points" || name == "bucketAggs" || name == "metrics" {
 		return "", nil
 	}
 
@@ -134,7 +143,7 @@ func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (st
 				vars.AttributeType = "ListNested"
 				nestedObjectAttributes, err := GenerateSchemaAttributes(e)
 				if err != nil {
-					return "", err
+					return "", fmt.Errorf("error trying to generate nested attributes in list: %s", err)
 				}
 				vars.NestedObjectAttributes = nestedObjectAttributes
 			}
@@ -152,7 +161,7 @@ func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (st
 		vars.AttributeType = "SingleNested"
 		nestedAttributes, err := GenerateSchemaAttributes(value.Value())
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("error trying to generate nested attributes in struct: %w", err)
 		}
 		vars.NestedAttributes = nestedAttributes
 	}
@@ -206,11 +215,11 @@ func GenerateModelFields(val cue.Value) (string, error) {
 }
 
 func genSingleModelField(name string, value cue.Value) (string, error) {
-	if name == "panels" {
+	if name == "panels" || name == "points" || name == "bucketAggs" || name == "metrics" {
 		return "", nil
 	}
 
-	goName := strings.Title(name)
+	goName := ToCamelCase(name)
 
 	kind := value.IncompleteKind()
 	typeStr := "types." + TypeMappings[kind]
@@ -239,6 +248,7 @@ func genSingleModelField(name string, value cue.Value) (string, error) {
 			return "", errors.New("unreachable - open list must have a type")
 		}
 	case cue.StructKind:
+		// If not optional, no need to be a pointer
 		typeStr = "*struct{\n"
 		nestedAttributes, err := GenerateModelFields(value.Value())
 		if err != nil {
