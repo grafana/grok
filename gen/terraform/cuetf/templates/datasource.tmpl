@@ -66,9 +66,34 @@ func (d *{{.StructName}}) Read(ctx context.Context, req datasource.ReadRequest, 
 	    return
     }
 
-	// Not sure about that
-    data.ToJSON = types.StringValue(string(JSONConfig))
+	{{ if eq .StructName "CoreDashboardDataSource" }}
+	// fix up the panel Attribute
+	// Read into a map[string]interface{} and then marshal it back to JSON
+	// This is a workaround for the fact that the panel attribute should be a list of maps but is a list of json strings
+	dataMap := make(map[string]interface{})
+	err = json.Unmarshal(JSONConfig, &dataMap)
+	if err != nil {
+		resp.Diagnostics.AddError("JSON marshalling error", err.Error())
+		return
+	}
+	panels := data.Panels.Elements()
+	panelsMaps := make([]map[string]interface{}, len(panels))
+	for i, panel := range panels {
+		panelMap := make(map[string]interface{})
+		err = json.Unmarshal([]byte(panel.String()), &panelMap)
+		if err != nil {
+			resp.Diagnostics.AddError("JSON marshalling error", err.Error())
+			return
+		}
+		panelsMaps[i] = panelMap
+	}
+
+	dataMap["panels"] = panelsMaps
+	{{ end }}
     
+	// Not sure about that
+	data.ToJSON = types.StringValue(string(JSONConfig))
+
 	// Write logs using the tflog package
 	// Documentation: https://terraform.io/plugin/log
 	tflog.Trace(ctx, "read a data source")

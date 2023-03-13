@@ -129,7 +129,7 @@ func GenerateSchemaAttributes(cueFields []cueField) (string, error) {
 }
 
 func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (string, error) {
-	if name == "panels" || name == "points" || name == "bucketAggs" || name == "metrics" {
+	if name == "points" || name == "bucketAggs" || name == "metrics" {
 		return "", nil
 	}
 
@@ -159,7 +159,11 @@ func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (st
 		e := value.LookupPath(cue.MakePath(cue.AnyIndex))
 		if e.Exists() {
 			subType := TypeMappings[e.IncompleteKind()]
-
+			// Using a string type to allow composition of panel datasources
+			// Doesn't seem possible to have an arbitrary map type here
+			if name == "panels" {
+				subType = TypeMappings[cue.StringKind]
+			}
 			if subType != "" {
 				// "example_attribute": schema.ListAttribute{
 				// 		ElementType: types.StringType,
@@ -244,7 +248,7 @@ func GenerateModelFields(cueFields []cueField) (string, error) {
 }
 
 func genSingleModelField(name string, value cue.Value) (string, error) {
-	if name == "panels" || name == "points" || name == "bucketAggs" || name == "metrics" {
+	if name == "points" || name == "bucketAggs" || name == "metrics" {
 		return "", nil
 	}
 
@@ -263,6 +267,11 @@ func genSingleModelField(name string, value cue.Value) (string, error) {
 		e := value.LookupPath(cue.MakePath(cue.AnyIndex))
 		if e.Exists() {
 			subType := TypeMappings[e.IncompleteKind()]
+			// Using a string type to allow composition of panel datasources
+			// Doesn't seem possible to have an arbitrary map type here
+			if name == "panels" {
+				subType = TypeMappings[cue.StringKind]
+			}
 			if subType != "" {
 				typeStr = "types.List"
 			} else {
