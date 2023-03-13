@@ -15,4 +15,4 @@
 # vendor/
 
 # Generating directly from the Terraform provider repository
-terraform
+/terraform
