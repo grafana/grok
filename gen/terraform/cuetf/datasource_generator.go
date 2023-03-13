@@ -11,42 +11,39 @@ import (
 	"github.com/grafana/thema"
 )
 
-type cueField struct {
-	Name       string
-	Value      cue.Value
-	IsOptional bool
+func GetKindName(rawName string) string {
+	name := rawName
+	if strings.HasSuffix(name, "PanelCfg") {
+		name = "Panel" + strings.TrimSuffix(name, "PanelCfg")
+	} else if strings.HasSuffix(name, "DataQuery") {
+		name = "Query" + strings.TrimSuffix(name, "DataQuery")
+	} else {
+		switch name {
+		case "dashboard", "playlist", "preferences", "team":
+			name = strings.ToUpper(name[:1]) + name[1:]
+		case "publicdashboard":
+			name = "PublicDashboard"
+		case "librarypanel":
+			name = "LibraryPanel"
+		case "serviceaccount":
+			name = "ServiceAccount"
+		}
+		name = "Core" + name
+	}
+
+	return name
 }
 
-func schemaToCueFields(schema cue.Value) ([]cueField, error) {
-	if !schema.IsConcrete() {
-		return nil, nil
-	}
-
-	fields := []cueField{}
-	iter, err := schema.Fields(
-		cue.Definitions(false),
-		cue.Optional(true),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving value fields: %w", err)
-	}
-	for iter.Next() {
-		fields = append(fields, cueField{
-			Name:       iter.Selector().String(),
-			Value:      iter.Value(),
-			IsOptional: iter.IsOptional(),
-		})
-	}
-	return fields, nil
+func GetStructName(rawName string) string {
+	return strings.Title(GetKindName(rawName)) + "DataSource"
 }
 
-func GetStructName(kindName string) string {
-	return strings.Title(kindName) + "DataSource"
+func GetResourceName(rawName string) string {
+	return ToSnakeCase(GetKindName(rawName))
 }
 
 // GenerateDataSource takes a cue.Value and generates the corresponding Terraform data source
 func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
-	kindName := schema.Lineage().Name()
 	if schema.Underlying().Validate() != nil {
 		return nil, fmt.Errorf("error validating schema: %w", err)
 	}
@@ -56,9 +53,11 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 		return nil, err
 	}
 
-	extractPanelSchema(schema)
+	if err := extractPanelSchema(schema); err != nil {
+		return nil, err
+	}
 
-	if strings.HasSuffix(kindName, "PanelCfg") {
+	if strings.HasPrefix(GetKindName(schema.Lineage().Name()), "Panel") {
 		if !panelSchema.Exists() {
 			return nil, errors.New("panel schema not found")
 		}
@@ -80,8 +79,8 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 	}
 
 	vars := TVarsDataSource{
-		Name:             kindName,
-		StructName:       GetStructName(kindName),
+		Name:             GetResourceName(schema.Lineage().Name()),
+		StructName:       GetStructName(schema.Lineage().Name()),
 		Description:      "TODO description",
 		ModelFields:      modelFields,
 		SchemaAttributes: string(schemaAttributes),
@@ -297,13 +296,16 @@ func genSingleModelField(name string, value cue.Value) (string, error) {
 
 var panelSchema cue.Value
 
-func extractPanelSchema(schema thema.Schema) {
+func extractPanelSchema(schema thema.Schema) error {
 	if schema.Lineage().Name() == "dashboard" {
-		iter, _ := schema.Underlying().Fields(
+		iter, err := schema.Underlying().Fields(
 			cue.Definitions(true),
 			cue.Optional(false),
 			cue.Attributes(false),
 		)
+		if err != nil {
+			return err
+		}
 		for iter.Next() {
 			if iter.Selector().String() == "#Panel" {
 				panelSchema = iter.Value()
@@ -311,5 +313,5 @@ func extractPanelSchema(schema thema.Schema) {
 			}
 		}
 	}
-
+	return nil
 }
