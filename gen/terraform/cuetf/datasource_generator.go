@@ -30,6 +30,10 @@ func ToCamelCase(str string) string {
 	return camelCase
 }
 
+func GetStructName(kindName string) string {
+	return strings.Title(kindName) + "DataSource"
+}
+
 // GenerateDataSource takes a cue.Value and generates the corresponding Terraform data source
 func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 	schemaAttributes, err := GenerateSchemaAttributes(schema.Underlying())
@@ -43,7 +47,8 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 	}
 
 	vars := TVarsDataSource{
-		Name:             strings.Title(schema.Lineage().Name()),
+		Name:             schema.Lineage().Name(),
+		StructName:       GetStructName(schema.Lineage().Name()),
 		Description:      "TODO description",
 		ModelFields:      modelFields,
 		SchemaAttributes: string(schemaAttributes),

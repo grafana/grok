@@ -24,6 +24,7 @@ var tmplFS embed.FS
 type (
 	TVarsDataSource struct {
 		Name             string
+		StructName       string
 		Description      string
 		ModelFields      string
 		SchemaAttributes string
