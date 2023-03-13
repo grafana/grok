@@ -11,25 +11,77 @@ import (
 	"github.com/grafana/thema"
 )
 
+type cueField struct {
+	Name       string
+	Value      cue.Value
+	IsOptional bool
+}
+
+func schemaToCueFields(schema cue.Value) ([]cueField, error) {
+	if !schema.IsConcrete() {
+		return nil, nil
+	}
+
+	fields := []cueField{}
+	iter, err := schema.Fields(
+		cue.Definitions(false),
+		cue.Optional(true),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving value fields: %w", err)
+	}
+	for iter.Next() {
+		fields = append(fields, cueField{
+			Name:       iter.Selector().String(),
+			Value:      iter.Value(),
+			IsOptional: iter.IsOptional(),
+		})
+	}
+	return fields, nil
+}
+
 func GetStructName(kindName string) string {
 	return strings.Title(kindName) + "DataSource"
 }
 
 // GenerateDataSource takes a cue.Value and generates the corresponding Terraform data source
 func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
-	schemaAttributes, err := GenerateSchemaAttributes(schema.Underlying())
+	kindName := schema.Lineage().Name()
+	if schema.Underlying().Validate() != nil {
+		return nil, fmt.Errorf("error validating schema: %w", err)
+	}
+
+	fields, err := schemaToCueFields(schema.Underlying())
 	if err != nil {
 		return nil, err
 	}
 
-	modelFields, err := GenerateModelFields(schema.Underlying())
+	extractPanelSchema(schema)
+
+	if strings.HasSuffix(kindName, "PanelCfg") {
+		if !panelSchema.Exists() {
+			return nil, errors.New("panel schema not found")
+		}
+		panelFields, err := schemaToCueFields(panelSchema)
+		if err != nil {
+			return nil, err
+		}
+		fields = append(fields, panelFields...)
+	}
+
+	schemaAttributes, err := GenerateSchemaAttributes(fields)
+	if err != nil {
+		return nil, err
+	}
+
+	modelFields, err := GenerateModelFields(fields)
 	if err != nil {
 		return nil, err
 	}
 
 	vars := TVarsDataSource{
-		Name:             schema.Lineage().Name(),
-		StructName:       GetStructName(schema.Lineage().Name()),
+		Name:             kindName,
+		StructName:       GetStructName(kindName),
 		Description:      "TODO description",
 		ModelFields:      modelFields,
 		SchemaAttributes: string(schemaAttributes),
@@ -40,25 +92,29 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 		return nil, fmt.Errorf("failed executing datasource template: %w", err)
 	}
 
+	// if err := os.MkdirAll("/Users/julienduchesne/Repos/terraform-provider-schemas/tools/grok/terraform/debug", 0755); err != nil {
+	// 	return nil, fmt.Errorf("failed creating debug directory: %w", err)
+	// }
+	// if err := os.WriteFile("/Users/julienduchesne/Repos/terraform-provider-schemas/tools/grok/terraform/debug/"+kindName+".go", buf.Bytes(), 0644); err != nil {
+	// 	return nil, fmt.Errorf("failed writing debug file: %w", err)
+	// }
+
 	return format.Source(buf.Bytes())
 }
 
-func GenerateSchemaAttributes(val cue.Value) (string, error) {
-	if err := val.Validate(); err != nil {
-		return "", fmt.Errorf("error validating value: %w", err)
-	}
-
-	iter, err := val.Fields(
-		cue.Definitions(false),
-		cue.Optional(true),
-	)
+func GenerateSchemaAttributesFromSchema(val cue.Value) (string, error) {
+	fields, err := schemaToCueFields(val)
 	if err != nil {
-		return "", fmt.Errorf("error retrieving value fields: %w", err)
+		return "", err
 	}
 
+	return GenerateSchemaAttributes(fields)
+}
+
+func GenerateSchemaAttributes(cueFields []cueField) (string, error) {
 	attributes := make([]string, 0)
-	for iter.Next() {
-		attr, err := genSingleSchemaAttribute(iter.Selector().String(), iter.Value(), iter.IsOptional())
+	for _, cueField := range cueFields {
+		attr, err := genSingleSchemaAttribute(cueField.Name, cueField.Value, cueField.IsOptional)
 		if err != nil {
 			return "", err
 		}
@@ -88,7 +144,7 @@ func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (st
 	for _, comment := range value.Doc() {
 		vars.Description += comment.Text()
 	}
-	vars.Description = strings.Trim(vars.Description, "\n ")
+	vars.Description = strings.ReplaceAll(strings.Trim(vars.Description, "\n "), "`", "")
 
 	// TODO: handle special cases (struct, list, bottom, null, top)
 	kind := value.IncompleteKind()
@@ -123,7 +179,7 @@ func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (st
 				//     },
 				// },
 				vars.AttributeType = "ListNested"
-				nestedObjectAttributes, err := GenerateSchemaAttributes(e)
+				nestedObjectAttributes, err := GenerateSchemaAttributesFromSchema(e)
 				if err != nil {
 					return "", fmt.Errorf("error trying to generate nested attributes in list: %s", err)
 				}
@@ -141,7 +197,7 @@ func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (st
 		//     },
 		// },
 		vars.AttributeType = "SingleNested"
-		nestedAttributes, err := GenerateSchemaAttributes(value.Value())
+		nestedAttributes, err := GenerateSchemaAttributesFromSchema(value.Value())
 		if err != nil {
 			return "", fmt.Errorf("error trying to generate nested attributes in struct: %w", err)
 		}
@@ -161,22 +217,19 @@ func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (st
 	return string(buf.Bytes()), nil
 }
 
-func GenerateModelFields(val cue.Value) (string, error) {
-	if err := val.Validate(); err != nil {
-		return "", err
-	}
-
-	iter, err := val.Fields(
-		cue.Definitions(false),
-		cue.Optional(true),
-	)
+func GenerateModelFieldsFromSchema(val cue.Value) (string, error) {
+	fields, err := schemaToCueFields(val)
 	if err != nil {
 		return "", err
 	}
 
+	return GenerateModelFields(fields)
+}
+
+func GenerateModelFields(cueFields []cueField) (string, error) {
 	fields := make([]string, 0)
-	for iter.Next() {
-		field, err := genSingleModelField(iter.Selector().String(), iter.Value())
+	for _, cueField := range cueFields {
+		field, err := genSingleModelField(cueField.Name, cueField.Value)
 		if err != nil {
 			return "", err
 		}
@@ -215,7 +268,7 @@ func genSingleModelField(name string, value cue.Value) (string, error) {
 				typeStr = "types.List"
 			} else {
 				typeStr = "[]struct{\n"
-				nestedAttributes, err := GenerateModelFields(e)
+				nestedAttributes, err := GenerateModelFieldsFromSchema(e)
 				if err != nil {
 					return "", err
 				}
@@ -227,7 +280,7 @@ func genSingleModelField(name string, value cue.Value) (string, error) {
 	case cue.StructKind:
 		// If not optional, no need to be a pointer
 		typeStr = "*struct{\n"
-		nestedAttributes, err := GenerateModelFields(value.Value())
+		nestedAttributes, err := GenerateModelFieldsFromSchema(value.Value())
 		if err != nil {
 			return "", err
 		}
@@ -240,4 +293,23 @@ func genSingleModelField(name string, value cue.Value) (string, error) {
 	}
 
 	return fmt.Sprintf("%s %s `tfsdk:\"%s\" json:\"%s\"`", goName, typeStr, ToSnakeCase(name), name), nil
+}
+
+var panelSchema cue.Value
+
+func extractPanelSchema(schema thema.Schema) {
+	if schema.Lineage().Name() == "dashboard" {
+		iter, _ := schema.Underlying().Fields(
+			cue.Definitions(true),
+			cue.Optional(false),
+			cue.Attributes(false),
+		)
+		for iter.Next() {
+			if iter.Selector().String() == "#Panel" {
+				panelSchema = iter.Value()
+				break
+			}
+		}
+	}
+
 }
