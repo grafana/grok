@@ -49,7 +49,7 @@ func GenerateSchemaAttributes(val cue.Value) (string, error) {
 	}
 
 	iter, err := val.Fields(
-		cue.Definitions(true),
+		cue.Definitions(false),
 		cue.Optional(true),
 	)
 	if err != nil {
@@ -58,10 +58,6 @@ func GenerateSchemaAttributes(val cue.Value) (string, error) {
 
 	attributes := make([]string, 0)
 	for iter.Next() {
-		if iter.IsDefinition() {
-			continue
-		}
-
 		attr, err := genSingleSchemaAttribute(iter.Selector().String(), iter.Value(), iter.IsOptional())
 		if err != nil {
 			return "", err
@@ -157,7 +153,6 @@ func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (st
 	if vars.AttributeType == "" {
 		return "", nil
 	}
-
 	buf := new(bytes.Buffer)
 	if err := tmpls.Lookup("schema_attribute.tmpl").Execute(buf, vars); err != nil {
 		return "", fmt.Errorf("failed executing datasource template: %w", err)
@@ -172,7 +167,7 @@ func GenerateModelFields(val cue.Value) (string, error) {
 	}
 
 	iter, err := val.Fields(
-		cue.Definitions(true),
+		cue.Definitions(false),
 		cue.Optional(true),
 	)
 	if err != nil {
@@ -181,10 +176,6 @@ func GenerateModelFields(val cue.Value) (string, error) {
 
 	fields := make([]string, 0)
 	for iter.Next() {
-		if iter.IsDefinition() {
-			continue
-		}
-
 		field, err := genSingleModelField(iter.Selector().String(), iter.Value())
 		if err != nil {
 			return "", err
