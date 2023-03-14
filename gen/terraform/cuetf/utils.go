@@ -22,3 +22,34 @@ func ToCamelCase(str string) string {
 	}
 	return camelCase
 }
+
+func GetKindName(rawName string) string {
+	name := rawName
+	if strings.HasSuffix(name, "PanelCfg") {
+		name = "Panel" + strings.TrimSuffix(name, "PanelCfg")
+	} else if strings.HasSuffix(name, "DataQuery") {
+		name = "Query" + strings.TrimSuffix(name, "DataQuery")
+	} else {
+		switch name {
+		case "dashboard", "playlist", "preferences", "team":
+			name = strings.ToUpper(name[:1]) + name[1:]
+		case "publicdashboard":
+			name = "PublicDashboard"
+		case "librarypanel":
+			name = "LibraryPanel"
+		case "serviceaccount":
+			name = "ServiceAccount"
+		}
+		name = "Core" + name
+	}
+
+	return name
+}
+
+func GetStructName(rawName string) string {
+	return strings.Title(GetKindName(rawName)) + "DataSource"
+}
+
+func GetResourceName(rawName string) string {
+	return ToSnakeCase(GetKindName(rawName))
+}

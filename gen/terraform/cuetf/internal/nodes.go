@@ -15,7 +15,7 @@ func GetAllNodes(val cue.Value) ([]types.Node, error) {
 	}
 
 	iter, err := val.Fields(
-		// cue.Definitions(true), // Should we do something with those?
+		cue.Definitions(false), // Should we do something with those?
 		cue.Optional(true),
 	)
 	if err != nil {
@@ -24,11 +24,6 @@ func GetAllNodes(val cue.Value) ([]types.Node, error) {
 
 	nodes := make([]types.Node, 0)
 	for iter.Next() {
-		sel := iter.Selector()
-		if sel.IsDefinition() {
-			continue
-		}
-
 		node, err := GetSingleNode(iter.Selector().String(), iter.Value(), iter.IsOptional())
 		if err != nil {
 			return nil, err
@@ -44,7 +39,7 @@ func GetAllNodes(val cue.Value) ([]types.Node, error) {
 
 func GetSingleNode(name string, val cue.Value, optional bool) (*types.Node, error) {
 	// TODO: fixme
-	if name == "panels" || name == "points" || name == "bucketAggs" || name == "metrics" {
+	if name == "points" || name == "bucketAggs" || name == "metrics" {
 		return nil, nil
 	}
 
@@ -58,7 +53,7 @@ func GetSingleNode(name string, val cue.Value, optional bool) (*types.Node, erro
 	for _, comment := range val.Doc() {
 		node.Doc += comment.Text()
 	}
-	node.Doc = strings.Trim(node.Doc, "\n ")
+	node.Doc = strings.ReplaceAll(strings.Trim(node.Doc, "\n "), "`", "")
 
 	switch node.Kind {
 	case cue.ListKind:
@@ -75,6 +70,12 @@ func GetSingleNode(name string, val cue.Value, optional bool) (*types.Node, erro
 		e := val.LookupPath(cue.MakePath(cue.AnyIndex))
 		if e.Exists() {
 			node.SubKind = e.IncompleteKind()
+			// TODO: fixme
+			// Using a string type to allow composition of panel datasources
+			// Doesn't seem possible to have an arbitrary map type here
+			if name == "panels" {
+				node.SubKind = cue.StringKind
+			}
 
 			if node.SubKind == cue.StructKind || node.SubKind == cue.ListKind {
 				children, err := GetAllNodes(e)
