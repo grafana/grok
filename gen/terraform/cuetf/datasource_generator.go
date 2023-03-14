@@ -27,10 +27,17 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 
 	linName := schema.Lineage().Name()
 	if strings.HasPrefix(GetKindName(linName), "Panel") {
+		tmpNodes := make([]types.Node, 0)
+		// I think panels can only have these fields, the other fields should be definitions
+		for _, node := range nodes {
+			if node.Name == "PanelOptions" || node.Name == "PanelFieldConfig" {
+				tmpNodes = append(tmpNodes, node)
+			}
+		}
 		if len(panelNodes) == 0 {
 			return nil, errors.New("panel schema not found")
 		}
-		nodes = append(nodes, panelNodes...)
+		nodes = append(tmpNodes, panelNodes...)
 	}
 
 	schemaAttributes, err := GenerateSchemaAttributes(nodes)
