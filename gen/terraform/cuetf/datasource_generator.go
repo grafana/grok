@@ -43,7 +43,7 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 		return nil, err
 	}
 
-	defaults, err := GenerateDefaults(nodes, []string{})
+	defaults, err := GenerateDefaults(nodes, []types.Node{})
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +168,10 @@ func GenerateModelFields(nodes []types.Node) (string, error) {
 			}
 		case cue.StructKind:
 			// If not optional, no need to be a pointer
-			typeStr = "*struct{\n"
+			typeStr = "struct{\n"
+			if node.Optional {
+				typeStr = "*" + typeStr
+			}
 			nestedAttributes, err := GenerateModelFields(node.Children)
 			if err != nil {
 				return "", err
@@ -187,23 +190,23 @@ func GenerateModelFields(nodes []types.Node) (string, error) {
 	return strings.Join(fields, "\n"), nil
 }
 
-func GenerateDefaults(nodes []types.Node, parents []string) (string, error) {
+func GenerateDefaults(nodes []types.Node, parents []types.Node) (string, error) {
 	defaults := make([]string, 0)
 	for _, node := range nodes {
 		kind := TypeMappings[node.Kind]
 
 		if kind != "" && node.Default != "" {
-			path := ToCamelCase(node.Name)
-			if len(parents) > 0 {
-				path = strings.Join(parents, ".") + "." + path
-			}
-
+			path := ""
 			// TODO: We check if all parent structs are not nil but maybe we should initialise them if they are
 			nullFieldConditions := make([]string, 0)
-			for i := range parents {
-				fields := strings.Join(parents[:i+1], ".")
-				nullFieldConditions = append(nullFieldConditions, fmt.Sprintf("data.%s != nil", fields))
+			for _, parent := range parents {
+				path = path + ToCamelCase(parent.Name)
+				if parent.Optional {
+					nullFieldConditions = append(nullFieldConditions, fmt.Sprintf("data.%s != nil", path))
+				}
+				path += "."
 			}
+			path += ToCamelCase(node.Name)
 			nullFieldConditions = append(nullFieldConditions, fmt.Sprintf("data.%s.IsNull()", path))
 
 			vars := TVarsDefault{
@@ -221,10 +224,10 @@ func GenerateDefaults(nodes []types.Node, parents []string) (string, error) {
 			defaults = append(defaults, string(buf.Bytes()))
 		}
 
-		// TODO: handle need separately, by adding builder functions?
+		// TODO: handle lists separately, by adding builder functions?
 		if node.Kind != cue.ListKind && len(node.Children) != 0 {
 			parentsCopy := parents
-			parentsCopy = append(parentsCopy, ToCamelCase(node.Name))
+			parentsCopy = append(parentsCopy, node)
 			nestedDefaults, err := GenerateDefaults(node.Children, parentsCopy)
 			if err != nil {
 				return "", fmt.Errorf("error generating nested defaults: %w", err)
