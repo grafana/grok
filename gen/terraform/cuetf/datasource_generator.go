@@ -2,13 +2,13 @@ package cuetf
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"go/format"
 	"strings"
 
 	"cuelang.org/go/cue"
 	"github.com/grafana/grok/gen/terraform/cuetf/internal"
-	"github.com/grafana/grok/gen/terraform/cuetf/internal/utils"
 	"github.com/grafana/grok/gen/terraform/cuetf/types"
 	"github.com/grafana/thema"
 	"golang.org/x/tools/imports"
@@ -19,6 +19,18 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 	nodes, err := internal.GetAllNodes(schema.Underlying())
 	if err != nil {
 		return nil, err
+	}
+
+	if err := extractPanelNodes(schema); err != nil {
+		return nil, err
+	}
+
+	linName := schema.Lineage().Name()
+	if strings.HasPrefix(GetKindName(linName), "Panel") {
+		if len(panelNodes) == 0 {
+			return nil, errors.New("panel schema not found")
+		}
+		nodes = append(nodes, panelNodes...)
 	}
 
 	schemaAttributes, err := GenerateSchemaAttributes(nodes)
@@ -37,7 +49,8 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 	}
 
 	vars := TVarsDataSource{
-		Name:             strings.Title(schema.Lineage().Name()),
+		Name:             GetResourceName(linName),
+		StructName:       GetStructName(linName),
 		Description:      "TODO description",
 		ModelFields:      modelFields,
 		SchemaAttributes: strings.Join(schemaAttributes, "\n"),
@@ -63,7 +76,7 @@ func GenerateSchemaAttributes(nodes []types.Node) ([]string, error) {
 	attributes := make([]string, 0)
 	for _, node := range nodes {
 		vars := TVarsSchemaAttribute{
-			Name:          utils.ToSnakeCase(node.Name),
+			Name:          ToSnakeCase(node.Name),
 			Description:   node.Doc,
 			AttributeType: TypeMappings[node.Kind],
 			Computed:      false,
@@ -168,7 +181,7 @@ func GenerateModelFields(nodes []types.Node) (string, error) {
 			continue
 		}
 
-		fields = append(fields, fmt.Sprintf("%s %s `tfsdk:\"%s\" json:\"%s\"`", utils.ToCamelCase(node.Name), typeStr, utils.ToSnakeCase(node.Name), node.Name))
+		fields = append(fields, fmt.Sprintf("%s %s `tfsdk:\"%s\" json:\"%s\"`", ToCamelCase(node.Name), typeStr, ToSnakeCase(node.Name), node.Name))
 	}
 
 	return strings.Join(fields, "\n"), nil
@@ -180,7 +193,7 @@ func GenerateDefaults(nodes []types.Node, parents []string) (string, error) {
 		kind := TypeMappings[node.Kind]
 
 		if kind != "" && node.Default != "" {
-			path := utils.ToCamelCase(node.Name)
+			path := ToCamelCase(node.Name)
 			if len(parents) > 0 {
 				path = strings.Join(parents, ".") + "." + path
 			}
@@ -211,7 +224,7 @@ func GenerateDefaults(nodes []types.Node, parents []string) (string, error) {
 		// TODO: handle need separately, by adding builder functions?
 		if node.Kind != cue.ListKind && len(node.Children) != 0 {
 			parentsCopy := parents
-			parentsCopy = append(parentsCopy, utils.ToCamelCase(node.Name))
+			parentsCopy = append(parentsCopy, ToCamelCase(node.Name))
 			nestedDefaults, err := GenerateDefaults(node.Children, parentsCopy)
 			if err != nil {
 				return "", fmt.Errorf("error generating nested defaults: %w", err)
@@ -221,4 +234,28 @@ func GenerateDefaults(nodes []types.Node, parents []string) (string, error) {
 	}
 
 	return strings.Join(defaults, ""), nil
+}
+
+var panelNodes []types.Node
+
+func extractPanelNodes(schema thema.Schema) error {
+	if schema.Lineage().Name() == "dashboard" {
+		iter, err := schema.Underlying().Fields(
+			cue.Definitions(true),
+			cue.Optional(false),
+			cue.Attributes(false),
+		)
+		if err != nil {
+			return err
+		}
+		for iter.Next() {
+			if iter.Selector().String() == "#Panel" {
+				if panelNodes, err = internal.GetAllNodes(iter.Value()); err != nil {
+					return err
+				}
+				break
+			}
+		}
+	}
+	return nil
 }

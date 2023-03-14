@@ -12,28 +12,28 @@ import (
 
 // Ensure provider defined types fully satisfy framework interfaces.
 var (
-	_ datasource.DataSource              = &{{.Name}}DataSource{}
-	_ datasource.DataSourceWithConfigure = &{{.Name}}DataSource{}
+	_ datasource.DataSource              = &{{.StructName}}{}
+	_ datasource.DataSourceWithConfigure = &{{.StructName}}{}
 )
 
-func New{{.Name}}DataSource() datasource.DataSource {
-	return &{{.Name}}DataSource{}
+func New{{.StructName}}() datasource.DataSource {
+	return &{{.StructName}}{}
 }
 
-// {{.Name}}DataSource defines the data source implementation.
-type {{.Name}}DataSource struct {}
+// {{.StructName}} defines the data source implementation.
+type {{.StructName}} struct {}
 
-// {{.Name}}DataSourceModel describes the data source data model.
-type {{.Name}}DataSourceModel struct {
+// {{.StructName}}Model describes the data source data model.
+type {{.StructName}}Model struct {
 	{{.ModelFields}}
 	ToJSON types.String `tfsdk:"to_json"`
 }
 
-func (d *{{.Name}}DataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_{{lowerCase .Name}}"
+func (d *{{.StructName}}) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_{{.Name}}"
 }
 
-func (d *{{.Name}}DataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *{{.StructName}}) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "{{.Description}}",
@@ -47,10 +47,10 @@ func (d *{{.Name}}DataSource) Schema(ctx context.Context, req datasource.SchemaR
 	}
 }
 
-func (d *{{.Name}}DataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {}
+func (d *{{.StructName}}) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {}
 
-func (d *{{.Name}}DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data {{.Name}}DataSourceModel
+func (d *{{.StructName}}) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data {{.StructName}}Model
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -66,9 +66,34 @@ func (d *{{.Name}}DataSource) Read(ctx context.Context, req datasource.ReadReque
 	    return
     }
 
-	// Not sure about that
-    data.ToJSON = types.StringValue(string(JSONConfig))
+	{{ if eq .StructName "CoreDashboardDataSource" }}
+	// fix up the panel Attribute
+	// Read into a map[string]interface{} and then marshal it back to JSON
+	// This is a workaround for the fact that the panel attribute should be a list of maps but is a list of json strings
+	dataMap := make(map[string]interface{})
+	err = json.Unmarshal(JSONConfig, &dataMap)
+	if err != nil {
+		resp.Diagnostics.AddError("JSON marshalling error", err.Error())
+		return
+	}
+	panels := data.Panels.Elements()
+	panelsMaps := make([]map[string]interface{}, len(panels))
+	for i, panel := range panels {
+		panelMap := make(map[string]interface{})
+		err = json.Unmarshal([]byte(panel.String()), &panelMap)
+		if err != nil {
+			resp.Diagnostics.AddError("JSON marshalling error", err.Error())
+			return
+		}
+		panelsMaps[i] = panelMap
+	}
+
+	dataMap["panels"] = panelsMaps
+	{{ end }}
     
+	// Not sure about that
+	data.ToJSON = types.StringValue(string(JSONConfig))
+
 	// Write logs using the tflog package
 	// Documentation: https://terraform.io/plugin/log
 	tflog.Trace(ctx, "read a data source")

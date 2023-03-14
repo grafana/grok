@@ -1,8 +1,6 @@
 package terraform
 
 import (
-	"fmt"
-
 	"github.com/grafana/codejen"
 	"github.com/grafana/grafana/pkg/codegen"
 	"github.com/grafana/grok/gen/terraform/cuetf"
@@ -21,8 +19,7 @@ func (j TerraformDataSourceJenny) Generate(sfg codegen.SchemaForGen) (*codejen.F
 		return nil, err
 	}
 
-	name := sfg.Schema.Lineage().Name()
-	fmt.Println(sfg.Schema.Lineage().Name())
+	name := cuetf.GetResourceName(sfg.Schema.Lineage().Name())
 
 	return codejen.NewFile("zzz_datasource_"+name+".go", bytes, j), nil
 }

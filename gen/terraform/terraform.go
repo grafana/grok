@@ -3,7 +3,6 @@ package terraform
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/grafana/grok/internal/jen"
 )
@@ -28,13 +27,14 @@ func JenniesForTerraform() jen.TargetJennies {
 		return tgt
 	}
 
-	dataSourcePath := filepath.Join(grafanaVersion, "data_sources")
 	tgt.Core.Append(
-		jen.LatestJenny(dataSourcePath, TerraformDataSourceJenny{}),
+		jen.LatestJenny(grafanaVersion, TerraformDataSourceJenny{}),
+		&TerraformCoreRegistryJenny{grafanaVersion},
 	)
 
 	tgt.Composable.Append(
-		jen.ComposableLatestMajorsOrXJenny(dataSourcePath, true, TerraformDataSourceJenny{}),
+		jen.ComposableLatestMajorsOrXJenny(grafanaVersion, true, TerraformDataSourceJenny{}),
+		&TerraformComposableRegistryJenny{grafanaVersion},
 	)
 
 	return tgt
