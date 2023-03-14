@@ -39,7 +39,7 @@ func GetAllNodes(val cue.Value) ([]types.Node, error) {
 
 func GetSingleNode(name string, val cue.Value, optional bool) (*types.Node, error) {
 	// TODO: fixme
-	if name == "points" || name == "bucketAggs" || name == "metrics" {
+	if name == "mappings" || name == "points" || name == "bucketAggs" || name == "metrics" {
 		return nil, nil
 	}
 

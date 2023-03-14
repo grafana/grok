@@ -53,7 +53,7 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 		StructName:       GetStructName(linName),
 		Description:      "TODO description",
 		ModelFields:      modelFields,
-		SchemaAttributes: strings.Join(schemaAttributes, "\n"),
+		SchemaAttributes: schemaAttributes,
 		Defaults:         defaults,
 	}
 
@@ -72,7 +72,7 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 	return format.Source(byt)
 }
 
-func GenerateSchemaAttributes(nodes []types.Node) ([]string, error) {
+func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 	attributes := make([]string, 0)
 	for _, node := range nodes {
 		vars := TVarsSchemaAttribute{
@@ -113,9 +113,9 @@ func GenerateSchemaAttributes(nodes []types.Node) ([]string, error) {
 				vars.AttributeType = "ListNested"
 				nestedObjectAttributes, err := GenerateSchemaAttributes(node.Children)
 				if err != nil {
-					return nil, fmt.Errorf("error trying to generate nested attributes in list: %s", err)
+					return "", fmt.Errorf("error trying to generate nested attributes in list: %s", err)
 				}
-				vars.NestedObjectAttributes = strings.Join(nestedObjectAttributes, "")
+				vars.NestedObjectAttributes = nestedObjectAttributes
 			}
 		case cue.StructKind:
 			// "nested_attribute": schema.SingleNestedAttribute{
@@ -128,9 +128,9 @@ func GenerateSchemaAttributes(nodes []types.Node) ([]string, error) {
 			vars.AttributeType = "SingleNested"
 			nestedAttributes, err := GenerateSchemaAttributes(node.Children)
 			if err != nil {
-				return nil, fmt.Errorf("error trying to generate nested attributes in struct: %w", err)
+				return "", fmt.Errorf("error trying to generate nested attributes in struct: %w", err)
 			}
-			vars.NestedAttributes = strings.Join(nestedAttributes, "")
+			vars.NestedAttributes = nestedAttributes
 		}
 
 		// TODO: fixme
@@ -140,13 +140,13 @@ func GenerateSchemaAttributes(nodes []types.Node) ([]string, error) {
 
 		buf := new(bytes.Buffer)
 		if err := tmpls.Lookup("schema_attribute.tmpl").Execute(buf, vars); err != nil {
-			return nil, fmt.Errorf("failed executing datasource template: %w", err)
+			return "", fmt.Errorf("failed executing datasource template: %w", err)
 		}
 
 		attributes = append(attributes, string(buf.Bytes()))
 	}
 
-	return attributes, nil
+	return strings.Join(attributes, ""), nil
 }
 
 func GenerateModelFields(nodes []types.Node) (string, error) {

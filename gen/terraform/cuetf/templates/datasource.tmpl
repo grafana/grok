@@ -102,7 +102,7 @@ func (d *{{.StructName}}) Read(ctx context.Context, req datasource.ReadRequest, 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 {{ if .Defaults }}
-func (d *{{.Name}}DataSource) applyDefaults(data *{{.Name}}DataSourceModel) {
+func (d *{{.StructName}}) applyDefaults(data *{{.StructName}}Model) {
 	{{.Defaults -}}
 }
 {{ end }}
