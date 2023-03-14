@@ -37,7 +37,6 @@ func (d *{{.Name}}DataSource) Schema(ctx context.Context, req datasource.SchemaR
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "{{.Description}}",
-
 		Attributes: map[string]schema.Attribute{
             {{.SchemaAttributes}}
             "to_json": schema.StringAttribute{
@@ -59,7 +58,8 @@ func (d *{{.Name}}DataSource) Read(ctx context.Context, req datasource.ReadReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
+	
+	{{ if .Defaults }}d.applyDefaults(&data){{ end }}
     JSONConfig, err := json.Marshal(data)
     if err != nil {
     	resp.Diagnostics.AddError("JSON marshalling error", err.Error())
@@ -76,3 +76,8 @@ func (d *{{.Name}}DataSource) Read(ctx context.Context, req datasource.ReadReque
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
+{{ if .Defaults }}
+func (d *{{.Name}}DataSource) applyDefaults(data *{{.Name}}DataSourceModel) {
+	{{.Defaults -}}
+}
+{{ end }}

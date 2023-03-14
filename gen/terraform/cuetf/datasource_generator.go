@@ -2,42 +2,36 @@ package cuetf
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"go/format"
-	"regexp"
 	"strings"
 
 	"cuelang.org/go/cue"
+	"github.com/grafana/grok/gen/terraform/cuetf/internal"
+	"github.com/grafana/grok/gen/terraform/cuetf/internal/utils"
+	"github.com/grafana/grok/gen/terraform/cuetf/types"
 	"github.com/grafana/thema"
+	"golang.org/x/tools/imports"
 )
-
-var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
-var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
-
-func ToSnakeCase(str string) string {
-	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
-	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
-	return strings.ToLower(snake)
-}
-
-func ToCamelCase(str string) string {
-	words := strings.Split(str, "_")
-	camelCase := ""
-	for _, s := range words {
-		camelCase += strings.Title(s)
-	}
-	return camelCase
-}
 
 // GenerateDataSource takes a cue.Value and generates the corresponding Terraform data source
 func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
-	schemaAttributes, err := GenerateSchemaAttributes(schema.Underlying())
+	nodes, err := internal.GetAllNodes(schema.Underlying())
 	if err != nil {
 		return nil, err
 	}
 
-	modelFields, err := GenerateModelFields(schema.Underlying())
+	schemaAttributes, err := GenerateSchemaAttributes(nodes)
+	if err != nil {
+		return nil, err
+	}
+
+	modelFields, err := GenerateModelFields(nodes)
+	if err != nil {
+		return nil, err
+	}
+
+	defaults, err := GenerateDefaults(nodes, []string{})
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +40,8 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 		Name:             strings.Title(schema.Lineage().Name()),
 		Description:      "TODO description",
 		ModelFields:      modelFields,
-		SchemaAttributes: string(schemaAttributes),
+		SchemaAttributes: strings.Join(schemaAttributes, "\n"),
+		Defaults:         defaults,
 	}
 
 	buf := new(bytes.Buffer)
@@ -54,75 +49,37 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 		return nil, fmt.Errorf("failed executing datasource template: %w", err)
 	}
 
-	return format.Source(buf.Bytes())
-}
-
-func GenerateSchemaAttributes(val cue.Value) (string, error) {
-	if err := val.Validate(); err != nil {
-		return "", fmt.Errorf("error validating value: %w", err)
-	}
-
-	iter, err := val.Fields(
-		cue.Definitions(true),
-		cue.Optional(true),
-	)
+	// Add import if needed - for now it should only add "math/big"
+	// if there is number attributes with defaults
+	byt, err := imports.Process("", buf.Bytes(), nil)
 	if err != nil {
-		return "", fmt.Errorf("error retrieving value fields: %w", err)
+		return nil, fmt.Errorf("goimports processing of generated file failed: %w", err)
 	}
 
-	attributes := make([]string, 0)
-	for iter.Next() {
-		if iter.IsDefinition() {
-			continue
-		}
-
-		attr, err := genSingleSchemaAttribute(iter.Selector().String(), iter.Value(), iter.IsOptional())
-		if err != nil {
-			return "", err
-		}
-
-		if attr == "" {
-			continue
-		}
-
-		attributes = append(attributes, attr)
-	}
-
-	return strings.Join(attributes, "\n"), nil
+	return format.Source(byt)
 }
 
-func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (string, error) {
-	if name == "panels" || name == "points" || name == "bucketAggs" || name == "metrics" {
-		return "", nil
-	}
-
-	vars := TVarsSchemaAttribute{
-		Name:     ToSnakeCase(name),
-		Computed: false,
-		Optional: isOptional,
-		Required: !isOptional,
-	}
-
-	for _, comment := range value.Doc() {
-		vars.Description += comment.Text()
-	}
-	vars.Description = strings.Trim(vars.Description, "\n ")
-
-	// TODO: handle special cases (struct, list, bottom, null, top)
-	kind := value.IncompleteKind()
-	vars.AttributeType = TypeMappings[kind]
-	switch kind {
-	case cue.ListKind:
-		defv, _ := value.Default()
-		if !defv.Equals(value) {
-			_, v := value.Expr()
-			value = v[0]
+func GenerateSchemaAttributes(nodes []types.Node) ([]string, error) {
+	attributes := make([]string, 0)
+	for _, node := range nodes {
+		vars := TVarsSchemaAttribute{
+			Name:          utils.ToSnakeCase(node.Name),
+			Description:   node.Doc,
+			AttributeType: TypeMappings[node.Kind],
+			Computed:      false,
+			Optional:      node.Optional,
 		}
 
-		e := value.LookupPath(cue.MakePath(cue.AnyIndex))
-		if e.Exists() {
-			subType := TypeMappings[e.IncompleteKind()]
+		if node.Default != "" {
+			vars.Optional = true
+			vars.Computed = true
+		}
 
+		vars.Required = !vars.Optional
+
+		switch node.Kind {
+		case cue.ListKind:
+			subType := TypeMappings[node.SubKind]
 			if subType != "" {
 				// "example_attribute": schema.ListAttribute{
 				// 		ElementType: types.StringType,
@@ -141,126 +98,127 @@ func genSingleSchemaAttribute(name string, value cue.Value, isOptional bool) (st
 				//     },
 				// },
 				vars.AttributeType = "ListNested"
-				nestedObjectAttributes, err := GenerateSchemaAttributes(e)
+				nestedObjectAttributes, err := GenerateSchemaAttributes(node.Children)
 				if err != nil {
-					return "", fmt.Errorf("error trying to generate nested attributes in list: %s", err)
+					return nil, fmt.Errorf("error trying to generate nested attributes in list: %s", err)
 				}
-				vars.NestedObjectAttributes = nestedObjectAttributes
+				vars.NestedObjectAttributes = strings.Join(nestedObjectAttributes, "")
 			}
-		} else {
-			return "", errors.New("unreachable - open list must have a type")
+		case cue.StructKind:
+			// "nested_attribute": schema.SingleNestedAttribute{
+			//     Attributes: map[string]schema.Attribute{
+			//         "hello": schema.StringAttribute{
+			//             /* ... */
+			//         },
+			//     },
+			// },
+			vars.AttributeType = "SingleNested"
+			nestedAttributes, err := GenerateSchemaAttributes(node.Children)
+			if err != nil {
+				return nil, fmt.Errorf("error trying to generate nested attributes in struct: %w", err)
+			}
+			vars.NestedAttributes = strings.Join(nestedAttributes, "")
 		}
-	case cue.StructKind:
-		// "nested_attribute": schema.SingleNestedAttribute{
-		//     Attributes: map[string]schema.Attribute{
-		//         "hello": schema.StringAttribute{
-		//             /* ... */
-		//         },
-		//     },
-		// },
-		vars.AttributeType = "SingleNested"
-		nestedAttributes, err := GenerateSchemaAttributes(value.Value())
-		if err != nil {
-			return "", fmt.Errorf("error trying to generate nested attributes in struct: %w", err)
+
+		// TODO: fixme
+		if vars.AttributeType == "" {
+			continue
 		}
-		vars.NestedAttributes = nestedAttributes
+
+		buf := new(bytes.Buffer)
+		if err := tmpls.Lookup("schema_attribute.tmpl").Execute(buf, vars); err != nil {
+			return nil, fmt.Errorf("failed executing datasource template: %w", err)
+		}
+
+		attributes = append(attributes, string(buf.Bytes()))
 	}
 
-	// TODO Remove
-	// TODO: jduchesne, empty attribute type fails
-	if vars.AttributeType == "" {
-		return "", nil
-	}
-
-	buf := new(bytes.Buffer)
-	if err := tmpls.Lookup("schema_attribute.tmpl").Execute(buf, vars); err != nil {
-		return "", fmt.Errorf("failed executing datasource template: %w", err)
-	}
-
-	return string(buf.Bytes()), nil
+	return attributes, nil
 }
 
-func GenerateModelFields(val cue.Value) (string, error) {
-	if err := val.Validate(); err != nil {
-		return "", err
-	}
-
-	iter, err := val.Fields(
-		cue.Definitions(true),
-		cue.Optional(true),
-	)
-	if err != nil {
-		return "", err
-	}
-
+func GenerateModelFields(nodes []types.Node) (string, error) {
 	fields := make([]string, 0)
-	for iter.Next() {
-		if iter.IsDefinition() {
-			continue
-		}
-
-		field, err := genSingleModelField(iter.Selector().String(), iter.Value())
-		if err != nil {
-			return "", err
-		}
-
-		if field == "" {
-			continue
-		}
-
-		fields = append(fields, field)
-	}
-
-	return strings.Join(fields, "\n"), nil
-}
-
-func genSingleModelField(name string, value cue.Value) (string, error) {
-	if name == "panels" || name == "points" || name == "bucketAggs" || name == "metrics" {
-		return "", nil
-	}
-
-	goName := ToCamelCase(name)
-
-	kind := value.IncompleteKind()
-	typeStr := "types." + TypeMappings[kind]
-	switch kind {
-	case cue.ListKind:
-		defv, _ := value.Default()
-		if !defv.Equals(value) {
-			_, v := value.Expr()
-			value = v[0]
-		}
-
-		e := value.LookupPath(cue.MakePath(cue.AnyIndex))
-		if e.Exists() {
-			subType := TypeMappings[e.IncompleteKind()]
+	for _, node := range nodes {
+		typeStr := "types." + TypeMappings[node.Kind]
+		switch node.Kind {
+		case cue.ListKind:
+			subType := TypeMappings[node.SubKind]
 			if subType != "" {
 				typeStr = "types.List"
 			} else {
 				typeStr = "[]struct{\n"
-				nestedAttributes, err := GenerateModelFields(e)
+				nestedAttributes, err := GenerateModelFields(node.Children)
 				if err != nil {
 					return "", err
 				}
 				typeStr += nestedAttributes + "\n}"
 			}
-		} else {
-			return "", errors.New("unreachable - open list must have a type")
+		case cue.StructKind:
+			// If not optional, no need to be a pointer
+			typeStr = "*struct{\n"
+			nestedAttributes, err := GenerateModelFields(node.Children)
+			if err != nil {
+				return "", err
+			}
+			typeStr += nestedAttributes + "\n}"
 		}
-	case cue.StructKind:
-		// If not optional, no need to be a pointer
-		typeStr = "*struct{\n"
-		nestedAttributes, err := GenerateModelFields(value.Value())
-		if err != nil {
-			return "", err
+
+		// TODO: fixme
+		if typeStr == "types." {
+			continue
 		}
-		typeStr += nestedAttributes + "\n}"
+
+		fields = append(fields, fmt.Sprintf("%s %s `tfsdk:\"%s\" json:\"%s\"`", utils.ToCamelCase(node.Name), typeStr, utils.ToSnakeCase(node.Name), node.Name))
 	}
 
-	// TODO: jduchesne, empty attribute type fails
-	if typeStr == "" || typeStr == "types." {
-		return "", nil
+	return strings.Join(fields, "\n"), nil
+}
+
+func GenerateDefaults(nodes []types.Node, parents []string) (string, error) {
+	defaults := make([]string, 0)
+	for _, node := range nodes {
+		kind := TypeMappings[node.Kind]
+
+		if kind != "" && node.Default != "" {
+			path := utils.ToCamelCase(node.Name)
+			if len(parents) > 0 {
+				path = strings.Join(parents, ".") + "." + path
+			}
+
+			// TODO: We check if all parent structs are not nil but maybe we should initialise them if they are
+			nullFieldConditions := make([]string, 0)
+			for i := range parents {
+				fields := strings.Join(parents[:i+1], ".")
+				nullFieldConditions = append(nullFieldConditions, fmt.Sprintf("data.%s != nil", fields))
+			}
+			nullFieldConditions = append(nullFieldConditions, fmt.Sprintf("data.%s.IsNull()", path))
+
+			vars := TVarsDefault{
+				Name:               path,
+				NullFieldCondition: strings.Join(nullFieldConditions, " && "),
+				Type:               kind,
+				Default:            node.Default,
+			}
+
+			buf := new(bytes.Buffer)
+			if err := tmpls.Lookup("default.tmpl").Execute(buf, vars); err != nil {
+				return "", fmt.Errorf("failed executing datasource template: %w", err)
+			}
+
+			defaults = append(defaults, string(buf.Bytes()))
+		}
+
+		// TODO: handle need separately, by adding builder functions?
+		if node.Kind != cue.ListKind && len(node.Children) != 0 {
+			parentsCopy := parents
+			parentsCopy = append(parentsCopy, utils.ToCamelCase(node.Name))
+			nestedDefaults, err := GenerateDefaults(node.Children, parentsCopy)
+			if err != nil {
+				return "", fmt.Errorf("error generating nested defaults: %w", err)
+			}
+			defaults = append(defaults, nestedDefaults)
+		}
 	}
 
-	return fmt.Sprintf("%s %s `tfsdk:\"%s\" json:\"%s\"`", goName, typeStr, ToSnakeCase(name), name), nil
+	return strings.Join(defaults, ""), nil
 }

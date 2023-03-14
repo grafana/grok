@@ -27,6 +27,7 @@ type (
 		Description      string
 		ModelFields      string
 		SchemaAttributes string
+		Defaults         string
 	}
 
 	TVarsSchemaAttribute struct {
@@ -39,5 +40,12 @@ type (
 		ElementType            string // Used for simple lists
 		NestedAttributes       string // Used for objects
 		NestedObjectAttributes string // Used for complex lists
+	}
+
+	TVarsDefault struct {
+		Name               string
+		NullFieldCondition string
+		Type               string
+		Default            string
 	}
 )
