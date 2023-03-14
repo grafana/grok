@@ -43,18 +43,26 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 		return nil, err
 	}
 
+	jsonModelFields, err := GenerateJSONModelFields(nodes)
+	if err != nil {
+		return nil, err
+	}
+
 	defaults, err := GenerateDefaults(nodes, []types.Node{})
 	if err != nil {
 		return nil, err
 	}
 
+	structName := GetStructName(linName)
 	vars := TVarsDataSource{
-		Name:             GetResourceName(linName),
-		StructName:       GetStructName(linName),
-		Description:      "TODO description",
-		ModelFields:      modelFields,
-		SchemaAttributes: schemaAttributes,
-		Defaults:         defaults,
+		Name:              GetResourceName(linName),
+		StructName:        structName,
+		Description:       "TODO description",
+		ModelFields:       modelFields,
+		JSONModelFields:   jsonModelFields,
+		TFModelToJSONFunc: GenerateToJSONFunction(structName, nodes),
+		SchemaAttributes:  schemaAttributes,
+		Defaults:          defaults,
 	}
 
 	buf := new(bytes.Buffer)
@@ -184,10 +192,86 @@ func GenerateModelFields(nodes []types.Node) (string, error) {
 			continue
 		}
 
-		fields = append(fields, fmt.Sprintf("%s %s `tfsdk:\"%s\" json:\"%s\"`", ToCamelCase(node.Name), typeStr, ToSnakeCase(node.Name), node.Name))
+		fields = append(fields, fmt.Sprintf("%s %s `tfsdk:\"%s\"`", ToCamelCase(node.Name), typeStr, ToSnakeCase(node.Name)))
 	}
 
 	return strings.Join(fields, "\n"), nil
+}
+
+func GenerateJSONModelFields(nodes []types.Node) (string, error) {
+	fields := make([]string, 0)
+	for _, node := range nodes {
+		typeStr := GolangTypeMappings[node.Kind]
+		switch node.Kind {
+		case cue.ListKind:
+			subType := GolangTypeMappings[node.SubKind]
+			if subType != "" {
+				typeStr = "[]" + subType
+			} else {
+				typeStr = "[]struct{\n"
+				nestedAttributes, err := GenerateJSONModelFields(node.Children)
+				if err != nil {
+					return "", err
+				}
+				typeStr += nestedAttributes + "\n}"
+			}
+		case cue.StructKind:
+			// If not optional, no need to be a pointer
+			typeStr = "struct{\n"
+			nestedAttributes, err := GenerateJSONModelFields(node.Children)
+			if err != nil {
+				return "", err
+			}
+			typeStr += nestedAttributes + "\n}"
+		default:
+
+		}
+
+		// TODO: fixme
+		if typeStr == "" {
+			continue
+		}
+
+		omitStr := ""
+		if node.Optional {
+			if !strings.HasPrefix(typeStr, "[]") {
+				typeStr = "*" + typeStr
+			}
+			omitStr = ",omitempty"
+		}
+
+		fields = append(fields, fmt.Sprintf("%s %s `json:\"%s%s\"`", ToCamelCase(node.Name), typeStr, node.Name, omitStr))
+	}
+
+	return strings.Join(fields, "\n"), nil
+}
+
+// GenerateToJSONFunction generates a function that converts the Terraform SDK model to the JSON model representation
+func GenerateToJSONFunction(structName string, nodes []types.Node) string {
+	content := fmt.Sprintf("func (d %[1]sModel) MarshalJSON() ([]byte, error) {\n", structName)
+	returnContent := "\n	model := &" + structName + "ModelJSON{\n"
+
+	for _, node := range nodes {
+		funcString := TerraformFuncTypeMappings[node.Kind]
+		if funcString == "" {
+			continue
+		}
+
+		identifier := "attr_" + strings.ToLower(node.Name)
+		content += fmt.Sprintf("	%[1]s := d.%[2]s.%[3]s\n", identifier, ToCamelCase(node.Name), funcString)
+
+		ref := ""
+		if node.Optional {
+			ref = "&"
+		}
+		returnContent += fmt.Sprintf("		%[1]s: %s%s,\n", ToCamelCase(node.Name), ref, identifier)
+	}
+
+	content += returnContent + `	}
+	return json.Marshal(model)
+}`
+
+	return content
 }
 
 func GenerateDefaults(nodes []types.Node, parents []types.Node) (string, error) {
