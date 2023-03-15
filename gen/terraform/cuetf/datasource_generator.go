@@ -30,7 +30,25 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 		if len(panelNodes) == 0 {
 			return nil, errors.New("panel schema not found")
 		}
-		nodes = append(nodes, panelNodes...)
+		// The common schema has an `options` field that is empty
+		// and the panel schema has a `panelOptions` field that is supposed to be used in the `options` json attribute
+		for _, node := range panelNodes {
+			if node.Name == "options" {
+				continue
+			}
+			nodes = append(nodes, node)
+		}
+		for i, node := range nodes {
+			if node.Name == "PanelOptions" {
+				node.Name = "options"
+				nodes[i] = node
+			}
+			if node.Name == "type" {
+				panelType := strings.ToLower(strings.TrimPrefix(GetKindName(linName), "Panel")) // TODO: Better way to get panel type?
+				node.Default = fmt.Sprintf("`%s`", panelType)
+				nodes[i] = node
+			}
+		}
 	}
 
 	schemaAttributes, err := GenerateSchemaAttributes(nodes)
@@ -78,9 +96,17 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 	attributes := make([]string, 0)
 	for _, node := range nodes {
+		description := node.Doc
+		if node.Default != "" {
+			if description != "" && !strings.HasSuffix(description, ".") {
+				description += "."
+			}
+			description += " Defaults to " + strings.ReplaceAll(node.Default, "`", `"`) + "."
+		}
+
 		vars := TVarsSchemaAttribute{
 			Name:          ToSnakeCase(node.Name),
-			Description:   node.Doc,
+			Description:   description,
 			AttributeType: TypeMappings[node.Kind],
 			Computed:      false,
 			Optional:      node.Optional,
