@@ -52,64 +52,63 @@ func (s *Model) jsonModel() string {
 
 // generateToJSONFunction generates a function that converts the Terraform SDK model to the JSON model representation
 func (s *Model) generateToJSONFunction() string {
-	content := fmt.Sprintf(`func (m %s) MarshalJSON() ([]byte, error) {
-	%s
-		`, s.Name, s.jsonModel())
+	b := strings.Builder{}
 
-	structContent := "\n	model := &json" + s.Name + "{\n"
+	fmt.Fprintf(&b, "func (m %s) MarshalJSON() ([]byte, error) {\n", s.Name)
+	b.WriteString(s.jsonModel() + "\n")
 
+	structLines := make([]string, 0)
 	for _, node := range s.Nodes {
+		if !node.IsGenerated() {
+			continue
+		}
+
 		identifier := "attr_" + strings.ToLower(node.Name)
 		funcString := node.TerraformFunc()
-		generated := false
 
 		if node.Kind == cue.ListKind {
 			subType := node.SubTerraformType()
 			subTypeGolang := node.SubGolangType()
 			subTypeFunc := node.SubTerraformFunc()
 			if subType != "" {
-				content += fmt.Sprintf("	%s := []%s{}\n", identifier, subTypeGolang)
-				content += fmt.Sprintf("	for _, v := range m.%s.Elements() {\n", utils.ToCamelCase(node.Name))
-				content += fmt.Sprintf("		%s = append(%s, v.(types.%s).%s)\n", identifier, identifier, subType, subTypeFunc)
-				content += "	}\n"
-				generated = true
+				fmt.Fprintf(&b, "	%s := []%s{}\n", identifier, subTypeGolang)
+				fmt.Fprintf(&b, "	for _, v := range m.%s.Elements() {\n", utils.ToCamelCase(node.Name))
+				fmt.Fprintf(&b, "		%s = append(%s, v.(types.%s).%s)\n", identifier, identifier, subType, subTypeFunc)
+				b.WriteString("	}\n")
 			} else if node.SubKind == cue.StructKind {
-				content += fmt.Sprintf("	%s := []interface{}{}\n", identifier)
-				content += fmt.Sprintf("	for _, v := range m.%s {\n", utils.ToCamelCase(node.Name))
-				content += fmt.Sprintf("		%s = append(%s, v)\n", identifier, identifier)
-				content += "	}\n"
-				generated = true
+				fmt.Fprintf(&b, "	%s := []interface{}{}\n", identifier)
+				fmt.Fprintf(&b, "	for _, v := range m.%s {\n", utils.ToCamelCase(node.Name))
+				fmt.Fprintf(&b, "		%s = append(%s, v)\n", identifier, identifier)
+				b.WriteString("	}\n")
 			}
 		} else if node.Kind == cue.StructKind {
 			if node.Optional {
-				content += fmt.Sprintf("	var %s interface{}\n", identifier)
-				content += fmt.Sprintf("	if m.%s != nil {\n", utils.ToCamelCase(node.Name))
-				content += fmt.Sprintf("		%s = m.%s\n", identifier, utils.ToCamelCase(node.Name))
-				content += "	}\n"
+				fmt.Fprintf(&b, "	var %s interface{}\n", identifier)
+				fmt.Fprintf(&b, "	if m.%s != nil {\n", utils.ToCamelCase(node.Name))
+				fmt.Fprintf(&b, "		%s = m.%s\n", identifier, utils.ToCamelCase(node.Name))
+				b.WriteString("	}\n")
 			} else {
-				content += fmt.Sprintf("	var %s interface{} = m.%s\n", identifier, utils.ToCamelCase(node.Name))
+				fmt.Fprintf(&b, "	var %s interface{} = m.%s\n", identifier, utils.ToCamelCase(node.Name))
 			}
-			generated = true
 		} else if funcString != "" {
-			content += fmt.Sprintf("	%s := m.%s.%s\n", identifier, utils.ToCamelCase(node.Name), funcString)
+			fmt.Fprintf(&b, "	%s := m.%s.%s\n", identifier, utils.ToCamelCase(node.Name), funcString)
 			if node.Optional {
 				identifier = "&" + identifier
 			}
-			generated = true
 		}
 
-		if generated {
-			structContent += fmt.Sprintf("		%s: %s,\n", utils.ToCamelCase(node.Name), identifier)
-		}
+		structLines = append(structLines, fmt.Sprintf("		%s: %s,\n", utils.ToCamelCase(node.Name), identifier))
 	}
 
-	content += structContent + `	}
+	fmt.Fprintf(&b, `
+	model := &json%s {
+%s
+	}
 	return json.Marshal(model)
 }
+`, s.Name, strings.Join(structLines, ""))
 
-`
-
-	return content
+	return b.String()
 }
 
 func (s *Model) Generate() string {
