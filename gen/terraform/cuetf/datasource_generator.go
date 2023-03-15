@@ -87,27 +87,20 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 		Nodes: nodes,
 	}
 
-	initStructs := InitStructs(structName+"Model", nodes, []types.Node{})
-	defaults, err := GenerateDefaults(nodes, []types.Node{})
-	if err != nil {
-		return nil, err
-	}
-
 	vars := TVarsDataSource{
 		Name:             GetResourceName(linName),
 		StructName:       structName,
 		Description:      "TODO description",
 		Models:           model.Generate(),
 		SchemaAttributes: schemaAttributes,
-		Defaults:         initStructs + defaults,
 	}
 
 	buf := new(bytes.Buffer)
 	if err := tmpls.Lookup("datasource.tmpl").Execute(buf, vars); err != nil {
 		return nil, fmt.Errorf("failed executing datasource template: %w", err)
 	}
-
 	// return buf.Bytes(), nil
+
 	return format.Source(buf.Bytes())
 }
 
@@ -138,7 +131,6 @@ func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 			vars.Optional = true
 			vars.Computed = true
 		}
-		vars.Required = !vars.Optional
 
 		switch node.Kind {
 		case cue.ListKind:
@@ -195,83 +187,6 @@ func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 	}
 
 	return strings.Join(attributes, ""), nil
-}
-
-func InitStructs(structName string, nodes []types.Node, parents []types.Node) string {
-	init := ""
-	for _, node := range nodes {
-		if node.Kind == cue.StructKind && node.Optional {
-			fieldType := structName
-			path := ""
-			for _, parent := range parents {
-				fieldType = fieldType + "_" + utils.ToCamelCase(parent.Name)
-				path += utils.ToCamelCase(parent.Name) + "."
-			}
-			path += utils.ToCamelCase(node.Name)
-			fieldType += "_" + utils.ToCamelCase(node.Name)
-
-			init += fmt.Sprintf("if data.%s == nil {\n", path)
-			init += fmt.Sprintf("data.%s = &%s{}\n", path, fieldType)
-			init += fmt.Sprintln("}")
-		}
-
-		if node.Kind != cue.ListKind {
-			parentsCopy := parents
-			parentsCopy = append(parentsCopy, node)
-			init += InitStructs(structName, node.Children, parentsCopy)
-		}
-	}
-
-	return init
-}
-
-func GenerateDefaults(nodes []types.Node, parents []types.Node) (string, error) {
-	defaults := make([]string, 0)
-	for _, node := range nodes {
-		kind := node.TerraformType()
-
-		if kind != "" && node.Default != "" {
-			path := ""
-			// TODO: We check if all parent structs are not nil but maybe we should initialise them if they are
-			nullFieldConditions := make([]string, 0)
-			for _, parent := range parents {
-				path = path + utils.ToCamelCase(parent.Name)
-				if parent.Optional {
-					nullFieldConditions = append(nullFieldConditions, fmt.Sprintf("data.%s != nil", path))
-				}
-				path += "."
-			}
-			path += utils.ToCamelCase(node.Name)
-			nullFieldConditions = append(nullFieldConditions, fmt.Sprintf("data.%s.IsNull()", path))
-
-			vars := TVarsDefault{
-				Name:               path,
-				NullFieldCondition: strings.Join(nullFieldConditions, " && "),
-				Type:               kind,
-				Default:            node.Default,
-			}
-
-			buf := new(bytes.Buffer)
-			if err := tmpls.Lookup("default.tmpl").Execute(buf, vars); err != nil {
-				return "", fmt.Errorf("failed executing datasource template: %w", err)
-			}
-
-			defaults = append(defaults, buf.String())
-		}
-
-		// TODO: handle lists separately, by adding builder functions?
-		if node.Kind != cue.ListKind && len(node.Children) != 0 {
-			parentsCopy := parents
-			parentsCopy = append(parentsCopy, node)
-			nestedDefaults, err := GenerateDefaults(node.Children, parentsCopy)
-			if err != nil {
-				return "", fmt.Errorf("error generating nested defaults: %w", err)
-			}
-			defaults = append(defaults, nestedDefaults)
-		}
-	}
-
-	return strings.Join(defaults, ""), nil
 }
 
 var panelNodes []types.Node

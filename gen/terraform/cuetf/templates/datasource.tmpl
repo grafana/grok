@@ -4,11 +4,17 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
+
+// Ensure that the imports are used to avoid compiler errors.
+var _ attr.Value
+var _ diag.Diagnostic
 
 // Ensure provider defined types fully satisfy framework interfaces.
 var (
@@ -46,16 +52,20 @@ func (d *{{.StructName}}) Schema(ctx context.Context, req datasource.SchemaReque
 func (d *{{.StructName}}) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {}
 
 func (d *{{.StructName}}) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data {{.StructName}}Model
+	var data *{{.StructName}}Model
 
 	// Read Terraform configuration data into the model
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 	
-	{{ if .Defaults }}d.applyDefaults(&data){{ end }}
+	data, diags := data.ApplyDefaults()
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
     JSONConfig, err := json.Marshal(data)
     if err != nil {
     	resp.Diagnostics.AddError("JSON marshalling error", err.Error())
@@ -102,8 +112,3 @@ func (d *{{.StructName}}) Read(ctx context.Context, req datasource.ReadRequest, 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
-{{ if .Defaults }}
-func (d *{{.StructName}}) applyDefaults(data *{{.StructName}}Model) {
-	{{.Defaults -}}
-}
-{{ end }}

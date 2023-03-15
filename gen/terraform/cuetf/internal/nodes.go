@@ -66,6 +66,7 @@ func GetSingleNode(name string, val cue.Value, optional bool) (*types.Node, erro
 		// If the default (all lists have a default, usually self, ugh) differs from the
 		// input list, peel it off. Otherwise our AnyIndex lookup may end up getting
 		// sent on the wrong path.
+		node.Optional = true
 		defv, _ := val.Default()
 		if !defv.Equals(val) {
 			_, v := val.Expr()

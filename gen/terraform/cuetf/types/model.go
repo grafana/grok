@@ -64,12 +64,12 @@ func (s *Model) generateToJSONFunction() string {
 		}
 
 		identifier := "attr_" + strings.ToLower(node.Name)
-		funcString := node.TerraformFunc()
+		funcString := node.terraformFunc()
 
 		if node.Kind == cue.ListKind {
 			subType := node.SubTerraformType()
-			subTypeGolang := node.SubGolangType()
-			subTypeFunc := node.SubTerraformFunc()
+			subTypeGolang := node.subGolangType()
+			subTypeFunc := node.subTerraformFunc()
 			if subType != "" {
 				fmt.Fprintf(&b, "	%s := []%s{}\n", identifier, subTypeGolang)
 				fmt.Fprintf(&b, "	for _, v := range m.%s.Elements() {\n", utils.ToCamelCase(node.Name))
@@ -78,17 +78,18 @@ func (s *Model) generateToJSONFunction() string {
 			} else if node.SubKind == cue.StructKind {
 				fmt.Fprintf(&b, "	%s := []interface{}{}\n", identifier)
 				fmt.Fprintf(&b, "	for _, v := range m.%s {\n", utils.ToCamelCase(node.Name))
+				fmt.Fprintf(&b, "		v, _ := v.ApplyDefaults()\n")
 				fmt.Fprintf(&b, "		%s = append(%s, v)\n", identifier, identifier)
 				b.WriteString("	}\n")
 			}
 		} else if node.Kind == cue.StructKind {
+			fmt.Fprintf(&b, "	var %s interface{}\n", identifier)
 			if node.Optional {
-				fmt.Fprintf(&b, "	var %s interface{}\n", identifier)
 				fmt.Fprintf(&b, "	if m.%s != nil {\n", utils.ToCamelCase(node.Name))
-				fmt.Fprintf(&b, "		%s = m.%s\n", identifier, utils.ToCamelCase(node.Name))
+				fmt.Fprintf(&b, "		%s, _ = m.%s.ApplyDefaults()\n", identifier, utils.ToCamelCase(node.Name))
 				b.WriteString("	}\n")
 			} else {
-				fmt.Fprintf(&b, "	var %s interface{} = m.%s\n", identifier, utils.ToCamelCase(node.Name))
+				fmt.Fprintf(&b, "	%s, _ = m.%s.ApplyDefaults()\n", identifier, utils.ToCamelCase(node.Name))
 			}
 		} else if funcString != "" {
 			fmt.Fprintf(&b, "	%s := m.%s.%s\n", identifier, utils.ToCamelCase(node.Name), funcString)
@@ -106,9 +107,37 @@ func (s *Model) generateToJSONFunction() string {
 	}
 	return json.Marshal(model)
 }
+
 `, s.Name, strings.Join(structLines, ""))
 
 	return b.String()
+}
+
+func (s *Model) generateDefaultsFunction() string {
+	defaults := make([]string, 0)
+	for _, node := range s.Nodes {
+		kind := node.TerraformType()
+
+		if kind != "" && node.Default != "" {
+			defaults = append(defaults, fmt.Sprintf(`if m.%s.IsNull() {
+	m.%s = types.%sValue(%s)
+}`, utils.ToCamelCase(node.Name), utils.ToCamelCase(node.Name), kind, node.Default))
+		}
+
+		if node.Kind == cue.ListKind && node.SubTerraformType() != "" {
+			defaults = append(defaults, fmt.Sprintf(`if len(m.%s.Elements()) == 0 {
+	m.%s, _ = types.ListValue(types.%sType, []attr.Value{})
+}`, utils.ToCamelCase(node.Name), utils.ToCamelCase(node.Name), node.SubTerraformType()))
+		}
+
+	}
+
+	return fmt.Sprintf(`func (m *%[1]s) ApplyDefaults() (*%[1]s, diag.Diagnostics) {
+	%s
+	return m, nil
+}
+
+`, s.Name, strings.Join(defaults, "\n"))
 }
 
 func (s *Model) Generate() string {
@@ -126,6 +155,7 @@ func (s *Model) Generate() string {
 
 	b.WriteString(s.terraformModel())
 	b.WriteString(s.generateToJSONFunction())
+	b.WriteString(s.generateDefaultsFunction())
 
 	return b.String()
 }

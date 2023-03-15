@@ -74,14 +74,6 @@ func (n *Node) TerraformType() string {
 	return kindMappings[n.Kind].terraformType
 }
 
-func (n *Node) TerraformFunc() string {
-	if kindMappings[n.Kind] == nil {
-		return ""
-	}
-
-	return kindMappings[n.Kind].terraformFunc
-}
-
 func (n *Node) SubTerraformType() string {
 	if kindMappings[n.SubKind] == nil {
 		return ""
@@ -90,7 +82,7 @@ func (n *Node) SubTerraformType() string {
 	return kindMappings[n.SubKind].terraformType
 }
 
-func (n *Node) SubGolangType() string {
+func (n *Node) subGolangType() string {
 	if kindMappings[n.SubKind] == nil {
 		return ""
 	}
@@ -98,7 +90,15 @@ func (n *Node) SubGolangType() string {
 	return kindMappings[n.SubKind].golangType
 }
 
-func (n *Node) SubTerraformFunc() string {
+func (n *Node) terraformFunc() string {
+	if kindMappings[n.Kind] == nil {
+		return ""
+	}
+
+	return kindMappings[n.Kind].terraformFunc
+}
+
+func (n *Node) subTerraformFunc() string {
 	if kindMappings[n.SubKind] == nil {
 		return ""
 	}
