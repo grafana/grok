@@ -23,14 +23,12 @@ var tmplFS embed.FS
 // of variables expected by the corresponding named template file under templates/
 type (
 	TVarsDataSource struct {
-		Name              string
-		StructName        string
-		Description       string
-		ModelFields       string
-		JSONModelFields   string
-		TFModelToJSONFunc string
-		SchemaAttributes  string
-		Defaults          string
+		Name             string
+		StructName       string
+		Description      string
+		Models           string
+		SchemaAttributes string
+		Defaults         string
 	}
 
 	TVarsSchemaAttribute struct {

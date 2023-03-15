@@ -23,16 +23,7 @@ func New{{.StructName}}() datasource.DataSource {
 // {{.StructName}} defines the data source implementation.
 type {{.StructName}} struct {}
 
-// {{.StructName}}Model describes the data source data model.
-type {{.StructName}}Model struct {
-	{{.ModelFields}}
-	ToJSON types.String `tfsdk:"to_json"`
-}
-
-// {{.StructName}}ModelJSON describes the data source data model when exported to json.
-type {{.StructName}}ModelJSON struct {
-	{{.JSONModelFields}}
-}
+{{ .Models }}
 
 func (d *{{.StructName}}) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_{{.Name}}"
@@ -116,6 +107,3 @@ func (d *{{.StructName}}) applyDefaults(data *{{.StructName}}Model) {
 	{{.Defaults -}}
 }
 {{ end }}
-
-
-{{ .TFModelToJSONFunc }}

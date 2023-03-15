@@ -84,6 +84,9 @@ func GetSingleNode(name string, val cue.Value, optional bool) (*types.Node, erro
 				}
 
 				node.Children = children
+				for i := range node.Children {
+					node.Children[i].Parent = &node
+				}
 			}
 		} else {
 			return nil, errors.New("unreachable - open list must have a type")
@@ -95,6 +98,9 @@ func GetSingleNode(name string, val cue.Value, optional bool) (*types.Node, erro
 		}
 
 		node.Children = children
+		for i := range node.Children {
+			node.Children[i].Parent = &node
+		}
 	}
 
 	return &node, nil

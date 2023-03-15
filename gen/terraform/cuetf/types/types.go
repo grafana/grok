@@ -1,6 +1,8 @@
 package types
 
-import "cuelang.org/go/cue"
+import (
+	"cuelang.org/go/cue"
+)
 
 type Node struct {
 	Name     string
@@ -10,4 +12,5 @@ type Node struct {
 	Default  string
 	Doc      string
 	Children []Node
+	Parent   *Node
 }
