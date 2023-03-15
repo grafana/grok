@@ -27,30 +27,42 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 
 	linName := schema.Lineage().Name()
 	if strings.HasPrefix(GetKindName(linName), "Panel") {
-		tmpNodes := make([]types.Node, 0)
-		// The panel schema has a `panelOptions` field that is supposed to be used in the `options` json attribute
-		// and a `panelFieldConfig` field that is supposed to be merged with the common `fieldConfig` json attribute
-		// It seems like all other fields should be definitions
-		for _, node := range nodes {
+		// The common schema has an `options` field that is empty and overriden by `panelOptions` in the panel schema
+		// and a `fieldConfig` field that should contain a `custom` field that contains the panel schema `panelFieldConfig` nodes
+		// It seems like all other fields in the panel schema should be definitions
+		var panelOptions *types.Node
+		var panelFieldConfig *types.Node
+		for i, node := range nodes {
 			if node.Name == "PanelOptions" {
-				node.Name = "options"
-				tmpNodes = append(tmpNodes, node)
+				nodes[i].Name = "options"
+				panelOptions = &nodes[i]
 			} else if node.Name == "PanelFieldConfig" {
-				node.Name = "fieldConfig"
-				tmpNodes = append(tmpNodes, node)
+				nodes[i].Name = "custom"
+				panelFieldConfig = &nodes[i]
 			}
 		}
-		nodes = tmpNodes
 
 		if len(panelNodes) == 0 {
 			return nil, errors.New("panel schema not found")
 		}
 
-		// The common schema has an `options` field that is empty and overriden by the panel schema
-		// and a `type` field that is specific to each panel
 		for i, node := range panelNodes {
-			if node.Name == "options" {
-				continue
+			if node.Name == "options" && panelOptions != nil {
+				panelNodes[i] = *panelOptions
+			}
+
+			if node.Name == "fieldConfig" && panelFieldConfig != nil {
+				for _, n1 := range node.Children {
+					if n1.Name != "defaults" {
+						continue
+					}
+
+					for j, n2 := range n1.Children {
+						if n2.Name == "custom" {
+							n1.Children[j] = *panelFieldConfig
+						}
+					}
+				}
 			}
 
 			// TODO: set it as read-only?
@@ -59,8 +71,9 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 				node.Default = fmt.Sprintf("`%s`", panelType)
 				panelNodes[i] = node
 			}
-			nodes = append(nodes, node)
 		}
+
+		nodes = panelNodes
 	}
 
 	schemaAttributes, err := GenerateSchemaAttributes(nodes)
