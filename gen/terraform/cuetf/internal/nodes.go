@@ -84,6 +84,9 @@ func GetSingleNode(name string, val cue.Value, optional bool) (*types.Node, erro
 				}
 
 				node.Children = children
+				for i := range node.Children {
+					node.Children[i].Parent = &node
+				}
 			}
 		} else {
 			return nil, errors.New("unreachable - open list must have a type")
@@ -95,6 +98,9 @@ func GetSingleNode(name string, val cue.Value, optional bool) (*types.Node, erro
 		}
 
 		node.Children = children
+		for i := range node.Children {
+			node.Children[i].Parent = &node
+		}
 	}
 
 	return &node, nil
@@ -113,7 +119,7 @@ func GetDefault(v cue.Value) string {
 			return ""
 		}
 		return fmt.Sprintf("`%s`", s)
-	case cue.FloatKind:
+	case cue.FloatKind, cue.NumberKind:
 		f, err := v.Float64()
 		if err != nil {
 			return ""
@@ -125,12 +131,6 @@ func GetDefault(v cue.Value) string {
 			return ""
 		}
 		return fmt.Sprintf("%d", i)
-	case cue.NumberKind:
-		i, err := v.Float64()
-		if err != nil {
-			return ""
-		}
-		return fmt.Sprintf("new(big.Float).SetFloat64(%f)", i)
 	case cue.BoolKind:
 		b, err := v.Bool()
 		if err != nil {

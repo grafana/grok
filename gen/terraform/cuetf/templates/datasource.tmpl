@@ -23,11 +23,7 @@ func New{{.StructName}}() datasource.DataSource {
 // {{.StructName}} defines the data source implementation.
 type {{.StructName}} struct {}
 
-// {{.StructName}}Model describes the data source data model.
-type {{.StructName}}Model struct {
-	{{.ModelFields}}
-	ToJSON types.String `tfsdk:"to_json"`
-}
+{{ .Models }}
 
 func (d *{{.StructName}}) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_{{.Name}}"
@@ -73,22 +69,27 @@ func (d *{{.StructName}}) Read(ctx context.Context, req datasource.ReadRequest, 
 	dataMap := make(map[string]interface{})
 	err = json.Unmarshal(JSONConfig, &dataMap)
 	if err != nil {
-		resp.Diagnostics.AddError("JSON marshalling error", err.Error())
+		resp.Diagnostics.AddError("error unmarshalling config into Go map", err.Error())
 		return
 	}
 	panels := data.Panels.Elements()
 	panelsMaps := make([]map[string]interface{}, len(panels))
 	for i, panel := range panels {
 		panelMap := make(map[string]interface{})
-		err = json.Unmarshal([]byte(panel.String()), &panelMap)
+		err = json.Unmarshal([]byte(panel.(types.String).ValueString()), &panelMap)
 		if err != nil {
-			resp.Diagnostics.AddError("JSON marshalling error", err.Error())
+			resp.Diagnostics.AddError("error unmarshalling panel into go map", err.Error())
 			return
 		}
 		panelsMaps[i] = panelMap
 	}
 
 	dataMap["panels"] = panelsMaps
+	JSONConfig, err = json.MarshalIndent(dataMap, "", "  ")
+	if err != nil {
+		resp.Diagnostics.AddError("error marshalling go map into json", err.Error())
+		return
+	}
 	{{ end }}
     
 	// Not sure about that

@@ -28,16 +28,39 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 	linName := schema.Lineage().Name()
 	if strings.HasPrefix(GetKindName(linName), "Panel") {
 		tmpNodes := make([]types.Node, 0)
-		// I think panels can only have these fields, the other fields should be definitions
+		// The panel schema has a `panelOptions` field that is supposed to be used in the `options` json attribute
+		// and a `panelFieldConfig` field that is supposed to be merged with the common `fieldConfig` json attribute
+		// It seems like all other fields should be definitions
 		for _, node := range nodes {
-			if node.Name == "PanelOptions" || node.Name == "PanelFieldConfig" {
+			if node.Name == "PanelOptions" {
+				node.Name = "options"
+				tmpNodes = append(tmpNodes, node)
+			} else if node.Name == "PanelFieldConfig" {
+				node.Name = "fieldConfig"
 				tmpNodes = append(tmpNodes, node)
 			}
 		}
+		nodes = tmpNodes
+
 		if len(panelNodes) == 0 {
 			return nil, errors.New("panel schema not found")
 		}
-		nodes = append(tmpNodes, panelNodes...)
+
+		// The common schema has an `options` field that is empty and overriden by the panel schema
+		// and a `type` field that is specific to each panel
+		for i, node := range panelNodes {
+			if node.Name == "options" {
+				continue
+			}
+
+			// TODO: set it as read-only?
+			if node.Name == "type" {
+				panelType := strings.ToLower(strings.TrimPrefix(GetKindName(linName), "Panel")) // TODO: Better way to get panel type?
+				node.Default = fmt.Sprintf("`%s`", panelType)
+				panelNodes[i] = node
+			}
+			nodes = append(nodes, node)
+		}
 	}
 
 	schemaAttributes, err := GenerateSchemaAttributes(nodes)
@@ -45,7 +68,8 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 		return nil, err
 	}
 
-	modelFields, err := GenerateModelFields(nodes)
+	structName := GetStructName(linName)
+	models, err := GenerateModels(structName+"Model", nodes, true)
 	if err != nil {
 		return nil, err
 	}
@@ -57,9 +81,9 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 
 	vars := TVarsDataSource{
 		Name:             GetResourceName(linName),
-		StructName:       GetStructName(linName),
+		StructName:       structName,
 		Description:      "TODO description",
-		ModelFields:      modelFields,
+		Models:           models,
 		SchemaAttributes: schemaAttributes,
 		Defaults:         defaults,
 	}
@@ -68,6 +92,8 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 	if err := tmpls.Lookup("datasource.tmpl").Execute(buf, vars); err != nil {
 		return nil, fmt.Errorf("failed executing datasource template: %w", err)
 	}
+
+	// return buf.Bytes(), nil
 
 	// Add import if needed - for now it should only add "math/big"
 	// if there is number attributes with defaults
@@ -82,9 +108,17 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 	attributes := make([]string, 0)
 	for _, node := range nodes {
+		description := node.Doc
+		if node.Default != "" {
+			if description != "" && !strings.HasSuffix(description, ".") {
+				description += "."
+			}
+			description += " Defaults to " + strings.ReplaceAll(node.Default, "`", `"`) + "."
+		}
+
 		vars := TVarsSchemaAttribute{
 			Name:          ToSnakeCase(node.Name),
-			Description:   node.Doc,
+			Description:   description,
 			AttributeType: TypeMappings[node.Kind],
 			Computed:      false,
 			Optional:      node.Optional,
@@ -107,7 +141,7 @@ func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 				// },
 				vars.AttributeType = "List"
 				vars.ElementType = fmt.Sprintf("types.%sType", subType)
-			} else {
+			} else if node.SubKind == cue.StructKind {
 				// "nested_attribute": schema.ListNestedAttribute{
 				//     NestedObject: schema.NestedAttributeObject{
 				//         Attributes: map[string]schema.Attribute{
@@ -154,47 +188,6 @@ func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 	}
 
 	return strings.Join(attributes, ""), nil
-}
-
-func GenerateModelFields(nodes []types.Node) (string, error) {
-	fields := make([]string, 0)
-	for _, node := range nodes {
-		typeStr := "types." + TypeMappings[node.Kind]
-		switch node.Kind {
-		case cue.ListKind:
-			subType := TypeMappings[node.SubKind]
-			if subType != "" {
-				typeStr = "types.List"
-			} else {
-				typeStr = "[]struct{\n"
-				nestedAttributes, err := GenerateModelFields(node.Children)
-				if err != nil {
-					return "", err
-				}
-				typeStr += nestedAttributes + "\n}"
-			}
-		case cue.StructKind:
-			// If not optional, no need to be a pointer
-			typeStr = "struct{\n"
-			if node.Optional {
-				typeStr = "*" + typeStr
-			}
-			nestedAttributes, err := GenerateModelFields(node.Children)
-			if err != nil {
-				return "", err
-			}
-			typeStr += nestedAttributes + "\n}"
-		}
-
-		// TODO: fixme
-		if typeStr == "types." {
-			continue
-		}
-
-		fields = append(fields, fmt.Sprintf("%s %s `tfsdk:\"%s\" json:\"%s\"`", ToCamelCase(node.Name), typeStr, ToSnakeCase(node.Name), node.Name))
-	}
-
-	return strings.Join(fields, "\n"), nil
 }
 
 func GenerateDefaults(nodes []types.Node, parents []types.Node) (string, error) {

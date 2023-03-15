@@ -26,7 +26,7 @@ type (
 		Name             string
 		StructName       string
 		Description      string
-		ModelFields      string
+		Models           string
 		SchemaAttributes string
 		Defaults         string
 	}
