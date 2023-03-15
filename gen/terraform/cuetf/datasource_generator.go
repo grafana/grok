@@ -9,6 +9,7 @@ import (
 
 	"cuelang.org/go/cue"
 	"github.com/grafana/grok/gen/terraform/cuetf/internal"
+	"github.com/grafana/grok/gen/terraform/cuetf/internal/utils"
 	"github.com/grafana/grok/gen/terraform/cuetf/types"
 	"github.com/grafana/thema"
 )
@@ -81,9 +82,9 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 	}
 
 	structName := GetStructName(linName)
-	models, err := GenerateModels(structName+"Model", nodes, true)
-	if err != nil {
-		return nil, err
+	model := types.Model{
+		Name:  structName + "Model",
+		Nodes: nodes,
 	}
 
 	initStructs := InitStructs(structName+"Model", nodes, []types.Node{})
@@ -96,7 +97,7 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 		Name:             GetResourceName(linName),
 		StructName:       structName,
 		Description:      "TODO description",
-		Models:           models,
+		Models:           model.Generate(),
 		SchemaAttributes: schemaAttributes,
 		Defaults:         initStructs + defaults,
 	}
@@ -113,6 +114,10 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 	attributes := make([]string, 0)
 	for _, node := range nodes {
+		if !node.IsGenerated() {
+			continue
+		}
+
 		description := node.Doc
 		if node.Default != "" {
 			if description != "" && !strings.HasSuffix(description, ".") {
@@ -122,9 +127,9 @@ func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 		}
 
 		vars := TVarsSchemaAttribute{
-			Name:          ToSnakeCase(node.Name),
+			Name:          utils.ToSnakeCase(node.Name),
 			Description:   description,
-			AttributeType: TypeMappings[node.Kind],
+			AttributeType: node.TerraformType(),
 			Computed:      false,
 			Optional:      node.Optional,
 		}
@@ -137,7 +142,7 @@ func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 
 		switch node.Kind {
 		case cue.ListKind:
-			subType := TypeMappings[node.SubKind]
+			subType := node.SubTerraformType()
 			if subType != "" {
 				// "example_attribute": schema.ListAttribute{
 				// 		ElementType: types.StringType,
@@ -181,17 +186,12 @@ func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 			vars.Computed = true
 		}
 
-		// TODO: fixme
-		if vars.AttributeType == "" {
-			continue
-		}
-
 		buf := new(bytes.Buffer)
 		if err := tmpls.Lookup("schema_attribute.tmpl").Execute(buf, vars); err != nil {
 			return "", fmt.Errorf("failed executing datasource template: %w", err)
 		}
 
-		attributes = append(attributes, string(buf.Bytes()))
+		attributes = append(attributes, buf.String())
 	}
 
 	return strings.Join(attributes, ""), nil
@@ -204,11 +204,11 @@ func InitStructs(structName string, nodes []types.Node, parents []types.Node) st
 			fieldType := structName
 			path := ""
 			for _, parent := range parents {
-				fieldType = fieldType + "_" + ToCamelCase(parent.Name)
-				path += ToCamelCase(parent.Name) + "."
+				fieldType = fieldType + "_" + utils.ToCamelCase(parent.Name)
+				path += utils.ToCamelCase(parent.Name) + "."
 			}
-			path += ToCamelCase(node.Name)
-			fieldType += "_" + ToCamelCase(node.Name)
+			path += utils.ToCamelCase(node.Name)
+			fieldType += "_" + utils.ToCamelCase(node.Name)
 
 			init += fmt.Sprintf("if data.%s == nil {\n", path)
 			init += fmt.Sprintf("data.%s = &%s{}\n", path, fieldType)
@@ -228,20 +228,20 @@ func InitStructs(structName string, nodes []types.Node, parents []types.Node) st
 func GenerateDefaults(nodes []types.Node, parents []types.Node) (string, error) {
 	defaults := make([]string, 0)
 	for _, node := range nodes {
-		kind := TypeMappings[node.Kind]
+		kind := node.TerraformType()
 
 		if kind != "" && node.Default != "" {
 			path := ""
 			// TODO: We check if all parent structs are not nil but maybe we should initialise them if they are
 			nullFieldConditions := make([]string, 0)
 			for _, parent := range parents {
-				path = path + ToCamelCase(parent.Name)
+				path = path + utils.ToCamelCase(parent.Name)
 				if parent.Optional {
 					nullFieldConditions = append(nullFieldConditions, fmt.Sprintf("data.%s != nil", path))
 				}
 				path += "."
 			}
-			path += ToCamelCase(node.Name)
+			path += utils.ToCamelCase(node.Name)
 			nullFieldConditions = append(nullFieldConditions, fmt.Sprintf("data.%s.IsNull()", path))
 
 			vars := TVarsDefault{
@@ -256,7 +256,7 @@ func GenerateDefaults(nodes []types.Node, parents []types.Node) (string, error) 
 				return "", fmt.Errorf("failed executing datasource template: %w", err)
 			}
 
-			defaults = append(defaults, string(buf.Bytes()))
+			defaults = append(defaults, buf.String())
 		}
 
 		// TODO: handle lists separately, by adding builder functions?
@@ -296,4 +296,35 @@ func extractPanelNodes(schema thema.Schema) error {
 		}
 	}
 	return nil
+}
+
+func GetKindName(rawName string) string {
+	name := rawName
+	if strings.HasSuffix(name, "PanelCfg") {
+		name = "Panel" + strings.TrimSuffix(name, "PanelCfg")
+	} else if strings.HasSuffix(name, "DataQuery") {
+		name = "Query" + strings.TrimSuffix(name, "DataQuery")
+	} else {
+		switch name {
+		case "dashboard", "playlist", "preferences", "team":
+			name = strings.ToUpper(name[:1]) + name[1:]
+		case "publicdashboard":
+			name = "PublicDashboard"
+		case "librarypanel":
+			name = "LibraryPanel"
+		case "serviceaccount":
+			name = "ServiceAccount"
+		}
+		name = "Core" + name
+	}
+
+	return name
+}
+
+func GetStructName(rawName string) string {
+	return strings.Title(GetKindName(rawName)) + "DataSource"
+}
+
+func GetResourceName(rawName string) string {
+	return utils.ToSnakeCase(GetKindName(rawName))
 }
