@@ -92,6 +92,8 @@ func GetSingleNode(name string, val cue.Value, optional bool) (*types.Node, erro
 			return nil, errors.New("unreachable - open list must have a type")
 		}
 	case cue.StructKind:
+		// Structs should be optional if we want to set nested defaults
+		node.Optional = true
 		children, err := GetAllNodes(val.Value())
 		if err != nil {
 			return nil, err

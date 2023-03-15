@@ -11,7 +11,6 @@ import (
 	"github.com/grafana/grok/gen/terraform/cuetf/internal"
 	"github.com/grafana/grok/gen/terraform/cuetf/types"
 	"github.com/grafana/thema"
-	"golang.org/x/tools/imports"
 )
 
 // GenerateDataSource takes a cue.Value and generates the corresponding Terraform data source
@@ -87,6 +86,7 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 		return nil, err
 	}
 
+	initStructs := InitStructs(structName+"Model", nodes, []types.Node{})
 	defaults, err := GenerateDefaults(nodes, []types.Node{})
 	if err != nil {
 		return nil, err
@@ -98,7 +98,7 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 		Description:      "TODO description",
 		Models:           models,
 		SchemaAttributes: schemaAttributes,
-		Defaults:         defaults,
+		Defaults:         initStructs + defaults,
 	}
 
 	buf := new(bytes.Buffer)
@@ -107,15 +107,7 @@ func GenerateDataSource(schema thema.Schema) (b []byte, err error) {
 	}
 
 	// return buf.Bytes(), nil
-
-	// Add import if needed - for now it should only add "math/big"
-	// if there is number attributes with defaults
-	byt, err := imports.Process("", buf.Bytes(), nil)
-	if err != nil {
-		return nil, fmt.Errorf("goimports processing of generated file failed: %w", err)
-	}
-
-	return format.Source(byt)
+	return format.Source(buf.Bytes())
 }
 
 func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
@@ -141,7 +133,6 @@ func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 			vars.Optional = true
 			vars.Computed = true
 		}
-
 		vars.Required = !vars.Optional
 
 		switch node.Kind {
@@ -185,6 +176,9 @@ func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 				return "", fmt.Errorf("error trying to generate nested attributes in struct: %w", err)
 			}
 			vars.NestedAttributes = nestedAttributes
+
+			// Structs should be computed if we want to set nested defaults?
+			vars.Computed = true
 		}
 
 		// TODO: fixme
@@ -201,6 +195,34 @@ func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 	}
 
 	return strings.Join(attributes, ""), nil
+}
+
+func InitStructs(structName string, nodes []types.Node, parents []types.Node) string {
+	init := ""
+	for _, node := range nodes {
+		if node.Kind == cue.StructKind && node.Optional {
+			fieldType := structName
+			path := ""
+			for _, parent := range parents {
+				fieldType = fieldType + "_" + ToCamelCase(parent.Name)
+				path += ToCamelCase(parent.Name) + "."
+			}
+			path += ToCamelCase(node.Name)
+			fieldType += "_" + ToCamelCase(node.Name)
+
+			init += fmt.Sprintf("if data.%s == nil {\n", path)
+			init += fmt.Sprintf("data.%s = &%s{}\n", path, fieldType)
+			init += fmt.Sprintln("}")
+		}
+
+		if node.Kind != cue.ListKind {
+			parentsCopy := parents
+			parentsCopy = append(parentsCopy, node)
+			init += InitStructs(structName, node.Children, parentsCopy)
+		}
+	}
+
+	return init
 }
 
 func GenerateDefaults(nodes []types.Node, parents []types.Node) (string, error) {
