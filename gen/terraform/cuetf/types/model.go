@@ -79,7 +79,6 @@ func (s *Model) generateToJSONFunction() string {
 			} else if node.SubKind == cue.StructKind {
 				fmt.Fprintf(&b, "	%s := []interface{}{}\n", identifier)
 				fmt.Fprintf(&b, "	for _, v := range m.%s {\n", utils.ToCamelCase(node.Name))
-				fmt.Fprintf(&b, "		v := v.ApplyDefaults()\n")
 				fmt.Fprintf(&b, "		%s = append(%s, v)\n", identifier, identifier)
 				b.WriteString("	}\n")
 			}
@@ -87,10 +86,10 @@ func (s *Model) generateToJSONFunction() string {
 			fmt.Fprintf(&b, "	var %s interface{}\n", identifier)
 			if node.Optional {
 				fmt.Fprintf(&b, "	if m.%s != nil {\n", utils.ToCamelCase(node.Name))
-				fmt.Fprintf(&b, "		%s = m.%s.ApplyDefaults()\n", identifier, utils.ToCamelCase(node.Name))
+				fmt.Fprintf(&b, "		%s = m.%s\n", identifier, utils.ToCamelCase(node.Name))
 				b.WriteString("	}\n")
 			} else {
-				fmt.Fprintf(&b, "	%s = m.%s.ApplyDefaults()\n", identifier, utils.ToCamelCase(node.Name))
+				fmt.Fprintf(&b, "	%s = m.%s\n", identifier, utils.ToCamelCase(node.Name))
 			}
 		} else if funcString != "" {
 			fmt.Fprintf(&b, "	%s := m.%s.%s\n", identifier, utils.ToCamelCase(node.Name), funcString)
