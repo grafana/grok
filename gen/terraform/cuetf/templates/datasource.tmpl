@@ -52,20 +52,15 @@ func (d *{{.StructName}}) Schema(ctx context.Context, req datasource.SchemaReque
 func (d *{{.StructName}}) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {}
 
 func (d *{{.StructName}}) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data *{{.StructName}}Model
+	var data {{.StructName}}Model
 
 	// Read Terraform configuration data into the model
-	resp.Diagnostics.Append(req.Config.Get(ctx, data)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 	
-	data, diags := data.ApplyDefaults()
-	if diags != nil {
-		resp.Diagnostics.Append(diags...)
-		return
-	}
     JSONConfig, err := json.Marshal(data)
     if err != nil {
     	resp.Diagnostics.AddError("JSON marshalling error", err.Error())
