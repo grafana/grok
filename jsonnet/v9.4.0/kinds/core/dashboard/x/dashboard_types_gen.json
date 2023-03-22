@@ -981,6 +981,11 @@
             "description": "TODO docs",
             "type": "string"
           },
+          "index": {
+            "description": "Threshold index, an old property that is not needed an should only appear in older dashboards",
+            "type": "integer",
+            "format": "int32"
+          },
           "state": {
             "description": "TODO docs\nTODO are the values here enumerable into a disjunction?\nSome seem to be listed in typescript comment",
             "type": "string"

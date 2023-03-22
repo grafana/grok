@@ -15,16 +15,12 @@
         ],
         "properties": {
           "refId": {
-            "description": "A - Z",
+            "description": "A unique identifier for the query within the list of targets.\nIn server side expressions, the refId is used as a variable name to identify results.\nBy default, the UI will assign A-\u003eZ; however setting meaningful names may be useful.",
             "type": "string"
           },
           "hide": {
-            "description": "true if query is disabled (ie should not be returned to the dashboard)",
+            "description": "true if query is disabled (ie should not be returned to the dashboard)\nNote this does not always imply that the query should not be executed since\nthe results from a hidden query may be used as the input to other queries (SSE etc)",
             "type": "boolean"
-          },
-          "key": {
-            "description": "Unique, guid like, string used in explore mode",
-            "type": "string"
           },
           "queryType": {
             "description": "Specify the query flavor\nTODO make this required and give it a default",
@@ -37,6 +33,10 @@
         "$schema": "http://json-schema.org/draft-04/schema#"
       },
       "TempoDataQuery": {
+        "type": "object",
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TempoQuery": {
         "type": "object",
         "properties": {
           "query": {
@@ -71,6 +71,12 @@
             "description": "Defines the maximum number of traces that are returned from Tempo",
             "type": "integer",
             "format": "int64"
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TraceqlFilter"
+            }
           }
         },
         "allOf": [
@@ -79,7 +85,8 @@
           },
           {
             "required": [
-              "query"
+              "query",
+              "filters"
             ]
           }
         ],
@@ -90,11 +97,76 @@
         "type": "string",
         "enum": [
           "traceql",
+          "traceqlSearch",
           "search",
           "serviceMap",
           "upload",
           "nativeSearch",
           "clear"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TraceqlFilter": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "description": "Uniquely identify the filter, will not be used in the query generation",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/TraceqlSearchFilterType"
+          },
+          "tag": {
+            "description": "The tag for the search filter, for example: .http.status_code, .service.name, status",
+            "type": "string"
+          },
+          "operator": {
+            "description": "The operator that connects the tag to the value, for example: =, \u003e, !=, =~",
+            "type": "string"
+          },
+          "value": {
+            "description": "The value for the search filter",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "valueType": {
+            "description": "The type of the value, used for example to check whether we need to wrap the value in quotes when generating the query",
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/TraceqlSearchScope"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TraceqlSearchFilterType": {
+        "description": "static fields are pre-set in the UI, dynamic fields are added by the user",
+        "type": "string",
+        "enum": [
+          "static",
+          "dynamic"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TraceqlSearchScope": {
+        "type": "string",
+        "enum": [
+          "unscoped",
+          "resource",
+          "span"
         ],
         "$schema": "http://json-schema.org/draft-04/schema#"
       }

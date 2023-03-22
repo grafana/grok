@@ -17,6 +17,13 @@ const (
 	BarGaugeDisplayModeLcd      BarGaugeDisplayMode = "lcd"
 )
 
+// Defines values for BarGaugeValueMode.
+const (
+	BarGaugeValueModeColor  BarGaugeValueMode = "color"
+	BarGaugeValueModeHidden BarGaugeValueMode = "hidden"
+	BarGaugeValueModeText   BarGaugeValueMode = "text"
+)
+
 // Defines values for VizOrientation.
 const (
 	VizOrientationAuto       VizOrientation = "auto"
@@ -27,6 +34,9 @@ const (
 // Enum expressing the possible display modes
 // for the bar gauge component of Grafana UI
 type BarGaugeDisplayMode string
+
+// Allows for the table cell gauge display type to set the gauge mode.
+type BarGaugeValueMode string
 
 // TODO docs
 type OptionsWithTextFormatting struct {

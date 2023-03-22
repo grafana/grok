@@ -89,9 +89,9 @@ type Average struct {
 
 // BaseBucketAggregation defines model for BaseBucketAggregation.
 type BaseBucketAggregation struct {
-	Id       string                 `json:"id"`
-	Settings map[string]interface{} `json:"settings,omitempty"`
-	Type     BucketAggregationType  `json:"type"`
+	Id       string                `json:"id"`
+	Settings *interface{}          `json:"settings,omitempty"`
+	Type     BucketAggregationType `json:"type"`
 }
 
 // BaseMetricAggregation defines model for BaseMetricAggregation.
@@ -109,7 +109,11 @@ type BaseMovingAverageModelSettings struct {
 }
 
 // BasePipelineMetricAggregation defines model for BasePipelineMetricAggregation.
-type BasePipelineMetricAggregation = MetricAggregationWithField
+type BasePipelineMetricAggregation struct {
+	Hide *bool                 `json:"hide,omitempty"`
+	Id   string                `json:"id"`
+	Type MetricAggregationType `json:"type"`
+}
 
 // BucketAggregationType defines model for BucketAggregationType.
 type BucketAggregationType string
@@ -149,24 +153,25 @@ type DataQuery struct {
 	Datasource *interface{} `json:"datasource,omitempty"`
 
 	// Hide true if query is disabled (ie should not be returned to the dashboard)
+	// Note this does not always imply that the query should not be executed since
+	// the results from a hidden query may be used as the input to other queries (SSE etc)
 	Hide *bool `json:"hide,omitempty"`
-
-	// Unique, guid like, string used in explore mode
-	Key *string `json:"key,omitempty"`
 
 	// Specify the query flavor
 	// TODO make this required and give it a default
 	QueryType *string `json:"queryType,omitempty"`
 
-	// A - Z
+	// A unique identifier for the query within the list of targets.
+	// In server side expressions, the refId is used as a variable name to identify results.
+	// By default, the UI will assign A->Z; however setting meaningful names may be useful.
 	RefId string `json:"refId"`
 }
 
 // DateHistogram defines model for DateHistogram.
 type DateHistogram struct {
-	Id       string                 `json:"id"`
-	Settings map[string]interface{} `json:"settings,omitempty"`
-	Type     BucketAggregationType  `json:"type"`
+	Id       string                `json:"id"`
+	Settings *interface{}          `json:"settings,omitempty"`
+	Type     BucketAggregationType `json:"type"`
 }
 
 // DateHistogramSettings defines model for DateHistogramSettings.
@@ -214,9 +219,9 @@ type Filter struct {
 
 // Filters defines model for Filters.
 type Filters struct {
-	Id       string                 `json:"id"`
-	Settings map[string]interface{} `json:"settings,omitempty"`
-	Type     BucketAggregationType  `json:"type"`
+	Id       string                `json:"id"`
+	Settings *interface{}          `json:"settings,omitempty"`
+	Type     BucketAggregationType `json:"type"`
 }
 
 // FiltersSettings defines model for FiltersSettings.
@@ -226,9 +231,9 @@ type FiltersSettings struct {
 
 // GeoHashGrid defines model for GeoHashGrid.
 type GeoHashGrid struct {
-	Id       string                 `json:"id"`
-	Settings map[string]interface{} `json:"settings,omitempty"`
-	Type     BucketAggregationType  `json:"type"`
+	Id       string                `json:"id"`
+	Settings *interface{}          `json:"settings,omitempty"`
+	Type     BucketAggregationType `json:"type"`
 }
 
 // GeoHashGridSettings defines model for GeoHashGridSettings.
@@ -238,9 +243,9 @@ type GeoHashGridSettings struct {
 
 // Histogram defines model for Histogram.
 type Histogram struct {
-	Id       string                 `json:"id"`
-	Settings map[string]interface{} `json:"settings,omitempty"`
-	Type     BucketAggregationType  `json:"type"`
+	Id       string                `json:"id"`
+	Settings *interface{}          `json:"settings,omitempty"`
+	Type     BucketAggregationType `json:"type"`
 }
 
 // HistogramSettings defines model for HistogramSettings.
@@ -339,9 +344,9 @@ type MovingFunction struct {
 
 // Nested defines model for Nested.
 type Nested struct {
-	Id       string                 `json:"id"`
-	Settings map[string]interface{} `json:"settings,omitempty"`
-	Type     BucketAggregationType  `json:"type"`
+	Id       string                `json:"id"`
+	Settings *interface{}          `json:"settings,omitempty"`
+	Type     BucketAggregationType `json:"type"`
 }
 
 // Percentiles defines model for Percentiles.
@@ -400,9 +405,9 @@ type Sum struct {
 
 // Terms defines model for Terms.
 type Terms struct {
-	Id       string                 `json:"id"`
-	Settings map[string]interface{} `json:"settings,omitempty"`
-	Type     BucketAggregationType  `json:"type"`
+	Id       string                `json:"id"`
+	Settings *interface{}          `json:"settings,omitempty"`
+	Type     BucketAggregationType `json:"type"`
 }
 
 // TermsOrder defines model for TermsOrder.

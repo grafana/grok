@@ -12,9 +12,10 @@ package statpanelcfg
 
 // Defines values for BigValueColorMode.
 const (
-	BigValueColorModeBackground BigValueColorMode = "background"
-	BigValueColorModeNone       BigValueColorMode = "none"
-	BigValueColorModeValue      BigValueColorMode = "value"
+	BigValueColorModeBackground      BigValueColorMode = "background"
+	BigValueColorModeBackgroundSolid BigValueColorMode = "background_solid"
+	BigValueColorModeNone            BigValueColorMode = "none"
+	BigValueColorModeValue           BigValueColorMode = "value"
 )
 
 // Defines values for BigValueGraphMode.
