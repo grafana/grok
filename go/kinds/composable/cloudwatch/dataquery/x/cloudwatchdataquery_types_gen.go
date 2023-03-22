@@ -104,19 +104,38 @@ const (
 // Defines values for QueryEditorPropertyType.
 const (
 	QueryEditorPropertyTypeString QueryEditorPropertyType = "string"
-	QueryEditorPropertyTypeTest   QueryEditorPropertyType = "test"
 )
 
 // CloudWatchAnnotationQuery defines model for CloudWatchAnnotationQuery.
 type CloudWatchAnnotationQuery struct {
-	AccountId  *string     `json:"accountId,omitempty"`
-	Dimensions *Dimensions `json:"dimensions,omitempty"`
-	MatchExact *bool       `json:"matchExact,omitempty"`
-	MetricName *string     `json:"metricName,omitempty"`
-	Namespace  string      `json:"namespace"`
-	Period     *string     `json:"period,omitempty"`
-	Region     string      `json:"region"`
-	Statistic  *string     `json:"statistic,omitempty"`
+	AccountId *string `json:"accountId,omitempty"`
+
+	// For mixed data sources the selected datasource is on the query level.
+	// For non mixed scenarios this is undefined.
+	// TODO find a better way to do this ^ that's friendly to schema
+	// TODO this shouldn't be unknown but DataSourceRef | null
+	Datasource *interface{} `json:"datasource,omitempty"`
+	Dimensions *Dimensions  `json:"dimensions,omitempty"`
+
+	// Hide true if query is disabled (ie should not be returned to the dashboard)
+	// Note this does not always imply that the query should not be executed since
+	// the results from a hidden query may be used as the input to other queries (SSE etc)
+	Hide       *bool   `json:"hide,omitempty"`
+	MatchExact *bool   `json:"matchExact,omitempty"`
+	MetricName *string `json:"metricName,omitempty"`
+	Namespace  string  `json:"namespace"`
+	Period     *string `json:"period,omitempty"`
+
+	// Specify the query flavor
+	// TODO make this required and give it a default
+	QueryType *string `json:"queryType,omitempty"`
+
+	// A unique identifier for the query within the list of targets.
+	// In server side expressions, the refId is used as a variable name to identify results.
+	// By default, the UI will assign A->Z; however setting meaningful names may be useful.
+	RefId     string  `json:"refId"`
+	Region    string  `json:"region"`
+	Statistic *string `json:"statistic,omitempty"`
 
 	// @deprecated use statistic
 	Statistics []string `json:"statistics,omitempty"`
@@ -134,29 +153,50 @@ type CloudWatchLogsQuery struct {
 	Datasource *interface{} `json:"datasource,omitempty"`
 
 	// Hide true if query is disabled (ie should not be returned to the dashboard)
+	// Note this does not always imply that the query should not be executed since
+	// the results from a hidden query may be used as the input to other queries (SSE etc)
 	Hide *bool `json:"hide,omitempty"`
-
-	// Unique, guid like, string used in explore mode
-	Key *string `json:"key,omitempty"`
 
 	// Specify the query flavor
 	// TODO make this required and give it a default
 	QueryType *string `json:"queryType,omitempty"`
 
-	// A - Z
+	// A unique identifier for the query within the list of targets.
+	// In server side expressions, the refId is used as a variable name to identify results.
+	// By default, the UI will assign A->Z; however setting meaningful names may be useful.
 	RefId string `json:"refId"`
 }
 
 // CloudWatchMetricsQuery defines model for CloudWatchMetricsQuery.
 type CloudWatchMetricsQuery struct {
-	AccountId  *string     `json:"accountId,omitempty"`
-	Dimensions *Dimensions `json:"dimensions,omitempty"`
-	MatchExact *bool       `json:"matchExact,omitempty"`
-	MetricName *string     `json:"metricName,omitempty"`
-	Namespace  string      `json:"namespace"`
-	Period     *string     `json:"period,omitempty"`
-	Region     string      `json:"region"`
-	Statistic  *string     `json:"statistic,omitempty"`
+	AccountId *string `json:"accountId,omitempty"`
+
+	// For mixed data sources the selected datasource is on the query level.
+	// For non mixed scenarios this is undefined.
+	// TODO find a better way to do this ^ that's friendly to schema
+	// TODO this shouldn't be unknown but DataSourceRef | null
+	Datasource *interface{} `json:"datasource,omitempty"`
+	Dimensions *Dimensions  `json:"dimensions,omitempty"`
+
+	// Hide true if query is disabled (ie should not be returned to the dashboard)
+	// Note this does not always imply that the query should not be executed since
+	// the results from a hidden query may be used as the input to other queries (SSE etc)
+	Hide       *bool   `json:"hide,omitempty"`
+	MatchExact *bool   `json:"matchExact,omitempty"`
+	MetricName *string `json:"metricName,omitempty"`
+	Namespace  string  `json:"namespace"`
+	Period     *string `json:"period,omitempty"`
+
+	// Specify the query flavor
+	// TODO make this required and give it a default
+	QueryType *string `json:"queryType,omitempty"`
+
+	// A unique identifier for the query within the list of targets.
+	// In server side expressions, the refId is used as a variable name to identify results.
+	// By default, the UI will assign A->Z; however setting meaningful names may be useful.
+	RefId     string  `json:"refId"`
+	Region    string  `json:"region"`
+	Statistic *string `json:"statistic,omitempty"`
 
 	// @deprecated use statistic
 	Statistics []string `json:"statistics,omitempty"`
@@ -176,16 +216,17 @@ type DataQuery struct {
 	Datasource *interface{} `json:"datasource,omitempty"`
 
 	// Hide true if query is disabled (ie should not be returned to the dashboard)
+	// Note this does not always imply that the query should not be executed since
+	// the results from a hidden query may be used as the input to other queries (SSE etc)
 	Hide *bool `json:"hide,omitempty"`
-
-	// Unique, guid like, string used in explore mode
-	Key *string `json:"key,omitempty"`
 
 	// Specify the query flavor
 	// TODO make this required and give it a default
 	QueryType *string `json:"queryType,omitempty"`
 
-	// A - Z
+	// A unique identifier for the query within the list of targets.
+	// In server side expressions, the refId is used as a variable name to identify results.
+	// By default, the UI will assign A->Z; however setting meaningful names may be useful.
 	RefId string `json:"refId"`
 }
 
@@ -223,14 +264,14 @@ type MetricStat struct {
 
 // QueryEditorArrayExpression defines model for QueryEditorArrayExpression.
 type QueryEditorArrayExpression struct {
-	// TODO should be QueryEditorExpression[] | QueryEditorArrayExpression[], extend in veneer
+	// TS type expressions: QueryEditorExpression[] | QueryEditorArrayExpression[], extended in veneer
 	Expressions interface{} `json:"expressions"`
 
-	// TODO this doesn't work
+	// TODO this doesn't work; temporarily extended in veneer
 	Type QueryEditorArrayExpressionType `json:"type"`
 }
 
-// TODO this doesn't work
+// TODO this doesn't work; temporarily extended in veneer
 type QueryEditorArrayExpressionType string
 
 // QueryEditorExpressionType defines model for QueryEditorExpressionType.
@@ -264,7 +305,7 @@ type QueryEditorGroupByExpression struct {
 // QueryEditorGroupByExpressionType defines model for QueryEditorGroupByExpression.Type.
 type QueryEditorGroupByExpressionType string
 
-// TODO <T extends QueryEditorOperatorValueType>, extend in veneer
+// TS type is QueryEditorOperator<T extends QueryEditorOperatorValueType>, extended in veneer
 type QueryEditorOperator struct {
 	Name  *string      `json:"name,omitempty"`
 	Value *interface{} `json:"value,omitempty"`
@@ -272,7 +313,7 @@ type QueryEditorOperator struct {
 
 // QueryEditorOperatorExpression defines model for QueryEditorOperatorExpression.
 type QueryEditorOperatorExpression struct {
-	// TODO <T extends QueryEditorOperatorValueType>, extend in veneer
+	// TS type is QueryEditorOperator<T extends QueryEditorOperatorValueType>, extended in veneer
 	Operator QueryEditorOperator               `json:"operator"`
 	Property QueryEditorProperty               `json:"property"`
 	Type     QueryEditorOperatorExpressionType `json:"type"`

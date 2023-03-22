@@ -10,8 +10,18 @@
 
 package tablepanelcfg
 
+// Defines values for TableCellHeight.
+const (
+	TableCellHeightLg TableCellHeight = "lg"
+	TableCellHeightMd TableCellHeight = "md"
+	TableCellHeightSm TableCellHeight = "sm"
+)
+
 // PanelOptions defines model for PanelOptions.
 type PanelOptions struct {
+	// Height of a table cell
+	CellHeight *TableCellHeight `json:"cellHeight,omitempty"`
+
 	// Controls footer options
 	Footer *interface{} `json:"footer,omitempty"`
 
@@ -30,6 +40,9 @@ type PanelOptions struct {
 	// Used to control row sorting
 	SortBy []TableSortByFieldState `json:"sortBy,omitempty"`
 }
+
+// Height of a table cell
+type TableCellHeight string
 
 // Footer options
 type TableFooterOptions struct {

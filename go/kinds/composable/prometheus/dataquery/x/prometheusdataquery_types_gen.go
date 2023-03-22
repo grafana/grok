@@ -8,13 +8,19 @@
 //
 // Run 'go generate ./' from repository root to regenerate.
 
-package phlaredataquery
+package prometheusdataquery
 
-// Defines values for PhlareQueryType.
+// Defines values for PromQueryFormat.
 const (
-	PhlareQueryTypeBoth    PhlareQueryType = "both"
-	PhlareQueryTypeMetrics PhlareQueryType = "metrics"
-	PhlareQueryTypeProfile PhlareQueryType = "profile"
+	PromQueryFormatHeatmap    PromQueryFormat = "heatmap"
+	PromQueryFormatTable      PromQueryFormat = "table"
+	PromQueryFormatTimeSeries PromQueryFormat = "time_series"
+)
+
+// Defines values for QueryEditorMode.
+const (
+	QueryEditorModeBuilder QueryEditorMode = "builder"
+	QueryEditorModeCode    QueryEditorMode = "code"
 )
 
 // These are the common properties available to all queries in all datasources.
@@ -42,8 +48,11 @@ type DataQuery struct {
 	RefId string `json:"refId"`
 }
 
-// PhlareDataQuery defines model for PhlareDataQuery.
-type PhlareDataQuery struct {
+// PromQueryFormat defines model for PromQueryFormat.
+type PromQueryFormat string
+
+// PrometheusDataQuery defines model for PrometheusDataQuery.
+type PrometheusDataQuery struct {
 	// For mixed data sources the selected datasource is on the query level.
 	// For non mixed scenarios this is undefined.
 	// TODO find a better way to do this ^ that's friendly to schema
@@ -65,5 +74,5 @@ type PhlareDataQuery struct {
 	RefId string `json:"refId"`
 }
 
-// PhlareQueryType defines model for PhlareQueryType.
-type PhlareQueryType string
+// QueryEditorMode defines model for QueryEditorMode.
+type QueryEditorMode string

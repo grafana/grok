@@ -12,12 +12,26 @@ package tempodataquery
 
 // Defines values for TempoQueryType.
 const (
-	TempoQueryTypeClear        TempoQueryType = "clear"
-	TempoQueryTypeNativeSearch TempoQueryType = "nativeSearch"
-	TempoQueryTypeSearch       TempoQueryType = "search"
-	TempoQueryTypeServiceMap   TempoQueryType = "serviceMap"
-	TempoQueryTypeTraceql      TempoQueryType = "traceql"
-	TempoQueryTypeUpload       TempoQueryType = "upload"
+	TempoQueryTypeClear         TempoQueryType = "clear"
+	TempoQueryTypeNativeSearch  TempoQueryType = "nativeSearch"
+	TempoQueryTypeSearch        TempoQueryType = "search"
+	TempoQueryTypeServiceMap    TempoQueryType = "serviceMap"
+	TempoQueryTypeTraceql       TempoQueryType = "traceql"
+	TempoQueryTypeTraceqlSearch TempoQueryType = "traceqlSearch"
+	TempoQueryTypeUpload        TempoQueryType = "upload"
+)
+
+// Defines values for TraceqlSearchFilterType.
+const (
+	TraceqlSearchFilterTypeDynamic TraceqlSearchFilterType = "dynamic"
+	TraceqlSearchFilterTypeStatic  TraceqlSearchFilterType = "static"
+)
+
+// Defines values for TraceqlSearchScope.
+const (
+	TraceqlSearchScopeResource TraceqlSearchScope = "resource"
+	TraceqlSearchScopeSpan     TraceqlSearchScope = "span"
+	TraceqlSearchScopeUnscoped TraceqlSearchScope = "unscoped"
 )
 
 // These are the common properties available to all queries in all datasources.
@@ -31,21 +45,25 @@ type DataQuery struct {
 	Datasource *interface{} `json:"datasource,omitempty"`
 
 	// Hide true if query is disabled (ie should not be returned to the dashboard)
+	// Note this does not always imply that the query should not be executed since
+	// the results from a hidden query may be used as the input to other queries (SSE etc)
 	Hide *bool `json:"hide,omitempty"`
-
-	// Unique, guid like, string used in explore mode
-	Key *string `json:"key,omitempty"`
 
 	// Specify the query flavor
 	// TODO make this required and give it a default
 	QueryType *string `json:"queryType,omitempty"`
 
-	// A - Z
+	// A unique identifier for the query within the list of targets.
+	// In server side expressions, the refId is used as a variable name to identify results.
+	// By default, the UI will assign A->Z; however setting meaningful names may be useful.
 	RefId string `json:"refId"`
 }
 
 // TempoDataQuery defines model for TempoDataQuery.
-type TempoDataQuery struct {
+type TempoDataQuery = map[string]interface{}
+
+// TempoQuery defines model for TempoQuery.
+type TempoQuery struct {
 	// For mixed data sources the selected datasource is on the query level.
 	// For non mixed scenarios this is undefined.
 	// TODO find a better way to do this ^ that's friendly to schema
@@ -53,18 +71,47 @@ type TempoDataQuery struct {
 	Datasource *interface{} `json:"datasource,omitempty"`
 
 	// Hide true if query is disabled (ie should not be returned to the dashboard)
+	// Note this does not always imply that the query should not be executed since
+	// the results from a hidden query may be used as the input to other queries (SSE etc)
 	Hide *bool `json:"hide,omitempty"`
-
-	// Unique, guid like, string used in explore mode
-	Key *string `json:"key,omitempty"`
 
 	// Specify the query flavor
 	// TODO make this required and give it a default
 	QueryType *string `json:"queryType,omitempty"`
 
-	// A - Z
+	// A unique identifier for the query within the list of targets.
+	// In server side expressions, the refId is used as a variable name to identify results.
+	// By default, the UI will assign A->Z; however setting meaningful names may be useful.
 	RefId string `json:"refId"`
 }
 
 // TempoQueryType search = Loki search, nativeSearch = Tempo search for backwards compatibility
 type TempoQueryType string
+
+// TraceqlFilter defines model for TraceqlFilter.
+type TraceqlFilter struct {
+	// Uniquely identify the filter, will not be used in the query generation
+	Id string `json:"id"`
+
+	// The operator that connects the tag to the value, for example: =, >, !=, =~
+	Operator *string             `json:"operator,omitempty"`
+	Scope    *TraceqlSearchScope `json:"scope,omitempty"`
+
+	// The tag for the search filter, for example: .http.status_code, .service.name, status
+	Tag *string `json:"tag,omitempty"`
+
+	// Type static fields are pre-set in the UI, dynamic fields are added by the user
+	Type TraceqlSearchFilterType `json:"type"`
+
+	// The value for the search filter
+	Value *interface{} `json:"value,omitempty"`
+
+	// The type of the value, used for example to check whether we need to wrap the value in quotes when generating the query
+	ValueType *string `json:"valueType,omitempty"`
+}
+
+// TraceqlSearchFilterType static fields are pre-set in the UI, dynamic fields are added by the user
+type TraceqlSearchFilterType string
+
+// TraceqlSearchScope defines model for TraceqlSearchScope.
+type TraceqlSearchScope string
