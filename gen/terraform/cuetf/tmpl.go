@@ -11,7 +11,8 @@ var tmpls *template.Template
 
 func init() {
 	base := template.New("cuetf").Funcs(template.FuncMap{
-		"lowerCase": strings.ToLower,
+		"lowerCase":  strings.ToLower,
+		"startsWith": strings.HasPrefix,
 	})
 	tmpls = template.Must(base.ParseFS(tmplFS, "templates/*.tmpl"))
 }

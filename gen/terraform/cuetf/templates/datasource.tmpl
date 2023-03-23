@@ -96,6 +96,36 @@ func (d *{{.StructName}}) Read(ctx context.Context, req datasource.ReadRequest, 
 		return
 	}
 	{{ end }}
+
+	{{ if startsWith .StructName "Panel" }}
+	// fix up the targets Attribute
+	// Read into a map[string]interface{} and then marshal it back to JSON
+	// This is a workaround for the fact that the targets attribute should be a list of maps but is a list of json strings
+	dataMap := make(map[string]interface{})
+	err = json.Unmarshal(JSONConfig, &dataMap)
+	if err != nil {
+		resp.Diagnostics.AddError("error unmarshalling config into Go map", err.Error())
+		return
+	}
+	targets := data.Targets.Elements()
+	targetsMaps := make([]map[string]interface{}, len(targets))
+	for i, target := range targets {
+		targetMap := make(map[string]interface{})
+		err = json.Unmarshal([]byte(target.(types.String).ValueString()), &targetMap)
+		if err != nil {
+			resp.Diagnostics.AddError("error unmarshalling target into go map", err.Error())
+			return
+		}
+		targetsMaps[i] = targetMap
+	}
+
+	dataMap["targets"] = targetsMaps
+	JSONConfig, err = json.MarshalIndent(dataMap, "", "  ")
+	if err != nil {
+		resp.Diagnostics.AddError("error marshalling go map into json", err.Error())
+		return
+	}
+	{{ end }}
     
 	// Not sure about that
 	data.ToJSON = types.StringValue(string(JSONConfig))

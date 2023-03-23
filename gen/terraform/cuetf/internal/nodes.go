@@ -79,7 +79,7 @@ func GetSingleNode(name string, val cue.Value, optional bool) (*types.Node, erro
 			// TODO: fixme
 			// Using a string type to allow composition of panel datasources
 			// Doesn't seem possible to have an arbitrary map type here
-			if name == "panels" {
+			if name == "panels" || name == "targets" {
 				node.SubKind = cue.StringKind
 			}
 
