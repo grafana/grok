@@ -5,7 +5,7 @@ go 1.19
 require (
 	cuelang.org/go v0.5.0-beta.2
 	github.com/grafana/codejen v0.0.4-0.20221122220907-a5e7cc5407b3
-	github.com/grafana/grafana v1.9.2-0.20230202155234-99a16d27c19b
+	github.com/grafana/grafana v1.9.2-0.20230323083650-66e4b12032d5
 	github.com/grafana/kindsys v0.0.0-20230309200316-812b9884a375
 	github.com/grafana/thema v0.0.0-20230302221249-6952e4a999b7
 )
