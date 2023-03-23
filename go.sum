@@ -50,8 +50,8 @@ github.com/grafana/codejen v0.0.4-0.20221122220907-a5e7cc5407b3 h1:XasADId/N6Jk8
 github.com/grafana/codejen v0.0.4-0.20221122220907-a5e7cc5407b3/go.mod h1:zmwwM/DRyQB7pfuBjTWII3CWtxcXh8LTwAYGfDfpR6s=
 github.com/grafana/cuetsy v0.1.6 h1:61QGIDy1rVABU3OkoarOn0+qPdGopIJr34PyWVmGDfs=
 github.com/grafana/cuetsy v0.1.6/go.mod h1:4KWkUOslwvRTpEv7wdQG0jDFTuJmU+0L9x0h4kWxa2A=
-github.com/grafana/grafana v1.9.2-0.20230202155234-99a16d27c19b h1:Wg5zlunhMDelqNlfbzqoeIFer7uGrTW6nx38B/fuYHE=
-github.com/grafana/grafana v1.9.2-0.20230202155234-99a16d27c19b/go.mod h1:Hbrjux0RAUDn8ifejZMc57rrZlzaIWpPmFJlcrn33ao=
+github.com/grafana/grafana v1.9.2-0.20230323083650-66e4b12032d5 h1:ieNodQbvOgBtK9aiWT9WRk5kYNNX2EL9ITmCeX2Cry0=
+github.com/grafana/grafana v1.9.2-0.20230323083650-66e4b12032d5/go.mod h1:vMAhtO0Yf0kS02YfA5wUGvgVRSQdgPI+eJGLikNoYc8=
 github.com/grafana/kindsys v0.0.0-20230309200316-812b9884a375 h1:iWFjqAU5GjIV/HetIE/Me6VF3SRw29u5QviMVbJUVQo=
 github.com/grafana/kindsys v0.0.0-20230309200316-812b9884a375/go.mod h1:213a3clTiegHfheYcLPLeEyHv/azK/fAF67OEbzuLzw=
 github.com/grafana/thema v0.0.0-20230302221249-6952e4a999b7 h1:XOxaBjhozlleshff3mKNdp55ul74nXJEX3wz8ckjTpc=
@@ -142,8 +142,8 @@ github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UV
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
-github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
+github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ8=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasttemplate v1.2.1/go.mod h1:KHLXt3tVN2HBp8eijSv/kGJopbvo7S+qRAEEKiv+SiQ=
