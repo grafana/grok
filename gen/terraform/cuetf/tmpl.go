@@ -35,6 +35,7 @@ type (
 		Name                   string
 		Description            string
 		AttributeType          string
+		DeprecationMessage     string
 		Computed               bool
 		Optional               bool
 		ElementType            string // Used for simple lists

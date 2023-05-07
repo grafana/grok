@@ -16,3 +16,6 @@
 
 # Generating directly from the Terraform provider repository
 /terraform
+
+# IDE files
+.idea/

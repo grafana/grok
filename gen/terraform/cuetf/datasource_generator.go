@@ -119,12 +119,19 @@ func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 			description += " Defaults to " + strings.ReplaceAll(node.Default, "`", `"`) + "."
 		}
 
+		// TODO: Should comments annotated as @deprecated do not appear in the attribute description?
+		var deprecated string
+		if strings.Contains(node.Doc, "@deprecated") {
+			deprecated = node.Doc
+		}
+
 		vars := TVarsSchemaAttribute{
-			Name:          utils.ToSnakeCase(node.Name),
-			Description:   description,
-			AttributeType: node.TerraformType(),
-			Computed:      false,
-			Optional:      node.Optional,
+			Name:               utils.ToSnakeCase(node.Name),
+			Description:        description,
+			DeprecationMessage: deprecated,
+			AttributeType:      node.TerraformType(),
+			Computed:           false,
+			Optional:           node.Optional,
 		}
 
 		if node.Default != "" {
