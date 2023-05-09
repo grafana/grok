@@ -12,11 +12,11 @@ import (
 
 	"cuelang.org/go/cue/cuecontext"
 	"github.com/grafana/codejen"
-	"github.com/grafana/grafana/pkg/kindsys"
 	"github.com/grafana/grafana/pkg/plugins/pfs/corelist"
 	"github.com/grafana/grafana/pkg/registry/corekind"
 	"github.com/grafana/grok/gen/terraform"
 	"github.com/grafana/grok/internal/jen"
+	"github.com/grafana/kindsys"
 	"github.com/grafana/thema"
 )
 
@@ -85,7 +85,7 @@ func lineUpJennies() jen.TargetJennies {
 	tgt := jen.NewTargetJennies()
 
 	tgtmap := map[string]jen.TargetJennies{
-		// "go":         _go.JenniesForGo(),
+		// "go": _go.JenniesForGo(), // This is not ready yet
 		// "jsonschema": jsonschema.JenniesForJsonSchema(),
 		// "jsonnet":    jsonnet.JenniesForJsonnet(),
 		"terraform": terraform.JenniesForTerraform(),

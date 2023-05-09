@@ -319,16 +319,12 @@
         ],
         "properties": {
           "refId": {
-            "description": "A - Z",
+            "description": "A unique identifier for the query within the list of targets.\nIn server side expressions, the refId is used as a variable name to identify results.\nBy default, the UI will assign A-\u003eZ; however setting meaningful names may be useful.",
             "type": "string"
           },
           "hide": {
-            "description": "true if query is disabled (ie should not be returned to the dashboard)",
+            "description": "true if query is disabled (ie should not be returned to the dashboard)\nNote this does not always imply that the query should not be executed since\nthe results from a hidden query may be used as the input to other queries (SSE etc)",
             "type": "boolean"
-          },
-          "key": {
-            "description": "Unique, guid like, string used in explore mode",
-            "type": "string"
           },
           "queryType": {
             "description": "Specify the query flavor\nTODO make this required and give it a default",

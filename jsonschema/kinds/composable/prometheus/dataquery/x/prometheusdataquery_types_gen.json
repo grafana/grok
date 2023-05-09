@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "PhlareDataQuery",
+    "title": "PrometheusDataQuery",
     "version": "0.0"
   },
   "paths": {},
@@ -32,24 +32,39 @@
         },
         "$schema": "http://json-schema.org/draft-04/schema#"
       },
-      "PhlareDataQuery": {
+      "PromQueryFormat": {
+        "type": "string",
+        "enum": [
+          "time_series",
+          "table",
+          "heatmap"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "PrometheusDataQuery": {
         "type": "object",
         "properties": {
-          "labelSelector": {
-            "description": "Specifies the query label selectors.",
-            "type": "string",
-            "default": "{}"
-          },
-          "profileTypeId": {
-            "description": "Specifies the type of profile to query.",
+          "expr": {
+            "description": "The actual expression/query that will be evaluated by Prometheus",
             "type": "string"
           },
-          "groupBy": {
-            "description": "Allows to group the results.",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "instant": {
+            "description": "Returns only the latest value that Prometheus has scraped for the requested time series",
+            "type": "boolean"
+          },
+          "range": {
+            "description": "Returns a Range vector, comprised of a set of time series containing a range of data points over time for each time series",
+            "type": "boolean"
+          },
+          "exemplar": {
+            "description": "Execute an additional query to identify interesting raw samples relevant for the given expr",
+            "type": "boolean"
+          },
+          "editorMode": {
+            "$ref": "#/components/schemas/QueryEditorMode"
+          },
+          "format": {
+            "$ref": "#/components/schemas/PromQueryFormat"
           }
         },
         "allOf": [
@@ -58,22 +73,18 @@
           },
           {
             "required": [
-              "labelSelector",
-              "profileTypeId",
-              "groupBy"
+              "expr"
             ]
           }
         ],
         "$schema": "http://json-schema.org/draft-04/schema#"
       },
-      "PhlareQueryType": {
+      "QueryEditorMode": {
         "type": "string",
         "enum": [
-          "both",
-          "profile",
-          "metrics"
+          "code",
+          "builder"
         ],
-        "default": "both",
         "$schema": "http://json-schema.org/draft-04/schema#"
       }
     }
