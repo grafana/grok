@@ -6,7 +6,7 @@ import (
 
 	"github.com/grafana/codejen"
 	"github.com/grafana/grafana/pkg/codegen"
-	"github.com/grafana/grafana/pkg/kindsys"
+	"github.com/grafana/kindsys"
 )
 
 // LatestJenny returns a jenny that runs another jenny for only the latest

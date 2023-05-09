@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/grafana/codejen"
-	"github.com/grafana/grafana/pkg/kindsys"
 	"github.com/grafana/grok/gen/terraform/cuetf"
+	"github.com/grafana/kindsys"
 )
 
 var datasources []string
