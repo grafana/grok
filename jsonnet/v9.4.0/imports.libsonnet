@@ -21,6 +21,7 @@
   import "./kinds/composable/loki/dataquery/x/loki_types_gen.json",
   import "./kinds/composable/parca/dataquery/x/parca_types_gen.json",
   import "./kinds/composable/phlare/dataquery/x/phlare_types_gen.json",
+  import "./kinds/composable/prometheus/dataquery/x/prometheus_types_gen.json",
   import "./kinds/composable/tempo/dataquery/x/tempo_types_gen.json",
   import "./kinds/composable/testdata/dataquery/x/testdata_types_gen.json",
   import "./kinds/composable/alertgroups/panelcfg/x/alertgroups_types_gen.json",

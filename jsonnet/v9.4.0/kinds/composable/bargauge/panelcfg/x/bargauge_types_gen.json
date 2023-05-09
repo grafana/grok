@@ -29,6 +29,9 @@
               "displayMode": {
                 "$ref": "#/components/schemas/BarGaugeDisplayMode"
               },
+              "valueMode": {
+                "$ref": "#/components/schemas/BarGaugeValueMode"
+              },
               "showUnfilled": {
                 "type": "boolean",
                 "default": true
@@ -53,6 +56,7 @@
               {
                 "required": [
                   "displayMode",
+                  "valueMode",
                   "showUnfilled",
                   "minVizWidth",
                   "minVizHeight"
@@ -61,6 +65,16 @@
             ]
           }
         },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "BarGaugeValueMode": {
+        "description": "Allows for the table cell gauge display type to set the gauge mode.",
+        "type": "string",
+        "enum": [
+          "color",
+          "text",
+          "hidden"
+        ],
         "$schema": "http://json-schema.org/draft-04/schema#"
       },
       "OptionsWithTextFormatting": {

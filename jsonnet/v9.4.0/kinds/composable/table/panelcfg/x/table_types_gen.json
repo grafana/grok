@@ -7,6 +7,16 @@
   "paths": {},
   "components": {
     "schemas": {
+      "TableCellHeight": {
+        "description": "Height of a table cell",
+        "type": "string",
+        "enum": [
+          "sm",
+          "md",
+          "lg"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
       "TableFooterOptions": {
         "description": "Footer options",
         "type": "object",
@@ -162,6 +172,9 @@
                     }
                   }
                 ]
+              },
+              "cellHeight": {
+                "$ref": "#/components/schemas/TableCellHeight"
               }
             }
           }
