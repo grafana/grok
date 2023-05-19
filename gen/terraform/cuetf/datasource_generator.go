@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"go/format"
+	"regexp"
 	"strings"
 
 	"cuelang.org/go/cue"
@@ -119,11 +120,7 @@ func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 			description += " Defaults to " + strings.ReplaceAll(node.Default, "`", `"`) + "."
 		}
 
-		// TODO: Should comments annotated as @deprecated do not appear in the attribute description?
-		var deprecated string
-		if strings.Contains(node.Doc, "@deprecated") {
-			deprecated = node.Doc
-		}
+		deprecated := deprecationMessage(node.Doc)
 
 		vars := TVarsSchemaAttribute{
 			Name:               utils.ToSnakeCase(node.Name),
@@ -194,6 +191,17 @@ func GenerateSchemaAttributes(nodes []types.Node) (string, error) {
 	}
 
 	return strings.Join(attributes, ""), nil
+}
+
+var deprecatedMatch = regexp.MustCompile(`^\W*@deprecated\W*`)
+
+func deprecationMessage(str string) string {
+	if !strings.Contains(str, "@deprecated") {
+		return str
+	}
+
+	deprecated := deprecatedMatch.ReplaceAllString(str, "")
+	return utils.CapitalizeFirstLetter(deprecated)
 }
 
 var panelNodes []types.Node

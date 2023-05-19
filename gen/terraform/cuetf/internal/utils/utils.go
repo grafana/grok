@@ -22,3 +22,12 @@ func ToCamelCase(str string) string {
 	}
 	return camelCase
 }
+
+func CapitalizeFirstLetter(str string) string {
+	sep := " "
+	parts := strings.SplitN(str, sep, 2)
+	if len(parts) != 2 {
+		return strings.Title(str)
+	}
+	return strings.Title(parts[0]) + sep + parts[1]
+}
