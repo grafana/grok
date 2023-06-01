@@ -1,0 +1,600 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "CloudWatchDataQuery",
+    "version": "0.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "CloudWatchAnnotationQuery": {
+        "type": "object",
+        "properties": {
+          "queryMode": {
+            "$ref": "#/components/schemas/CloudWatchQueryMode"
+          },
+          "prefixMatching": {
+            "type": "boolean"
+          },
+          "actionPrefix": {
+            "type": "string"
+          },
+          "alarmNamePrefix": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/DataQuery"
+          },
+          {
+            "$ref": "#/components/schemas/MetricStat"
+          },
+          {
+            "required": [
+              "queryMode"
+            ]
+          }
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "CloudWatchDataQuery": {
+        "type": "object",
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "CloudWatchLogsQuery": {
+        "type": "object",
+        "properties": {
+          "queryMode": {
+            "$ref": "#/components/schemas/CloudWatchQueryMode"
+          },
+          "id": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "expression": {
+            "type": "string"
+          },
+          "statsGroups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "logGroups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LogGroup"
+            }
+          },
+          "logGroupNames": {
+            "description": "deprecated, use logGroups instead",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/DataQuery"
+          },
+          {
+            "required": [
+              "queryMode",
+              "id",
+              "region"
+            ]
+          }
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "CloudWatchMetricsQuery": {
+        "type": "object",
+        "properties": {
+          "queryMode": {
+            "$ref": "#/components/schemas/CloudWatchQueryMode"
+          },
+          "metricQueryType": {
+            "$ref": "#/components/schemas/MetricQueryType"
+          },
+          "metricEditorMode": {
+            "$ref": "#/components/schemas/MetricEditorMode"
+          },
+          "id": {
+            "description": "common props",
+            "type": "string"
+          },
+          "alias": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "expression": {
+            "description": "Math expression query",
+            "type": "string"
+          },
+          "sqlExpression": {
+            "type": "string"
+          },
+          "sql": {
+            "$ref": "#/components/schemas/SQLExpression"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/DataQuery"
+          },
+          {
+            "$ref": "#/components/schemas/MetricStat"
+          },
+          {
+            "required": [
+              "id"
+            ]
+          }
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "CloudWatchQueryMode": {
+        "type": "string",
+        "enum": [
+          "Metrics",
+          "Logs",
+          "Annotations"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "DataQuery": {
+        "description": "These are the common properties available to all queries in all datasources.\nSpecific implementations will *extend* this interface, adding the required\nproperties for the given context.",
+        "type": "object",
+        "required": [
+          "refId"
+        ],
+        "properties": {
+          "refId": {
+            "description": "A unique identifier for the query within the list of targets.\nIn server side expressions, the refId is used as a variable name to identify results.\nBy default, the UI will assign A-\u003eZ; however setting meaningful names may be useful.",
+            "type": "string"
+          },
+          "hide": {
+            "description": "true if query is disabled (ie should not be returned to the dashboard)\nNote this does not always imply that the query should not be executed since\nthe results from a hidden query may be used as the input to other queries (SSE etc)",
+            "type": "boolean"
+          },
+          "queryType": {
+            "description": "Specify the query flavor\nTODO make this required and give it a default",
+            "type": "string"
+          },
+          "datasource": {
+            "description": "For mixed data sources the selected datasource is on the query level.\nFor non mixed scenarios this is undefined.\nTODO find a better way to do this ^ that's friendly to schema\nTODO this shouldn't be unknown but DataSourceRef | null"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "Dimensions": {
+        "type": "object",
+        "additionalProperties": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "LogGroup": {
+        "type": "object",
+        "required": [
+          "arn",
+          "name"
+        ],
+        "properties": {
+          "arn": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "accountId": {
+            "type": "string"
+          },
+          "accountLabel": {
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "MetricEditorMode": {
+        "type": "integer",
+        "enum": [
+          0,
+          1
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "MetricQueryType": {
+        "type": "integer",
+        "enum": [
+          0,
+          1
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "MetricStat": {
+        "type": "object",
+        "required": [
+          "region",
+          "namespace"
+        ],
+        "properties": {
+          "region": {
+            "type": "string"
+          },
+          "namespace": {
+            "type": "string"
+          },
+          "metricName": {
+            "type": "string"
+          },
+          "dimensions": {
+            "$ref": "#/components/schemas/Dimensions"
+          },
+          "matchExact": {
+            "type": "boolean"
+          },
+          "period": {
+            "type": "string"
+          },
+          "accountId": {
+            "type": "string"
+          },
+          "statistic": {
+            "type": "string"
+          },
+          "statistics": {
+            "description": "@deprecated use statistic",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "QueryEditorArrayExpression": {
+        "type": "object",
+        "required": [
+          "type",
+          "expressions"
+        ],
+        "properties": {
+          "type": {
+            "description": "TODO this doesn't work; temporarily extended in veneer",
+            "type": "string",
+            "enum": [
+              "and",
+              "or"
+            ]
+          },
+          "expressions": {
+            "description": "TS type expressions: QueryEditorExpression[] | QueryEditorArrayExpression[], extended in veneer"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "QueryEditorExpression": {
+        "description": "QueryEditorArrayExpression is added in veneer",
+        "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/QueryEditorPropertyExpression"
+          },
+          {
+            "$ref": "#/components/schemas/QueryEditorGroupByExpression"
+          },
+          {
+            "$ref": "#/components/schemas/QueryEditorFunctionExpression"
+          },
+          {
+            "$ref": "#/components/schemas/QueryEditorFunctionParameterExpression"
+          },
+          {
+            "$ref": "#/components/schemas/QueryEditorOperatorExpression"
+          }
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "QueryEditorExpressionType": {
+        "type": "string",
+        "enum": [
+          "property",
+          "operator",
+          "or",
+          "and",
+          "groupBy",
+          "function",
+          "functionParameter"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "QueryEditorFunctionExpression": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QueryEditorExpressionType"
+              },
+              {
+                "enum": [
+                  "function"
+                ]
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QueryEditorFunctionParameterExpression"
+            }
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "QueryEditorFunctionParameterExpression": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QueryEditorExpressionType"
+              },
+              {
+                "enum": [
+                  "functionParameter"
+                ]
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "QueryEditorGroupByExpression": {
+        "type": "object",
+        "required": [
+          "type",
+          "property"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QueryEditorExpressionType"
+              },
+              {
+                "enum": [
+                  "groupBy"
+                ]
+              }
+            ]
+          },
+          "property": {
+            "$ref": "#/components/schemas/QueryEditorProperty"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "QueryEditorOperator": {
+        "description": "TS type is QueryEditorOperator\u003cT extends QueryEditorOperatorValueType\u003e, extended in veneer",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "number",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryEditorOperatorType"
+                }
+              }
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "QueryEditorOperatorExpression": {
+        "type": "object",
+        "required": [
+          "type",
+          "property",
+          "operator"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QueryEditorExpressionType"
+              },
+              {
+                "enum": [
+                  "operator"
+                ]
+              }
+            ]
+          },
+          "property": {
+            "$ref": "#/components/schemas/QueryEditorProperty"
+          },
+          "operator": {
+            "$ref": "#/components/schemas/QueryEditorOperator"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "QueryEditorOperatorType": {
+        "oneOf": [
+          {
+            "type": "string",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          {
+            "type": "boolean",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          {
+            "type": "number",
+            "minimum": -9223372036854775808,
+            "maximum": 9223372036854775807,
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          }
+        ]
+      },
+      "QueryEditorOperatorValueType": {
+        "oneOf": [
+          {
+            "type": "string",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          {
+            "type": "boolean",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          {
+            "type": "number",
+            "minimum": -9223372036854775808,
+            "maximum": 9223372036854775807,
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QueryEditorOperatorType"
+            },
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          }
+        ]
+      },
+      "QueryEditorProperty": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/QueryEditorPropertyType"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "QueryEditorPropertyExpression": {
+        "type": "object",
+        "required": [
+          "type",
+          "property"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QueryEditorExpressionType"
+              },
+              {
+                "enum": [
+                  "property"
+                ]
+              }
+            ]
+          },
+          "property": {
+            "$ref": "#/components/schemas/QueryEditorProperty"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "QueryEditorPropertyType": {
+        "type": "string",
+        "enum": [
+          "string"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "SQLExpression": {
+        "type": "object",
+        "properties": {
+          "select": {
+            "$ref": "#/components/schemas/QueryEditorFunctionExpression"
+          },
+          "from": {
+            "type": "object",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/QueryEditorPropertyExpression"
+              },
+              {
+                "$ref": "#/components/schemas/QueryEditorFunctionExpression"
+              }
+            ]
+          },
+          "where": {
+            "$ref": "#/components/schemas/QueryEditorArrayExpression"
+          },
+          "groupBy": {
+            "$ref": "#/components/schemas/QueryEditorArrayExpression"
+          },
+          "orderBy": {
+            "$ref": "#/components/schemas/QueryEditorFunctionExpression"
+          },
+          "orderByDirection": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      }
+    }
+  }
+}

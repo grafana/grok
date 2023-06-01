@@ -1,0 +1,51 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "preferences",
+    "version": "0.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "QueryHistoryPreference": {
+        "type": "object",
+        "properties": {
+          "homeTab": {
+            "description": "one of: '' | 'query' | 'starred';",
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "preferences": {
+        "type": "object",
+        "properties": {
+          "homeDashboardUID": {
+            "description": "UID for the home dashboard",
+            "type": "string"
+          },
+          "timezone": {
+            "description": "The timezone selection\nTODO: this should use the timezone defined in common",
+            "type": "string"
+          },
+          "weekStart": {
+            "description": "day of the week (sunday, monday, etc)",
+            "type": "string"
+          },
+          "theme": {
+            "description": "light, dark, empty is default",
+            "type": "string"
+          },
+          "language": {
+            "description": "Selected language (beta)",
+            "type": "string"
+          },
+          "queryHistory": {
+            "$ref": "#/components/schemas/QueryHistoryPreference"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      }
+    }
+  }
+}
