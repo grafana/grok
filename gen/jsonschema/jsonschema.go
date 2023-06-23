@@ -20,12 +20,19 @@ func JenniesForJsonSchema() jen.TargetJennies {
 	}
 
 	tgt.Core.Append(
-		codegen.LatestMajorsOrXJenny(filepath.Join(grafanaVersion, "kinds", "core"), JsonSchemaJenny{}),
+		codegen.LatestMajorsOrXJenny(
+			filepath.Join(grafanaVersion, "kinds", "core"),
+			false,
+			JsonSchemaJenny{},
+		),
 	)
 
 	tgt.Composable.Append(
 		// oooonly need to inject the proper path interstitial to make this right
-		jen.ComposableLatestMajorsOrXJenny(filepath.Join(grafanaVersion, "kinds", "composable"), JsonSchemaJenny{}),
+		jen.ComposableLatestMajorsOrXJenny(
+			filepath.Join(grafanaVersion, "kinds", "composable"),
+			JsonSchemaJenny{},
+		),
 	)
 
 	return tgt

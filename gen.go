@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"os"
 
-	"cuelang.org/go/cue/cuecontext"
 	"github.com/grafana/codejen"
 	"github.com/grafana/grafana/pkg/plugins/pfs/corelist"
 	"github.com/grafana/grafana/pkg/registry/corekind"
@@ -18,10 +17,7 @@ import (
 	"github.com/grafana/grok/gen/jsonschema"
 	"github.com/grafana/grok/internal/jen"
 	"github.com/grafana/kindsys"
-	"github.com/grafana/thema"
 )
-
-var rt = thema.NewRuntime(cuecontext.New())
 
 func main() {
 	jfs := codejen.NewFS()
