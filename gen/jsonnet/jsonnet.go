@@ -18,7 +18,7 @@ func JenniesForJsonnet() jen.TargetJennies {
 	}
 	tgt.Core.Append(
 		&JsonnetCoreImportsJenny{},
-		codegen.LatestMajorsOrXJenny(filepath.Join(grafanaVersion, "kinds", "core"), JsonnetSchemaJenny{}),
+		codegen.LatestMajorsOrXJenny(filepath.Join(grafanaVersion, "kinds", "core"), false, JsonnetSchemaJenny{}),
 	)
 	tgt.Composable.Append(
 		// oooonly need to inject the proper path interstitial to make this right

@@ -20,7 +20,7 @@ func JenniesForJsonSchema() jen.TargetJennies {
 	}
 
 	tgt.Core.Append(
-		codegen.LatestMajorsOrXJenny(filepath.Join(grafanaVersion, "kinds", "core"), JsonSchemaJenny{}),
+		codegen.LatestMajorsOrXJenny(filepath.Join(grafanaVersion, "kinds", "core"), false, JsonSchemaJenny{}),
 	)
 
 	tgt.Composable.Append(
