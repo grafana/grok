@@ -67,5 +67,3 @@ require (
 replace cuelang.org/go => github.com/sdboyer/cue v0.5.0-beta.2.0.20221218111347-341999f48bdb
 
 replace github.com/deepmap/oapi-codegen => github.com/spinillos/oapi-codegen v1.12.5-0.20230417081915-2945b61c0b1c
-
-replace k8s.io/client-go => k8s.io/client-go v0.25.0
