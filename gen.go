@@ -13,6 +13,7 @@ import (
 	"github.com/grafana/codejen"
 	"github.com/grafana/grafana/pkg/plugins/pfs/corelist"
 	"github.com/grafana/grafana/pkg/registry/corekind"
+	_go "github.com/grafana/grok/gen/go"
 	"github.com/grafana/grok/gen/jsonnet"
 	"github.com/grafana/grok/gen/jsonschema"
 	"github.com/grafana/grok/internal/jen"
@@ -20,11 +21,16 @@ import (
 )
 
 func main() {
+	grafanaVersion := os.Getenv("GRAFANA_VERSION")
+	if grafanaVersion == "" {
+		panic("GRAFANA_VERSION environment variable must be set")
+	}
+
 	jfs := codejen.NewFS()
 
 	// i've got a lovely bunch of coconuts
 	// there they are all standing in a row
-	coco := lineUpJennies()
+	coco := lineUpJennies(grafanaVersion)
 
 	var corek []kindsys.Kind
 	var compok []kindsys.Composable
@@ -78,13 +84,13 @@ func main() {
 
 // Line up all the jennies from all the language targets, prefixing them with
 // their lang target subpaths.
-func lineUpJennies() jen.TargetJennies {
+func lineUpJennies(grafanaVersion string) jen.TargetJennies {
 	tgt := jen.NewTargetJennies()
 
 	tgtmap := map[string]jen.TargetJennies{
-		// "go": _go.JenniesForGo(), // This is not ready yet
-		"jsonschema": jsonschema.JenniesForJsonSchema(),
-		"jsonnet":    jsonnet.JenniesForJsonnet(),
+		"go":         _go.JenniesForGo(grafanaVersion), // This is not ready yet
+		"jsonschema": jsonschema.JenniesForJsonSchema(grafanaVersion),
+		"jsonnet":    jsonnet.JenniesForJsonnet(grafanaVersion),
 	}
 
 	for path, tj := range tgtmap {

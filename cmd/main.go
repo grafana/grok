@@ -1,0 +1,101 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
+
+	"cuelang.org/go/cue/cuecontext"
+	"github.com/grafana/codejen"
+	_go "github.com/grafana/grok/gen/go"
+	"github.com/grafana/grok/gen/jsonnet"
+	"github.com/grafana/grok/gen/jsonschema"
+	"github.com/grafana/grok/internal/jen"
+	"github.com/grafana/thema"
+)
+
+const kindRegistryRoot = "/home/kevin/sandbox/work/kind-registry/grafana"
+const targetVersion = "10.0.0"
+
+const outputRoot = "/home/kevin/sandbox/work/grok/output"
+
+var corePath = filepath.Join(kindRegistryRoot, targetVersion, "core")
+var composablePath = filepath.Join(kindRegistryRoot, targetVersion, "composable")
+
+type someFS struct {
+	basePath string
+}
+
+func (f *someFS) Open(name string) (fs.File, error) {
+	fmt.Printf("opening file %s\n", filepath.Join(f.basePath, name))
+	return os.Open(filepath.Join(f.basePath, name))
+}
+
+// Line up all the jennies from all the language targets, prefixing them with
+// their lang target subpaths.
+func lineUpJennies(targetGrafanaVersion string) jen.TargetJennies {
+	targets := jen.NewTargetJennies()
+
+	targetMap := map[string]jen.TargetJennies{
+		"go":         _go.JenniesForGo(targetGrafanaVersion), // This is not ready yet
+		"jsonschema": jsonschema.JenniesForJsonSchema(targetGrafanaVersion),
+		"jsonnet":    jsonnet.JenniesForJsonnet(targetGrafanaVersion),
+	}
+
+	for path, target := range targetMap {
+		target.Core.AddPostprocessors(jen.Prefixer(path), jen.SlashHeaderMapper(path))
+		target.Composable.AddPostprocessors(jen.Prefixer(path), jen.SlashHeaderMapper(path))
+
+		targets.Core.AppendManyToMany(target.Core)
+		targets.Composable.AppendManyToMany(target.Composable)
+	}
+
+	return targets
+}
+
+func main() {
+	cueCtx := cuecontext.New()
+	themaRuntime := thema.NewRuntime(cueCtx)
+
+	fmt.Printf("Building core Kinds from CUE files in '%s'\n", corePath)
+	coreKinds, err := loadCoreKinds(cueCtx, themaRuntime, corePath)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Building composable Kinds from CUE files in '%s'\n", composablePath)
+	composableKinds, err := loadComposableKinds(cueCtx, themaRuntime, composablePath)
+	if err != nil {
+		panic(err)
+	}
+
+	// Here begins the code generation setup
+	rootCodeJenFS := codejen.NewFS()
+	targetJennies := lineUpJennies("v" + targetVersion)
+
+	fmt.Printf("Got %d core kinds\n", len(coreKinds))
+
+	coreKindFS, err := targetJennies.Core.GenerateFS(coreKinds...)
+	if err != nil {
+		panic(fmt.Errorf("could not generate FS for core kind: %w", err))
+	}
+
+	if err = rootCodeJenFS.Merge(coreKindFS); err != nil {
+		panic(fmt.Errorf("could not merge coreKindFS into rootCodeJenFS: %w", err))
+	}
+
+	composableKindFS, err := targetJennies.Composable.GenerateFS(composableKinds...)
+	if err != nil {
+		panic(fmt.Errorf("could not generate FS for composable kind: %w", err))
+	}
+
+	if err = rootCodeJenFS.Merge(composableKindFS); err != nil {
+		panic(fmt.Errorf("could not merge composableKindFS into rootCodeJenFS: %w", err))
+	}
+
+	if err = rootCodeJenFS.Write(context.Background(), outputRoot); err != nil {
+		panic(fmt.Errorf("could not write rootCodeJenFS to disk: %w", err))
+	}
+}
