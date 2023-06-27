@@ -1,7 +1,6 @@
 package jsonnet
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -9,21 +8,17 @@ import (
 	"github.com/grafana/grok/internal/jen"
 )
 
-func JenniesForJsonnet() jen.TargetJennies {
+func JenniesForJsonnet(targetGrafanaVersion string) jen.TargetJennies {
 	tgt := jen.NewTargetJennies()
 
-	grafanaVersion := os.Getenv("GRAFANA_VERSION")
-	if grafanaVersion == "" {
-		return tgt
-	}
 	tgt.Core.Append(
 		&JsonnetCoreImportsJenny{},
-		codegen.LatestMajorsOrXJenny(filepath.Join(grafanaVersion, "kinds", "core"), false, JsonnetSchemaJenny{}),
+		codegen.LatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "core"), false, JsonnetSchemaJenny{}),
 	)
 	tgt.Composable.Append(
 		// oooonly need to inject the proper path interstitial to make this right
 		&JsonnetComposableImportsJenny{},
-		jen.ComposableLatestMajorsOrXJenny(filepath.Join(grafanaVersion, "kinds", "composable"), JsonnetSchemaJenny{}),
+		jen.ComposableLatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "composable"), JsonnetSchemaJenny{}),
 	)
 
 	return tgt

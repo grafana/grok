@@ -18,17 +18,17 @@ import (
 // go/byrelease/{c,c,c}
 // go/builder
 
-func JenniesForGo() jen.TargetJennies {
+func JenniesForGo(targetGrafanaVersion string) jen.TargetJennies {
 	tgt := jen.NewTargetJennies()
 
 	tgt.Core.Append(
-		codegen.LatestMajorsOrXJenny(filepath.Join("kinds", "core"), codegen.GoTypesJenny{}),
-		codegen.LatestMajorsOrXJenny(filepath.Join("kinds", "core"), TypedSchemaJenny{}),
+		codegen.LatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "core"), false, codegen.GoTypesJenny{}),
+		codegen.LatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "core"), false, TypedSchemaJenny{}),
 	)
 
 	tgt.Composable.Append(
 		// oooonly need to inject the proper path interstitial to make this right
-		jen.ComposableLatestMajorsOrXJenny(filepath.Join("kinds", "composable"), GoTypesJenny{}),
+		jen.ComposableLatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "composable"), GoTypesJenny{}),
 	)
 
 	return tgt

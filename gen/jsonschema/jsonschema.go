@@ -2,7 +2,6 @@ package jsonschema
 
 import (
 	"encoding/json"
-	"os"
 	"path/filepath"
 
 	"cuelang.org/go/cue/cuecontext"
@@ -12,20 +11,16 @@ import (
 	"github.com/grafana/thema/encoding/jsonschema"
 )
 
-func JenniesForJsonSchema() jen.TargetJennies {
+func JenniesForJsonSchema(targetGrafanaVersion string) jen.TargetJennies {
 	tgt := jen.NewTargetJennies()
-	grafanaVersion := os.Getenv("GRAFANA_VERSION")
-	if grafanaVersion == "" {
-		return tgt
-	}
 
 	tgt.Core.Append(
-		codegen.LatestMajorsOrXJenny(filepath.Join(grafanaVersion, "kinds", "core"), false, JsonSchemaJenny{}),
+		codegen.LatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "core"), false, JsonSchemaJenny{}),
 	)
 
 	tgt.Composable.Append(
 		// oooonly need to inject the proper path interstitial to make this right
-		jen.ComposableLatestMajorsOrXJenny(filepath.Join(grafanaVersion, "kinds", "composable"), JsonSchemaJenny{}),
+		jen.ComposableLatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "composable"), JsonSchemaJenny{}),
 	)
 
 	return tgt
