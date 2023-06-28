@@ -3,9 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
-	"testing/fstest"
 
 	"cuelang.org/go/cue/cuecontext"
 	"github.com/grafana/codejen"
@@ -50,26 +48,11 @@ func lineUpJennies(targetGrafanaVersion string) jen.TargetJennies {
 func main() {
 	themaRuntime := thema.NewRuntime(cuecontext.New())
 
-	commonHandle, err := os.ReadDir(commonLibPath)
+	fmt.Printf("Loading grafana-schema/common module from '%s'\n", commonLibPath)
+	commonCueImportPrefix := "cue.mod/pkg/github.com/grafana/grafana/packages/grafana-schema/src/common"
+	commonFS, err := dirToPrefixedFS(commonLibPath, commonCueImportPrefix)
 	if err != nil {
 		panic(err)
-	}
-
-	commonCueImportPrefix := "cue.mod/pkg/github.com/grafana/grafana/packages/grafana-schema/src/common"
-	commonFS := fstest.MapFS{}
-	for _, file := range commonHandle {
-		if file.IsDir() {
-			continue
-		}
-
-		content, err := os.ReadFile(filepath.Join(commonLibPath, file.Name()))
-		if err != nil {
-			panic(err)
-		}
-
-		commonFS[filepath.Join(commonCueImportPrefix, file.Name())] = &fstest.MapFile{
-			Data: content,
-		}
 	}
 
 	fmt.Printf("Building core Kinds from CUE files in '%s'\n", corePath)
