@@ -6,12 +6,11 @@ import (
 	"path/filepath"
 	"testing/fstest"
 
-	"cuelang.org/go/cue"
 	"github.com/grafana/kindsys"
 	"github.com/grafana/thema"
 )
 
-func moduleToComposableKind(cueCtx *cue.Context, themaRuntime *thema.Runtime, modulePath string) (kindsys.Composable, error) {
+func moduleToComposableKind(themaRuntime *thema.Runtime, modulePath string) (kindsys.Composable, error) {
 	fmt.Printf(" → Loading %s\n", modulePath)
 
 	moduleHandle, err := os.ReadDir(modulePath)
@@ -35,7 +34,7 @@ func moduleToComposableKind(cueCtx *cue.Context, themaRuntime *thema.Runtime, mo
 		}
 	}
 
-	cueInstance, err := kindsys.BuildInstance(cueCtx, ".", "grafanaplugin", overlayFS)
+	cueInstance, err := kindsys.BuildInstance(themaRuntime.Context(), ".", "grafanaplugin", overlayFS)
 	if err != nil {
 		return nil, fmt.Errorf("could not load kindsys instance: %w", err)
 	}
@@ -58,7 +57,7 @@ func moduleToComposableKind(cueCtx *cue.Context, themaRuntime *thema.Runtime, mo
 	return boundKind, nil
 }
 
-func loadComposableKinds(cueCtx *cue.Context, themaRuntime *thema.Runtime, composableKindsPath string) ([]kindsys.Composable, error) {
+func loadComposableKinds(themaRuntime *thema.Runtime, composableKindsPath string) ([]kindsys.Composable, error) {
 	files, err := os.ReadDir(composableKindsPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not open registry: %w", err)
@@ -75,7 +74,7 @@ func loadComposableKinds(cueCtx *cue.Context, themaRuntime *thema.Runtime, compo
 			continue
 		}
 
-		composableKind, err := moduleToComposableKind(cueCtx, themaRuntime, filepath.Join(composableKindsPath, file.Name()))
+		composableKind, err := moduleToComposableKind(themaRuntime, filepath.Join(composableKindsPath, file.Name()))
 		if err != nil {
 			return nil, err
 		}

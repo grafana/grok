@@ -56,17 +56,16 @@ func lineUpJennies(targetGrafanaVersion string) jen.TargetJennies {
 }
 
 func main() {
-	cueCtx := cuecontext.New()
-	themaRuntime := thema.NewRuntime(cueCtx)
+	themaRuntime := thema.NewRuntime(cuecontext.New())
 
 	fmt.Printf("Building core Kinds from CUE files in '%s'\n", corePath)
-	coreKinds, err := loadCoreKinds(cueCtx, themaRuntime, corePath)
+	coreKinds, err := loadCoreKinds(themaRuntime, corePath)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Printf("Building composable Kinds from CUE files in '%s'\n", composablePath)
-	composableKinds, err := loadComposableKinds(cueCtx, themaRuntime, composablePath)
+	composableKinds, err := loadComposableKinds(themaRuntime, composablePath)
 	if err != nil {
 		panic(err)
 	}
