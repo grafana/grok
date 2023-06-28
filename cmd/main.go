@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/fs"
-	"os"
 	"path/filepath"
 
 	"cuelang.org/go/cue/cuecontext"
@@ -23,15 +21,6 @@ const outputRoot = "/home/kevin/sandbox/work/grok/output"
 
 var corePath = filepath.Join(kindRegistryRoot, targetVersion, "core")
 var composablePath = filepath.Join(kindRegistryRoot, targetVersion, "composable")
-
-type someFS struct {
-	basePath string
-}
-
-func (f *someFS) Open(name string) (fs.File, error) {
-	fmt.Printf("opening file %s\n", filepath.Join(f.basePath, name))
-	return os.Open(filepath.Join(f.basePath, name))
-}
 
 // Line up all the jennies from all the language targets, prefixing them with
 // their lang target subpaths.

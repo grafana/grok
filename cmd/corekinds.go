@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"testing/fstest"
 
 	"github.com/grafana/kindsys"
 	"github.com/grafana/thema"
@@ -13,15 +12,11 @@ import (
 func fileToCoreKind(themaRuntime *thema.Runtime, filePath string) (kindsys.Core, error) {
 	fmt.Printf(" → Loading %s\n", filePath)
 
-	fileContent, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-
 	// core kinds are all dumped in the same folder, which isn't a valid cue module.
 	// to work around that, we create a virtual FS to isolate each files into an in-memory module
-	overlayFS := fstest.MapFS{
-		filepath.Base(filePath): &fstest.MapFile{Data: fileContent},
+	overlayFS, err := fileToFS(filePath)
+	if err != nil {
+		return nil, err
 	}
 
 	cueInstance, err := kindsys.BuildInstance(themaRuntime.Context(), ".", "kind", overlayFS)
