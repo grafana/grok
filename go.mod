@@ -8,6 +8,7 @@ require (
 	github.com/grafana/grafana v1.9.2-0.20230609164553-81d85ce8028d
 	github.com/grafana/kindsys v0.0.0-20230615185749-1424263c17c7
 	github.com/grafana/thema v0.0.0-20230628103417-8f63313207a5
+	github.com/spf13/cobra v1.4.0
 	github.com/yalue/merged_fs v1.2.2
 )
 
@@ -30,6 +31,7 @@ require (
 	github.com/grafana/cuetsy v0.1.9 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/invopop/yaml v0.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -49,6 +51,7 @@ require (
 	github.com/protocolbuffers/txtpbfmt v0.0.0-20230412060525-fa9f017c0ded // indirect
 	github.com/rivo/uniseg v0.3.4 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
