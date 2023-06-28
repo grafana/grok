@@ -88,11 +88,6 @@ func loadComposableKinds(themaRuntime *thema.Runtime, commonFS fs.FS, composable
 			continue
 		}
 
-		// TODO: figure out why loading this one hangs and remove
-		if file.Name() == "elasticsearch" {
-			continue
-		}
-
 		composableKind, err := moduleToComposableKind(themaRuntime, commonFS, filepath.Join(composableKindsPath, file.Name()))
 		if err != nil {
 			return nil, err

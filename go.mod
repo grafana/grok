@@ -7,7 +7,8 @@ require (
 	github.com/grafana/codejen v0.0.4-0.20221122220907-a5e7cc5407b3
 	github.com/grafana/grafana v1.9.2-0.20230609164553-81d85ce8028d
 	github.com/grafana/kindsys v0.0.0-20230615185749-1424263c17c7
-	github.com/grafana/thema v0.0.0-20230615161902-b6e21996aef8
+	github.com/grafana/thema v0.0.0-20230628103417-8f63313207a5
+	github.com/yalue/merged_fs v1.2.2
 )
 
 require (
@@ -52,7 +53,6 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xlab/treeprint v1.1.0 // indirect
-	github.com/yalue/merged_fs v1.2.2 // indirect
 	golang.org/x/crypto v0.10.0 // indirect
 	golang.org/x/mod v0.11.0 // indirect
 	golang.org/x/net v0.11.0 // indirect
