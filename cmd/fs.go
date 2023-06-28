@@ -1,21 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"testing/fstest"
 )
-
-type someFS struct {
-	basePath string
-}
-
-func (f *someFS) Open(name string) (fs.File, error) {
-	fmt.Printf("opening file %s\n", filepath.Join(f.basePath, name))
-	return os.Open(filepath.Join(f.basePath, name))
-}
 
 func fileToFS(filePath string) (fs.FS, error) {
 	fileContent, err := os.ReadFile(filePath)
