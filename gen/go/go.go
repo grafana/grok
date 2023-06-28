@@ -23,7 +23,7 @@ func JenniesForGo(targetGrafanaVersion string) jen.TargetJennies {
 
 	tgt.Core.Append(
 		codegen.LatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "core"), false, codegen.GoTypesJenny{}),
-		codegen.LatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "core"), false, TypedSchemaJenny{}),
+		//codegen.LatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "core"), false, TypedSchemaJenny{}), // not good enough: references stuff from grafana/grafana
 	)
 
 	tgt.Composable.Append(
