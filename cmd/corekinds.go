@@ -6,12 +6,11 @@ import (
 	"path/filepath"
 	"testing/fstest"
 
-	"cuelang.org/go/cue"
 	"github.com/grafana/kindsys"
 	"github.com/grafana/thema"
 )
 
-func fileToCoreKind(cueCtx *cue.Context, themaRuntime *thema.Runtime, filePath string) (kindsys.Core, error) {
+func fileToCoreKind(themaRuntime *thema.Runtime, filePath string) (kindsys.Core, error) {
 	fmt.Printf(" → Loading %s\n", filePath)
 
 	fileContent, err := os.ReadFile(filePath)
@@ -25,7 +24,7 @@ func fileToCoreKind(cueCtx *cue.Context, themaRuntime *thema.Runtime, filePath s
 		filepath.Base(filePath): &fstest.MapFile{Data: fileContent},
 	}
 
-	cueInstance, err := kindsys.BuildInstance(cueCtx, ".", "kind", overlayFS)
+	cueInstance, err := kindsys.BuildInstance(themaRuntime.Context(), ".", "kind", overlayFS)
 	if err != nil {
 		return nil, fmt.Errorf("could not load kindsys instance: %w", err)
 	}
@@ -48,7 +47,7 @@ func fileToCoreKind(cueCtx *cue.Context, themaRuntime *thema.Runtime, filePath s
 	return boundKind, nil
 }
 
-func loadCoreKinds(cueCtx *cue.Context, themaRuntime *thema.Runtime, coreKindsPath string) ([]kindsys.Kind, error) {
+func loadCoreKinds(themaRuntime *thema.Runtime, coreKindsPath string) ([]kindsys.Kind, error) {
 	files, err := os.ReadDir(coreKindsPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not open registry: %w", err)
@@ -60,7 +59,7 @@ func loadCoreKinds(cueCtx *cue.Context, themaRuntime *thema.Runtime, coreKindsPa
 			continue
 		}
 
-		coreKind, err := fileToCoreKind(cueCtx, themaRuntime, filepath.Join(coreKindsPath, file.Name()))
+		coreKind, err := fileToCoreKind(themaRuntime, filepath.Join(coreKindsPath, file.Name()))
 		if err != nil {
 			return nil, err
 		}
