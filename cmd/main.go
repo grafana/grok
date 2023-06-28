@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
+	"testing/fstest"
 
 	"cuelang.org/go/cue/cuecontext"
 	"github.com/grafana/codejen"
@@ -21,6 +23,7 @@ const outputRoot = "/home/kevin/sandbox/work/grok/output"
 
 var corePath = filepath.Join(kindRegistryRoot, targetVersion, "core")
 var composablePath = filepath.Join(kindRegistryRoot, targetVersion, "composable")
+var commonLibPath = filepath.Join(kindRegistryRoot, targetVersion, "common")
 
 // Line up all the jennies from all the language targets, prefixing them with
 // their lang target subpaths.
@@ -47,6 +50,28 @@ func lineUpJennies(targetGrafanaVersion string) jen.TargetJennies {
 func main() {
 	themaRuntime := thema.NewRuntime(cuecontext.New())
 
+	commonHandle, err := os.ReadDir(commonLibPath)
+	if err != nil {
+		panic(err)
+	}
+
+	commonCueImportPrefix := "cue.mod/pkg/github.com/grafana/grafana/packages/grafana-schema/src/common"
+	commonFS := fstest.MapFS{}
+	for _, file := range commonHandle {
+		if file.IsDir() {
+			continue
+		}
+
+		content, err := os.ReadFile(filepath.Join(commonLibPath, file.Name()))
+		if err != nil {
+			panic(err)
+		}
+
+		commonFS[filepath.Join(commonCueImportPrefix, file.Name())] = &fstest.MapFile{
+			Data: content,
+		}
+	}
+
 	fmt.Printf("Building core Kinds from CUE files in '%s'\n", corePath)
 	coreKinds, err := loadCoreKinds(themaRuntime, corePath)
 	if err != nil {
@@ -54,7 +79,7 @@ func main() {
 	}
 
 	fmt.Printf("Building composable Kinds from CUE files in '%s'\n", composablePath)
-	composableKinds, err := loadComposableKinds(themaRuntime, composablePath)
+	composableKinds, err := loadComposableKinds(themaRuntime, commonFS, composablePath)
 	if err != nil {
 		panic(err)
 	}
@@ -64,6 +89,7 @@ func main() {
 	targetJennies := lineUpJennies("v" + targetVersion)
 
 	fmt.Printf("Got %d core kinds\n", len(coreKinds))
+	fmt.Printf("Got %d composable kinds\n", len(composableKinds))
 
 	coreKindFS, err := targetJennies.Core.GenerateFS(coreKinds...)
 	if err != nil {
