@@ -26,6 +26,8 @@ type options struct {
 
 	// Do not run the generation process for these kinds
 	excludeKinds []string
+
+	excludeTargets []string
 }
 
 func (opts options) grafanaRegistryRoot() string {
@@ -60,6 +62,7 @@ func Command() *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.outputDir, "output", "o", ".", "Output directory")
 	cmd.Flags().StringSliceVar(&opts.excludeKinds, "exclude-kind", nil, "Excludes a kind from the code generation process.")
+	cmd.Flags().StringSliceVar(&opts.excludeTargets, "exclude-target", nil, "Excludes a target from the code generation process.")
 
 	return cmd
 }
@@ -80,7 +83,7 @@ func doGenerate(opts options) error {
 
 	// Here begins the code generation setup
 	rootCodeJenFS := codejen.NewFS()
-	targetJennies := lineUpJennies("v" + opts.targetVersion)
+	targetJennies := lineUpJennies("v"+opts.targetVersion, opts.excludeTargets)
 
 	// Run the generation process for the desired kinds
 	for kind, generator := range kindGenerators {
@@ -142,7 +145,7 @@ func generateComposableKinds(opts options, themaRuntime *thema.Runtime, commonFS
 
 // Line up all the jennies from all the language targets, prefixing them with
 // their lang target subpaths.
-func lineUpJennies(targetGrafanaVersion string) jen.TargetJennies {
+func lineUpJennies(targetGrafanaVersion string, excludedTargets []string) jen.TargetJennies {
 	targets := jen.NewTargetJennies()
 
 	targetMap := map[string]jen.TargetJennies{
@@ -152,6 +155,10 @@ func lineUpJennies(targetGrafanaVersion string) jen.TargetJennies {
 	}
 
 	for path, target := range targetMap {
+		if contains(excludedTargets, path) {
+			continue
+		}
+
 		target.Core.AddPostprocessors(jen.Prefixer(path), jen.SlashHeaderMapper(path))
 		target.Composable.AddPostprocessors(jen.Prefixer(path), jen.SlashHeaderMapper(path))
 
