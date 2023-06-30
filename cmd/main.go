@@ -9,8 +9,9 @@ import (
 
 func main() {
 	rootCmd := &cobra.Command{
-		Use:   "grok <command>",
-		Short: "A tool for working with Grafana objects from code",
+		Use:          "grok <command>",
+		Short:        "A tool for working with Grafana objects from code",
+		SilenceUsage: true,
 	}
 
 	rootCmd.AddCommand(generate.Command())
