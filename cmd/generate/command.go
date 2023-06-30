@@ -50,17 +50,33 @@ func Command() *cobra.Command {
 	opts := options{}
 
 	cmd := &cobra.Command{
-		Use:  "generate REGISTRY_PATH SCHEMA_VERSION",
-		Args: cobra.ExactArgs(2),
+		Use:   "generate REGISTRY_PATH",
+		Short: "Generates code from kinds stored in the registry",
+		Long: `Generates code from kinds stored in the registry.
+
+"core" and "composable" kinds defined in the registry can be generated as:
+
+ * go
+ * jsonnet
+ * jsonschema
+
+By default, each of these output targets is enabled.
+`,
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.kindRegistryRoot = args[0]
-			opts.targetVersion = args[1]
+
+			// If a version was specified
+			if len(args) == 2 {
+				opts.targetVersion = args[1]
+			}
 
 			return doGenerate(opts)
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.outputDir, "output", "o", ".", "Output directory")
+	cmd.Flags().StringVarP(&opts.outputDir, "output", "o", ".", "Output directory.")
+	cmd.Flags().StringVar(&opts.targetVersion, "version", "next", "Version to generate.")
 	cmd.Flags().StringSliceVar(&opts.excludeKinds, "exclude-kind", nil, "Excludes a kind from the code generation process.")
 	cmd.Flags().StringSliceVar(&opts.excludeTargets, "exclude-target", nil, "Excludes a target from the code generation process.")
 
