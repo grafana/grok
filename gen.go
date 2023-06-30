@@ -13,7 +13,6 @@ import (
 	"github.com/grafana/codejen"
 	"github.com/grafana/grafana/pkg/plugins/pfs/corelist"
 	"github.com/grafana/grafana/pkg/registry/corekind"
-	_go "github.com/grafana/grok/gen/go"
 	"github.com/grafana/grok/gen/jsonnet"
 	"github.com/grafana/grok/gen/jsonschema"
 	"github.com/grafana/grok/internal/jen"
@@ -88,7 +87,7 @@ func lineUpJennies(grafanaVersion string) jen.TargetJennies {
 	tgt := jen.NewTargetJennies()
 
 	tgtmap := map[string]jen.TargetJennies{
-		"go":         _go.JenniesForGo(grafanaVersion), // This is not ready yet
+		//"go":         _go.JenniesForGo(grafanaVersion), // This is not ready yet
 		"jsonschema": jsonschema.JenniesForJsonSchema(grafanaVersion),
 		"jsonnet":    jsonnet.JenniesForJsonnet(grafanaVersion),
 	}
