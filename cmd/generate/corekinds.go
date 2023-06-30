@@ -43,24 +43,11 @@ func fileToCoreKind(themaRuntime *thema.Runtime, filePath string) (kindsys.Core,
 }
 
 func loadCoreKinds(themaRuntime *thema.Runtime, coreKindsPath string) ([]kindsys.Kind, error) {
-	files, err := os.ReadDir(coreKindsPath)
-	if err != nil {
-		return nil, fmt.Errorf("could not open registry: %w", err)
-	}
-
-	coreKinds := make([]kindsys.Kind, 0, len(files))
-	for _, file := range files {
+	return mapDir[kindsys.Kind](coreKindsPath, func(file os.DirEntry) (kindsys.Kind, error) {
 		if file.IsDir() {
-			continue
+			return nil, nil
 		}
 
-		coreKind, err := fileToCoreKind(themaRuntime, filepath.Join(coreKindsPath, file.Name()))
-		if err != nil {
-			return nil, err
-		}
-
-		coreKinds = append(coreKinds, coreKind)
-	}
-
-	return coreKinds, nil
+		return fileToCoreKind(themaRuntime, filepath.Join(coreKindsPath, file.Name()))
+	})
 }
