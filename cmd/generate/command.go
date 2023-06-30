@@ -12,6 +12,7 @@ import (
 	"github.com/grafana/grok/gen/jsonnet"
 	"github.com/grafana/grok/gen/jsonschema"
 	"github.com/grafana/grok/internal/jen"
+	"github.com/grafana/kindsys"
 	"github.com/grafana/thema"
 	"github.com/spf13/cobra"
 )
@@ -23,6 +24,7 @@ type kindGenerator func(opts options, themaRuntime *thema.Runtime, commonFS fs.F
 type options struct {
 	kindRegistryRoot string
 	targetVersion    string
+	minimumMaturity  string
 
 	outputDir string
 
@@ -30,6 +32,22 @@ type options struct {
 	excludeKinds []string
 
 	excludeTargets []string
+}
+
+func (opts options) maturity() kindsys.Maturity {
+	switch opts.minimumMaturity {
+	case "merged":
+		return kindsys.MaturityMerged
+	case "experimental":
+		return kindsys.MaturityExperimental
+	case "stable":
+		return kindsys.MaturityStable
+	case "mature":
+		return kindsys.MaturityMature
+	default:
+		return kindsys.MaturityExperimental
+	}
+
 }
 
 func (opts options) grafanaRegistryRoot() string {
@@ -79,6 +97,7 @@ By default, each of these output targets is enabled.
 
 	cmd.Flags().StringVarP(&opts.outputDir, "output", "o", ".", "Output directory.")
 	cmd.Flags().StringVar(&opts.targetVersion, "version", "next", "Version to generate.")
+	cmd.Flags().StringVar(&opts.minimumMaturity, "min-maturity", "experimental", "Minimum maturity of the kinds to generate.")
 	cmd.Flags().StringSliceVar(&opts.excludeKinds, "exclude-kind", nil, "Excludes a kind from the code generation process.")
 	cmd.Flags().StringSliceVar(&opts.excludeTargets, "exclude-target", nil, "Excludes a target from the code generation process.")
 
@@ -134,6 +153,8 @@ func generateCoreKinds(opts options, themaRuntime *thema.Runtime, _ fs.FS, targe
 		return nil, err
 	}
 
+	coreKinds = filterByMaturity(coreKinds, opts.maturity())
+
 	fmt.Printf("Got %d core kinds\n", len(coreKinds))
 
 	coreKindFS, err := targetJennies.Core.GenerateFS(coreKinds...)
@@ -149,6 +170,8 @@ func generateComposableKinds(opts options, themaRuntime *thema.Runtime, commonFS
 	if err != nil {
 		return nil, err
 	}
+
+	composableKinds = filterByMaturity(composableKinds, opts.maturity())
 
 	fmt.Printf("Got %d composable kinds\n", len(composableKinds))
 
@@ -194,4 +217,18 @@ func contains(haystack []string, needle string) bool {
 	}
 
 	return false
+}
+
+func filterByMaturity[T kindsys.Kind](kinds []T, minMaturity kindsys.Maturity) []T {
+	var filtered []T
+
+	for _, kind := range kinds {
+		if kind.Maturity().Less(minMaturity) {
+			continue
+		}
+
+		filtered = append(filtered, kind)
+	}
+
+	return filtered
 }
