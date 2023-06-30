@@ -16,6 +16,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const commonCueImportPrefix = "cue.mod/pkg/github.com/grafana/grafana/packages/grafana-schema/src/common"
+
 type kindGenerator func(opts options, themaRuntime *thema.Runtime, commonFS fs.FS, targetJennies jen.TargetJennies) (*codejen.FS, error)
 
 type options struct {
@@ -91,7 +93,6 @@ func doGenerate(opts options) error {
 	}
 
 	fmt.Printf("Loading grafana-schema/common module from '%s'\n", opts.commonLibPath())
-	commonCueImportPrefix := "cue.mod/pkg/github.com/grafana/grafana/packages/grafana-schema/src/common"
 	commonFS, err := dirToPrefixedFS(opts.commonLibPath(), commonCueImportPrefix)
 	if err != nil {
 		return err

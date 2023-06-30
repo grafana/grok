@@ -1,26 +1,40 @@
 package generate
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"testing/fstest"
 )
 
-func fileToFS(filePath string) (fs.FS, error) {
-	fileContent, err := os.ReadFile(filePath)
+type FSOption func(file *fstest.MapFile) *fstest.MapFile
+
+func PrependFilesWith(input string) FSOption {
+	return func(file *fstest.MapFile) *fstest.MapFile {
+		return &fstest.MapFile{
+			Data: []byte(fmt.Sprintf("%s%s", input, file.Data)),
+		}
+	}
+}
+
+func fileToFS(filePath string, options ...FSOption) (fs.FS, error) {
+	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
 
-	// core kinds are all dumped in the same folder, which isn't a valid cue module.
-	// to work around that, we create a virtual FS to isolate each files into an in-memory module
+	mapFile := &fstest.MapFile{Data: content}
+	for _, opt := range options {
+		mapFile = opt(mapFile)
+	}
+
 	return fstest.MapFS{
-		filepath.Base(filePath): &fstest.MapFile{Data: fileContent},
+		filepath.Base(filePath): mapFile,
 	}, nil
 }
 
-func dirToPrefixedFS(directory string, prefix string) (fs.FS, error) {
+func dirToPrefixedFS(directory string, prefix string, options ...FSOption) (fs.FS, error) {
 	dirHandle, err := os.ReadDir(directory)
 	if err != nil {
 		return nil, err
@@ -37,10 +51,32 @@ func dirToPrefixedFS(directory string, prefix string) (fs.FS, error) {
 			return nil, err
 		}
 
-		commonFS[filepath.Join(prefix, file.Name())] = &fstest.MapFile{
-			Data: content,
+		mapFile := &fstest.MapFile{Data: content}
+		for _, opt := range options {
+			mapFile = opt(mapFile)
 		}
+
+		commonFS[filepath.Join(prefix, file.Name())] = mapFile
 	}
 
 	return commonFS, nil
+}
+
+func mapDir[T any](directory string, readFunc func(file os.DirEntry) (T, error)) ([]T, error) {
+	files, err := os.ReadDir(directory)
+	if err != nil {
+		return nil, fmt.Errorf("could not open directory '%s': %w", directory, err)
+	}
+
+	results := make([]T, 0, len(files))
+	for _, file := range files {
+		result, err := readFunc(file)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, result)
+	}
+
+	return results, nil
 }
