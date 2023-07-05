@@ -8,33 +8,7 @@ import (
 	"testing/fstest"
 )
 
-type FSOption func(file *fstest.MapFile) *fstest.MapFile
-
-func PrependFilesWith(input string) FSOption {
-	return func(file *fstest.MapFile) *fstest.MapFile {
-		return &fstest.MapFile{
-			Data: []byte(fmt.Sprintf("%s%s", input, file.Data)),
-		}
-	}
-}
-
-func fileToFS(filePath string, options ...FSOption) (fs.FS, error) {
-	content, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-
-	mapFile := &fstest.MapFile{Data: content}
-	for _, opt := range options {
-		mapFile = opt(mapFile)
-	}
-
-	return fstest.MapFS{
-		filepath.Base(filePath): mapFile,
-	}, nil
-}
-
-func dirToPrefixedFS(directory string, prefix string, options ...FSOption) (fs.FS, error) {
+func dirToPrefixedFS(directory string, prefix string) (fs.FS, error) {
 	dirHandle, err := os.ReadDir(directory)
 	if err != nil {
 		return nil, err
@@ -51,12 +25,7 @@ func dirToPrefixedFS(directory string, prefix string, options ...FSOption) (fs.F
 			return nil, err
 		}
 
-		mapFile := &fstest.MapFile{Data: content}
-		for _, opt := range options {
-			mapFile = opt(mapFile)
-		}
-
-		commonFS[filepath.Join(prefix, file.Name())] = mapFile
+		commonFS[filepath.Join(prefix, file.Name())] = &fstest.MapFile{Data: content}
 	}
 
 	return commonFS, nil

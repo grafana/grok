@@ -14,24 +14,7 @@ import (
 func moduleToComposableKind(themaRuntime *thema.Runtime, commonFS fs.FS, modulePath string) (kindsys.Composable, error) {
 	fmt.Printf(" → Loading %s\n", modulePath)
 
-	// weird CUE errors if we don't prepend schemas with a package declaration
-	//
-	// Ex:
-	//panic: schemaInterface: cannot convert non-concrete value string:
-	//	/github.com/grafana/kindsys/kindcat_composable.cue:18:2
-	//schif: invalid non-ground value string (must be concrete string):
-	//	/github.com/grafana/kindsys/kindcat_composable.cue:18:19
-	//name: cannot convert non-concrete value =~"^([A-Z][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])$":
-	//	/github.com/grafana/kindsys/kindcats.cue:38:2
-	//machineName: error in call to strings.Replace: non-concrete value string:
-	//	/github.com/grafana/kindsys/kindcats.cue:46:31
-	//	/github.com/grafana/kindsys/kindcats.cue:38:8
-	//pluralName: cannot convert non-concrete value =~"^([A-Z][a-zA-Z0-9-]{0,61}[a-zA-Z])$":
-	//	/github.com/grafana/kindsys/kindcats.cue:49:2
-	//pluralMachineName: error in call to strings.Replace: non-concrete value string:
-	//	/github.com/grafana/kindsys/kindcats.cue:54:37
-	//	/github.com/grafana/kindsys/kindcats.cue:49:14
-	moduleFS, err := dirToPrefixedFS(modulePath, "", PrependFilesWith("package composable\n"))
+	moduleFS, err := dirToPrefixedFS(modulePath, "")
 	if err != nil {
 		return nil, fmt.Errorf("could not open module '%s' from registry: %w", modulePath, err)
 	}
