@@ -9,12 +9,10 @@ import (
 	"github.com/grafana/thema"
 )
 
-func fileToCoreKind(themaRuntime *thema.Runtime, filePath string) (kindsys.Core, error) {
-	fmt.Printf(" → Loading %s\n", filePath)
+func moduleToCoreKind(themaRuntime *thema.Runtime, modulePath string) (kindsys.Core, error) {
+	fmt.Printf(" → Loading %s\n", modulePath)
 
-	// core kinds are all dumped in the same folder, which isn't a valid cue module.
-	// to work around that, we create a virtual FS to isolate each files into an in-memory module
-	overlayFS, err := fileToFS(filePath)
+	overlayFS, err := dirToPrefixedFS(modulePath, "")
 	if err != nil {
 		return nil, err
 	}
@@ -44,10 +42,10 @@ func fileToCoreKind(themaRuntime *thema.Runtime, filePath string) (kindsys.Core,
 
 func loadCoreKinds(themaRuntime *thema.Runtime, coreKindsPath string) ([]kindsys.Kind, error) {
 	return mapDir[kindsys.Kind](coreKindsPath, func(file os.DirEntry) (kindsys.Kind, error) {
-		if file.IsDir() {
+		if !file.IsDir() {
 			return nil, nil
 		}
 
-		return fileToCoreKind(themaRuntime, filepath.Join(coreKindsPath, file.Name()))
+		return moduleToCoreKind(themaRuntime, filepath.Join(coreKindsPath, file.Name()))
 	})
 }
