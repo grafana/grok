@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"strings"
 
 	"cuelang.org/go/cue/cuecontext"
 	"github.com/grafana/codejen"
@@ -15,11 +16,15 @@ import (
 	"github.com/grafana/kindsys"
 	"github.com/grafana/thema"
 	"github.com/spf13/cobra"
+	"github.com/yalue/merged_fs"
 )
 
-const commonCueImportPrefix = "cue.mod/pkg/github.com/grafana/grafana/packages/grafana-schema/src/common"
-
 type kindGenerator func(opts options, themaRuntime *thema.Runtime, commonFS fs.FS, targetJennies jen.TargetJennies) (*codejen.FS, error)
+
+type includeImport struct {
+	fsPath     string // path of the library on the filesystem
+	importPath string // path used in CUE files to import that library
+}
 
 type options struct {
 	kindRegistryRoot string
@@ -32,6 +37,8 @@ type options struct {
 	excludeKinds []string
 
 	excludeTargets []string
+
+	imports []string
 }
 
 func (opts options) maturity() kindsys.Maturity {
@@ -47,7 +54,6 @@ func (opts options) maturity() kindsys.Maturity {
 	default:
 		return kindsys.MaturityExperimental
 	}
-
 }
 
 func (opts options) grafanaRegistryRoot() string {
@@ -64,6 +70,25 @@ func (opts options) composablePath() string {
 
 func (opts options) commonLibPath() string {
 	return filepath.Join(opts.grafanaRegistryRoot(), opts.targetVersion, "common")
+}
+
+func (opts options) includeImports() ([]includeImport, error) {
+	if len(opts.imports) == 0 {
+		return nil, nil
+	}
+
+	imports := make([]includeImport, len(opts.imports))
+	for i, importDefinition := range opts.imports {
+		parts := strings.Split(importDefinition, ":")
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("'%s' is not a valid import definition", importDefinition)
+		}
+
+		imports[i].fsPath = parts[0]
+		imports[i].importPath = parts[1]
+	}
+
+	return imports, nil
 }
 
 func Command() *cobra.Command {
@@ -100,6 +125,7 @@ By default, each of these output targets is enabled.
 	cmd.Flags().StringVar(&opts.minimumMaturity, "min-maturity", "experimental", "Minimum maturity of the kinds to generate.")
 	cmd.Flags().StringSliceVar(&opts.excludeKinds, "exclude-kind", nil, "Excludes a kind from the code generation process.")
 	cmd.Flags().StringSliceVar(&opts.excludeTargets, "exclude-target", nil, "Excludes a target from the code generation process.")
+	cmd.Flags().StringArrayVarP(&opts.imports, "include-import", "I", nil, "Specify an additional library import directory. Format: [path]:[import]. Example: '../grafana/common-library:github.com/grafana/grafana/packages/grafana-schema/src/common")
 
 	return cmd
 }
@@ -111,11 +137,24 @@ func doGenerate(opts options) error {
 		"composable": generateComposableKinds,
 	}
 
-	fmt.Printf("Loading grafana-schema/common module from '%s'\n", opts.commonLibPath())
-	commonFS, err := dirToPrefixedFS(opts.commonLibPath(), commonCueImportPrefix)
+	importDefinitions, err := opts.includeImports()
 	if err != nil {
 		return err
 	}
+
+	var librariesFS []fs.FS
+	for _, importDefinition := range importDefinitions {
+		fmt.Printf("Loading '%s' module from '%s'\n", importDefinition.importPath, importDefinition.fsPath)
+
+		libraryFS, err := dirToPrefixedFS(importDefinition.fsPath, "cue.mod/pkg/"+importDefinition.importPath)
+		if err != nil {
+			return err
+		}
+
+		librariesFS = append(librariesFS, libraryFS)
+	}
+
+	commonFS := merged_fs.MergeMultiple(librariesFS...)
 
 	// Here begins the code generation setup
 	rootCodeJenFS := codejen.NewFS()
