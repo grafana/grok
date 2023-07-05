@@ -21,7 +21,7 @@ func moduleToComposableKind(themaRuntime *thema.Runtime, commonFS fs.FS, moduleP
 
 	overlayFS := merged_fs.NewMergedFS(commonFS, moduleFS)
 
-	cueInstance, err := kindsys.BuildInstance(themaRuntime.Context(), ".", "composable", overlayFS)
+	cueInstance, err := kindsys.BuildInstance(themaRuntime.Context(), ".", "kind", overlayFS)
 	if err != nil {
 		return nil, fmt.Errorf("could not load kindsys instance: %w", err)
 	}
