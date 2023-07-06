@@ -41,6 +41,14 @@ type options struct {
 	imports []string
 }
 
+func (opts options) versionString() string {
+	if opts.targetVersion == "next" {
+		return "next"
+	}
+
+	return "v" + opts.targetVersion
+}
+
 func (opts options) maturity() kindsys.Maturity {
 	switch opts.minimumMaturity {
 	case "merged":
@@ -158,7 +166,7 @@ func doGenerate(opts options) error {
 
 	// Here begins the code generation setup
 	rootCodeJenFS := codejen.NewFS()
-	targetJennies := lineUpJennies("v"+opts.targetVersion, opts.excludeTargets)
+	targetJennies := lineUpJennies(opts.versionString(), opts.excludeTargets)
 
 	// Run the generation process for the desired kinds
 	for kind, generator := range kindGenerators {
@@ -224,13 +232,13 @@ func generateComposableKinds(opts options, themaRuntime *thema.Runtime, commonFS
 
 // Line up all the jennies from all the language targets, prefixing them with
 // their lang target subpaths.
-func lineUpJennies(targetGrafanaVersion string, excludedTargets []string) jen.TargetJennies {
+func lineUpJennies(targetVersion string, excludedTargets []string) jen.TargetJennies {
 	targets := jen.NewTargetJennies()
 
 	targetMap := map[string]jen.TargetJennies{
-		"go":         _go.JenniesForGo(targetGrafanaVersion), // This is not ready yet
-		"jsonschema": jsonschema.JenniesForJsonSchema(targetGrafanaVersion),
-		"jsonnet":    jsonnet.JenniesForJsonnet(targetGrafanaVersion),
+		"go":         _go.JenniesForGo(targetVersion), // This is not ready yet
+		"jsonschema": jsonschema.JenniesForJsonSchema(targetVersion),
+		"jsonnet":    jsonnet.JenniesForJsonnet(targetVersion),
 	}
 
 	for path, target := range targetMap {
