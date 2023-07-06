@@ -145,24 +145,10 @@ func doGenerate(opts options) error {
 		"composable": generateComposableKinds,
 	}
 
-	importDefinitions, err := opts.includeImports()
+	commonFS, err := buildBaseFSWithLibraries(opts)
 	if err != nil {
 		return err
 	}
-
-	var librariesFS []fs.FS
-	for _, importDefinition := range importDefinitions {
-		fmt.Printf("Loading '%s' module from '%s'\n", importDefinition.importPath, importDefinition.fsPath)
-
-		libraryFS, err := dirToPrefixedFS(importDefinition.fsPath, "cue.mod/pkg/"+importDefinition.importPath)
-		if err != nil {
-			return err
-		}
-
-		librariesFS = append(librariesFS, libraryFS)
-	}
-
-	commonFS := merged_fs.MergeMultiple(librariesFS...)
 
 	// Here begins the code generation setup
 	rootCodeJenFS := codejen.NewFS()
@@ -192,6 +178,27 @@ func doGenerate(opts options) error {
 	}
 
 	return nil
+}
+
+func buildBaseFSWithLibraries(opts options) (fs.FS, error) {
+	importDefinitions, err := opts.includeImports()
+	if err != nil {
+		return nil, err
+	}
+
+	var librariesFS []fs.FS
+	for _, importDefinition := range importDefinitions {
+		fmt.Printf("Loading '%s' module from '%s'\n", importDefinition.importPath, importDefinition.fsPath)
+
+		libraryFS, err := dirToPrefixedFS(importDefinition.fsPath, "cue.mod/pkg/"+importDefinition.importPath)
+		if err != nil {
+			return nil, err
+		}
+
+		librariesFS = append(librariesFS, libraryFS)
+	}
+
+	return merged_fs.MergeMultiple(librariesFS...), nil
 }
 
 func generateCoreKinds(opts options, themaRuntime *thema.Runtime, _ fs.FS, targetJennies jen.TargetJennies) (*codejen.FS, error) {
