@@ -17,7 +17,7 @@ func JenniesForJsonnet(targetGrafanaVersion string) jen.TargetJennies {
 	)
 	tgt.Composable.Append(
 		// oooonly need to inject the proper path interstitial to make this right
-		&JsonnetComposableImportsJenny{},
+		&JsonnetComposableImportsJenny{GrafanaVersion: targetGrafanaVersion},
 		jen.ComposableLatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "composable"), JsonnetSchemaJenny{}),
 	)
 
