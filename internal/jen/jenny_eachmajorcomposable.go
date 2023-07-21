@@ -34,7 +34,7 @@ func (j *clmox) JennyName() string {
 func (j *clmox) Generate(k kindsys.Composable) (codejen.Files, error) {
 	si, err := kindsys.FindSchemaInterface(k.Def().Properties.SchemaInterface)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	sfg := codegen.SchemaForGen{
 		Name:    k.Lineage().Name(),
