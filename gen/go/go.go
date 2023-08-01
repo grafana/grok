@@ -3,8 +3,8 @@ package _go
 import (
 	"path/filepath"
 
-	"github.com/grafana/grafana/pkg/codegen"
 	"github.com/grafana/grok/internal/jen"
+	"github.com/grafana/kindsys/pkg/codegen"
 )
 
 // Key things
@@ -28,7 +28,7 @@ func JenniesForGo(targetGrafanaVersion string) jen.TargetJennies {
 
 	tgt.Composable.Append(
 		// oooonly need to inject the proper path interstitial to make this right
-		jen.ComposableLatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "composable"), GoTypesJenny{}),
+		codegen.ComposableLatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "composable"), codegen.GoTypesJenny{}),
 	)
 
 	return tgt

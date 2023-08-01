@@ -14,6 +14,7 @@ import (
 	"github.com/grafana/grok/gen/jsonschema"
 	"github.com/grafana/grok/internal/jen"
 	"github.com/grafana/kindsys"
+	"github.com/grafana/kindsys/pkg/codegen"
 	"github.com/grafana/thema"
 	"github.com/spf13/cobra"
 	"github.com/yalue/merged_fs"
@@ -253,8 +254,8 @@ func lineUpJennies(targetVersion string, excludedTargets []string) jen.TargetJen
 			continue
 		}
 
-		target.Core.AddPostprocessors(jen.Prefixer(path), jen.SlashHeaderMapper(path))
-		target.Composable.AddPostprocessors(jen.Prefixer(path), jen.SlashHeaderMapper(path))
+		target.Core.AddPostprocessors(codegen.Prefixer(path), codegen.SlashHeaderMapper(path))
+		target.Composable.AddPostprocessors(codegen.Prefixer(path), codegen.SlashHeaderMapper(path))
 
 		targets.Core.AppendManyToMany(target.Core)
 		targets.Composable.AppendManyToMany(target.Composable)
