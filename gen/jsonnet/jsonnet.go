@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/grafana/grafana/pkg/codegen"
 	"github.com/grafana/grok/internal/jen"
+	"github.com/grafana/kindsys/pkg/codegen"
 )
 
 func JenniesForJsonnet(targetGrafanaVersion string) jen.TargetJennies {
@@ -18,7 +18,7 @@ func JenniesForJsonnet(targetGrafanaVersion string) jen.TargetJennies {
 	tgt.Composable.Append(
 		// oooonly need to inject the proper path interstitial to make this right
 		&JsonnetComposableImportsJenny{GrafanaVersion: targetGrafanaVersion},
-		jen.ComposableLatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "composable"), JsonnetSchemaJenny{}),
+		codegen.ComposableLatestMajorsOrXJenny(filepath.Join(targetGrafanaVersion, "kinds", "composable"), JsonnetSchemaJenny{}),
 	)
 
 	return tgt

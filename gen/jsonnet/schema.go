@@ -5,7 +5,7 @@ import (
 
 	"cuelang.org/go/cue/cuecontext"
 	"github.com/grafana/codejen"
-	"github.com/grafana/grafana/pkg/codegen"
+	"github.com/grafana/kindsys/pkg/codegen"
 	"github.com/grafana/thema/encoding/jsonschema"
 )
 
@@ -30,5 +30,5 @@ func (j JsonnetSchemaJenny) Generate(sfg codegen.SchemaForGen) (*codejen.File, e
 	// @TODO we should be receiving a name without schema interface type so that we don't
 	// need to strip it with a hack like this:
 	name := fixKindName(sfg.Schema.Lineage().Name())
-	return codejen.NewFile(name+"_types_gen.json", []byte(str), j), nil
+	return codejen.NewFile(name+"_types_gen.json", str, j), nil
 }

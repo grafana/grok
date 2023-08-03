@@ -17,6 +17,7 @@ import (
 	"github.com/grafana/grok/gen/jsonschema"
 	"github.com/grafana/grok/internal/jen"
 	"github.com/grafana/kindsys"
+	"github.com/grafana/kindsys/pkg/codegen"
 )
 
 func main() {
@@ -93,8 +94,8 @@ func lineUpJennies(grafanaVersion string) jen.TargetJennies {
 	}
 
 	for path, tj := range tgtmap {
-		tj.Core.AddPostprocessors(jen.Prefixer(path), jen.SlashHeaderMapper(path))
-		tj.Composable.AddPostprocessors(jen.Prefixer(path), jen.SlashHeaderMapper(path))
+		tj.Core.AddPostprocessors(codegen.Prefixer(path), codegen.SlashHeaderMapper(path))
+		tj.Composable.AddPostprocessors(codegen.Prefixer(path), codegen.SlashHeaderMapper(path))
 		tgt.Core.AppendManyToMany(tj.Core)
 		tgt.Composable.AppendManyToMany(tj.Composable)
 	}
