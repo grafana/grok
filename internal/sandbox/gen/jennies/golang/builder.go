@@ -38,7 +38,7 @@ func (jenny GoBuilder) generateFile(file *ast.File) ([]byte, error) {
 	buffer.WriteString(fmt.Sprintf("package %s\n\n", file.Package))
 
 	// import generated types
-	buffer.WriteString("import \"github.com/grafana/grok/newgen/dashboard/types\"\n\n")
+	buffer.WriteString(fmt.Sprintf("import \"github.com/grafana/grok/newgen/%s/types\"\n\n", file.Package))
 
 	// Option type declaration
 	buffer.WriteString("type Option func(builder *Builder) error\n\n")
