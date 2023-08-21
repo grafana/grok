@@ -1,3 +1,9 @@
+// Theme of dashboard.
+export enum DashboardStyle {
+	Light = "light",
+	Dark = "dark",
+}
+
 // This is a dashboard.
 export interface Dashboard {
 	// Unique numeric identifier for the dashboard.
@@ -17,7 +23,6 @@ export interface Dashboard {
 	// Tags associated with dashboard.
 	tags?: string[];
 	// Theme of dashboard.
-	// Default value: dark.
 	style: DashboardStyle;
 	// Timezone of dashboard. Accepted values are IANA TZDB zone ID or "browser" or "utc".
 	timezone?: string;

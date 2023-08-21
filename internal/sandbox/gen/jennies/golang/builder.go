@@ -10,13 +10,18 @@ import (
 )
 
 type GoBuilder struct {
+	defaults []string
+	file     *ast.File
 }
 
-func (jenny GoBuilder) JennyName() string {
+func (jenny *GoBuilder) JennyName() string {
 	return "GoRawTypes"
 }
 
-func (jenny GoBuilder) Generate(file *ast.File) (*codejen.File, error) {
+func (jenny *GoBuilder) Generate(file *ast.File) (*codejen.File, error) {
+	jenny.file = file
+	jenny.defaults = nil
+
 	output, err := jenny.generateFile(file)
 	if err != nil {
 		return nil, err
@@ -25,7 +30,7 @@ func (jenny GoBuilder) Generate(file *ast.File) (*codejen.File, error) {
 	return codejen.NewFile(file.Package+"_builder_gen.go", output, jenny), nil
 }
 
-func (jenny GoBuilder) generateFile(file *ast.File) ([]byte, error) {
+func (jenny *GoBuilder) generateFile(file *ast.File) ([]byte, error) {
 	var buffer strings.Builder
 	tr := newPreprocessor()
 	entryPointType, ok := file.EntryPointType()
@@ -75,10 +80,19 @@ func (jenny GoBuilder) generateFile(file *ast.File) ([]byte, error) {
 		buffer.WriteString("\n")
 	}
 
+	// add calls to set default values
+	buffer.WriteString("func defaults() []Option {\n")
+	buffer.WriteString("return []Option{\n")
+	for _, defaultCall := range jenny.defaults {
+		buffer.WriteString(defaultCall + ",\n")
+	}
+	buffer.WriteString("}\n")
+	buffer.WriteString("}\n")
+
 	return []byte(buffer.String()), nil
 }
 
-func (jenny GoBuilder) formatTypeDef(def ast.Definition) ([]byte, error) {
+func (jenny *GoBuilder) formatTypeDef(def ast.Definition) ([]byte, error) {
 	// nothing to do for enums & other non-struct types
 	if def.Kind != ast.KindStruct {
 		return nil, nil
@@ -92,7 +106,7 @@ func (jenny GoBuilder) formatTypeDef(def ast.Definition) ([]byte, error) {
 	return jenny.formatMainTypeOptions(def)
 }
 
-func (jenny GoBuilder) formatMainTypeOptions(def ast.Definition) ([]byte, error) {
+func (jenny *GoBuilder) formatMainTypeOptions(def ast.Definition) ([]byte, error) {
 	var buffer strings.Builder
 
 	for _, fieldDef := range def.Fields {
@@ -102,7 +116,7 @@ func (jenny GoBuilder) formatMainTypeOptions(def ast.Definition) ([]byte, error)
 	return []byte(buffer.String()), nil
 }
 
-func (jenny GoBuilder) fieldToOption(def ast.FieldDefinition) string {
+func (jenny *GoBuilder) fieldToOption(def ast.FieldDefinition) string {
 	var buffer strings.Builder
 
 	fieldName := strings.Title(def.Name)
@@ -113,6 +127,15 @@ func (jenny GoBuilder) fieldToOption(def ast.FieldDefinition) string {
 	// FIXME: this condition is probably wrong
 	if def.Type.Nullable || (def.Type.Kind != ast.KindArray && def.Type.Kind != ast.KindStruct && !def.Required) {
 		asPointer = "&"
+	}
+
+	defaultValue := def.Type.Default
+	if def.Type.IsReference() {
+		referredType := jenny.file.LocateDefinition(string(def.Type.Kind))
+		defaultValue = referredType.Default
+	}
+	if defaultValue != nil {
+		jenny.defaults = append(jenny.defaults, fmt.Sprintf("%[1]s(%#[2]v)", fieldName, defaultValue))
 	}
 
 	buffer.WriteString(fmt.Sprintf(`
@@ -129,7 +152,7 @@ func %[1]s(%[2]s %[3]s) Option {
 	return buffer.String()
 }
 
-func (jenny GoBuilder) constraints(argumentName string, constraints []ast.TypeConstraint) []string {
+func (jenny *GoBuilder) constraints(argumentName string, constraints []ast.TypeConstraint) []string {
 	output := make([]string, 0, len(constraints))
 
 	for _, constraint := range constraints {
@@ -139,7 +162,7 @@ func (jenny GoBuilder) constraints(argumentName string, constraints []ast.TypeCo
 	return output
 }
 
-func (jenny GoBuilder) constraint(argumentName string, constraint ast.TypeConstraint) string {
+func (jenny *GoBuilder) constraint(argumentName string, constraint ast.TypeConstraint) string {
 	var buffer strings.Builder
 
 	buffer.WriteString(fmt.Sprintf("if !(%s) {\n", jenny.constraintComparison(argumentName, constraint)))
@@ -149,7 +172,7 @@ func (jenny GoBuilder) constraint(argumentName string, constraint ast.TypeConstr
 	return buffer.String()
 }
 
-func (jenny GoBuilder) constraintComparison(argumentName string, constraint ast.TypeConstraint) string {
+func (jenny *GoBuilder) constraintComparison(argumentName string, constraint ast.TypeConstraint) string {
 	if constraint.Op == "minLength" {
 		return fmt.Sprintf("len([]rune(%[1]s)) >= %[2]v", argumentName, constraint.Args[0])
 	}

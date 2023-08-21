@@ -46,7 +46,7 @@ func main() {
 	generationTargets.AppendOneToOne(
 		// Golang
 		golang.GoRawTypes{},
-		golang.GoBuilder{},
+		&golang.GoBuilder{},
 
 		// Typescript
 		typescript.TypescriptRawTypes{},

@@ -19,7 +19,7 @@ func New(title string, options ...Option) (Builder, error) {
 
 	builder := &Builder{internal: dashboard}
 
-	for _, opt := range options {
+	for _, opt := range append(defaults(), options...) {
 		if err := opt(builder); err != nil {
 			return *builder, err
 		}
@@ -45,6 +45,7 @@ func (builder *Builder) MarshalJSON() ([]byte, error) {
 func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 	return json.MarshalIndent(builder.internal, "", "  ")
 }
+
 func Id(id int64) Option {
 	return func(builder *Builder) error {
 
@@ -254,5 +255,16 @@ func Links(links []types.DashboardLink) Option {
 		builder.internal.Links = links
 
 		return nil
+	}
+}
+
+func defaults() []Option {
+	return []Option{
+		Style("dark"),
+		Timezone("browser"),
+		Editable(true),
+		GraphTooltip(0),
+		FiscalYearStartMonth(0),
+		SchemaVersion(36),
 	}
 }

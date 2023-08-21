@@ -152,3 +152,13 @@ func (file *File) EntryPointType() (Definition, bool) {
 
 	return Definition{}, false
 }
+
+func (file *File) LocateDefinition(name string) Definition {
+	for _, def := range file.Types {
+		if def.Name == name {
+			return def
+		}
+	}
+
+	return Definition{}
+}

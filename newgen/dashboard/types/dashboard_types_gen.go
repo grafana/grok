@@ -6,7 +6,6 @@ package types
 // See https://grafana.com/docs/grafana/latest/dashboards/build-dashboards/annotate-visualizations/
 type AnnotationContainer struct {
 	// List of annotations
-	// Default: []interface {}(nil)
 	List []AnnotationQuery `json:"list,omitempty"`
 }
 
@@ -15,7 +14,6 @@ type AnnotationPanelFilter struct {
 	// Default: false
 	Exclude *bool `json:"exclude,omitempty"`
 	// Panel IDs that should be included or excluded
-	// Default: []interface {}(nil)
 	Ids []uint8 `json:"ids"`
 }
 
@@ -54,7 +52,6 @@ type AnnotationTarget struct {
 	MatchAny bool `json:"matchAny"`
 	// Only required/valid for the grafana datasource...
 	// but code+tests is already depending on it so hard to change
-	// Default: []interface {}(nil)
 	Tags []string `json:"tags"`
 	// Only required/valid for the grafana datasource...
 	// but code+tests is already depending on it so hard to change
@@ -78,10 +75,8 @@ type Dashboard struct {
 	// ID of a dashboard imported from the https://grafana.com/grafana/dashboards/ portal
 	GnetId *string `json:"gnetId,omitempty"`
 	// Tags associated with dashboard.
-	// Default: []interface {}(nil)
 	Tags []string `json:"tags,omitempty"`
 	// Theme of dashboard.
-	// Default value: dark.
 	Style DashboardStyle `json:"style"`
 	// Timezone of dashboard. Accepted values are IANA TZDB zone ID or "browser" or "utc".
 	// Default: "browser"
@@ -120,7 +115,6 @@ type Dashboard struct {
 	// Version of the dashboard, incremented each time the dashboard is updated.
 	Version *uint32 `json:"version,omitempty"`
 	// List of dashboard panels
-	// Default: []interface {}(nil)
 	Panels []RowPanel `json:"panels,omitempty"`
 	// Configured template variables
 	Templating *DashboardTemplating `json:"templating,omitempty"`
@@ -130,7 +124,6 @@ type Dashboard struct {
 	// See https://grafana.com/docs/grafana/latest/dashboards/build-dashboards/annotate-visualizations/
 	Annotations *AnnotationContainer `json:"annotations,omitempty"`
 	// Links with references to other dashboards or external websites.
-	// Default: []interface {}(nil)
 	Links []DashboardLink `json:"links,omitempty"`
 }
 
@@ -158,7 +151,6 @@ type DashboardLink struct {
 	// Link URL. Only required/valid if the type is link
 	Url string `json:"url"`
 	// List of tags to limit the linked dashboards. If empty, all dashboards will be displayed. Only valid if the type is dashboards
-	// Default: []interface {}(nil)
 	Tags []string `json:"tags"`
 	// If true, all dashboards links will be displayed in a dropdown. If false, all dashboards links will be displayed side by side. Only valid if the type is dashboards
 	// Default: false
@@ -191,7 +183,6 @@ const (
 
 type DashboardTemplating struct {
 	// List of configured template variables with their saved values along with some other metadata
-	// Default: []interface {}(nil)
 	List []VariableModel `json:"list,omitempty"`
 }
 
@@ -323,14 +314,12 @@ type FieldConfig struct {
 	// The maximum value used in percentage threshold calculations. Leave blank for auto calculation based on all series and fields.
 	Max *float64 `json:"max,omitempty"`
 	// Convert input values into a display string
-	// Default: []interface {}(nil)
 	Mappings []ValueMapOrRangeMapOrRegexMapOrSpecialValueMap `json:"mappings,omitempty"`
 	// Map numeric values to states
 	Thresholds *ThresholdsConfig `json:"thresholds,omitempty"`
 	// Panel color configuration
 	Color *FieldColor `json:"color,omitempty"`
 	// The behavior when clicking on a result
-	// Default: []interface {}(nil)
 	Links []any `json:"links,omitempty"`
 	// Alternative to empty string
 	NoValue *string `json:"noValue,omitempty"`
@@ -346,13 +335,11 @@ type FieldConfigSource struct {
 	// Defaults are the options applied to all fields.
 	Defaults FieldConfig `json:"defaults"`
 	// Overrides are the options applied to specific fields overriding the defaults.
-	// Default: []interface {}(nil)
 	Overrides []FieldConfigSourceOverride `json:"overrides"`
 }
 
 type FieldConfigSourceOverride struct {
-	Matcher MatcherConfig `json:"matcher"`
-	// Default: []interface {}(nil)
+	Matcher    MatcherConfig        `json:"matcher"`
 	Properties []DynamicConfigValue `json:"properties"`
 }
 
@@ -429,10 +416,8 @@ type Panel struct {
 	// The version of the plugin that is used for this panel. This is used to find the plugin to display the panel and to migrate old panel configs.
 	PluginVersion *string `json:"pluginVersion,omitempty"`
 	// Tags for the panel.
-	// Default: []interface {}(nil)
 	Tags []string `json:"tags,omitempty"`
 	// Depends on the panel plugin. See the plugin documentation for details.
-	// Default: []interface {}(nil)
 	Targets []Target `json:"targets,omitempty"`
 	// Panel title.
 	Title *string `json:"title,omitempty"`
@@ -446,7 +431,6 @@ type Panel struct {
 	// Grid position.
 	GridPos *GridPos `json:"gridPos,omitempty"`
 	// Panel links.
-	// Default: []interface {}(nil)
 	Links []DashboardLink `json:"links,omitempty"`
 	// Name of template variable to repeat for.
 	Repeat *string `json:"repeat,omitempty"`
@@ -460,7 +444,6 @@ type Panel struct {
 	// List of transformations that are applied to the panel data before rendering.
 	// When there are multiple transformations, Grafana applies them in the order they are listed.
 	// Each transformation creates a result set that then passes on to the next transformation in the processing pipeline.
-	// Default: []interface {}(nil)
 	Transformations []DataTransformerConfig `json:"transformations"`
 	// The min time interval setting defines a lower limit for the $__interval and $__interval_ms variables.
 	// This value must be formatted as a number followed by a valid time
@@ -540,7 +523,6 @@ type RowPanel struct {
 	// Unique identifier of the panel. Generated by Grafana when creating a new panel. It must be unique within a dashboard, but not globally.
 	Id uint32 `json:"id"`
 	// List of panels in the row
-	// Default: []interface {}(nil)
 	Panels []Panel `json:"panels"`
 	// Name of template variable to repeat for.
 	Repeat *string `json:"repeat,omitempty"`
@@ -606,7 +588,6 @@ type ThresholdsConfig struct {
 	// Thresholds mode.
 	Mode ThresholdsMode `json:"mode"`
 	// Must be sorted by 'value', first value is always -Infinity
-	// Default: []interface {}(nil)
 	Steps []Threshold `json:"steps"`
 }
 
@@ -710,7 +691,6 @@ type VariableModel struct {
 	// Default: false
 	Multi *bool `json:"multi,omitempty"`
 	// Options that can be selected for a variable.
-	// Default: []interface {}(nil)
 	Options []VariableOption `json:"options,omitempty"`
 	Refresh *VariableRefresh `json:"refresh,omitempty"`
 }

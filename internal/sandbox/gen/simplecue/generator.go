@@ -61,7 +61,7 @@ func (g *newGenerator) declareTopLevelType(name string, v cue.Value, isCueDefini
 
 	// Hinted as an enum
 	if typeHint == hintKindEnum {
-		return g.declareTopLevelEnum(name, v)
+		return g.declareEnum(name, v)
 	}
 
 	ik := v.IncompleteKind()
@@ -69,7 +69,7 @@ func (g *newGenerator) declareTopLevelType(name string, v cue.Value, isCueDefini
 	// Is it a string disjunction that we can turn into an enum?
 	disjunctions := appendSplit(nil, cue.OrOp, v)
 	if len(disjunctions) != 1 && ik&cue.StringKind == ik {
-		return g.declareTopLevelEnum(name, v)
+		return g.declareEnum(name, v)
 	}
 
 	switch v.IncompleteKind() {
@@ -80,7 +80,7 @@ func (g *newGenerator) declareTopLevelType(name string, v cue.Value, isCueDefini
 	}
 }
 
-func (g *newGenerator) declareTopLevelEnum(name string, v cue.Value) (*ast.Definition, error) {
+func (g *newGenerator) declareEnum(name string, v cue.Value) (*ast.Definition, error) {
 	// Restrict the expression of enums to ints or strings.
 	allowed := cue.StringKind | cue.IntKind
 	ik := v.IncompleteKind()
@@ -93,11 +93,17 @@ func (g *newGenerator) declareTopLevelEnum(name string, v cue.Value) (*ast.Defin
 		return nil, err
 	}
 
+	defaultValue, err := g.extractDefault(v)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ast.Definition{
 		Kind:     ast.KindEnum,
 		Name:     name,
 		Comments: commentsFromCueValue(v),
 		Values:   values,
+		Default:  defaultValue,
 	}, nil
 }
 
@@ -232,19 +238,19 @@ func (g *newGenerator) declareNode(v cue.Value) (*ast.Definition, error) {
 			return g.declareAnonymousEnum(v)
 		}
 
-		subTypes := make([]ast.Definition, 0, len(disjunctions))
+		branches := make([]ast.Definition, 0, len(disjunctions))
 		for _, subTypeValue := range disjunctions {
 			subType, err := g.declareNode(subTypeValue)
 			if err != nil {
 				return nil, err
 			}
 
-			subTypes = append(subTypes, *subType)
+			branches = append(branches, *subType)
 		}
 
 		return &ast.Definition{
 			Kind:     ast.KindDisjunction,
-			Branches: subTypes,
+			Branches: branches,
 			Nullable: false,
 		}, nil
 	}
@@ -325,7 +331,7 @@ func (g *newGenerator) declareAnonymousEnum(v cue.Value) (*ast.Definition, error
 	}
 
 	enumName := g.currentTopLevelTypeName + strings.Title(fieldName)
-	enumType, err := g.declareTopLevelEnum(enumName, v)
+	enumType, err := g.declareEnum(enumName, v)
 	if err != nil {
 		return nil, err
 	}
@@ -595,7 +601,9 @@ func (g *newGenerator) declareList(v cue.Value) (*ast.Definition, error) {
 		return nil, err
 	}
 
-	typeDef.Default = defVal
+	if len(defVal.([]interface{})) != 0 {
+		typeDef.Default = defVal
+	}
 
 	// works only for a closed/concrete list
 	if v.IsConcrete() {

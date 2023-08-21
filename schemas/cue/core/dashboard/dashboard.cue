@@ -30,8 +30,7 @@ Dashboard: {
 	tags?: [...string]
 
 	// Theme of dashboard.
-	// Default value: dark.
-	style: #DashboardStyle
+	style: "light" | *"dark"
 
 	// Timezone of dashboard. Accepted values are IANA TZDB zone ID or "browser" or "utc".
 	timezone?: string | *"browser"

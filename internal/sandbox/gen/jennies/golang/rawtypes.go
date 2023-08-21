@@ -106,6 +106,7 @@ func formatField(def ast.FieldDefinition, typesPkg string) string {
 		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
 	}
 
+	// ToDo: this doesn't follow references to other types like the builder jenny does
 	if def.Type.Default != nil {
 		buffer.WriteString(fmt.Sprintf("// Default: %#v\n", def.Type.Default))
 	}
