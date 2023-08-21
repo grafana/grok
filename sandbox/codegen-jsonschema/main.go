@@ -5,9 +5,7 @@ import (
 	"os"
 
 	"github.com/grafana/codejen"
-	"github.com/grafana/grok/internal/jen"
-	"github.com/grafana/grok/internal/sandbox/gen/ast"
-	"github.com/grafana/grok/internal/sandbox/gen/jennies/golang"
+	"github.com/grafana/grok/internal/sandbox/gen/jennies"
 	"github.com/grafana/grok/internal/sandbox/gen/jsonschema"
 )
 
@@ -28,18 +26,7 @@ func main() {
 	}
 
 	// Here begins the code generation setup
-	generationTargets := codejen.JennyListWithNamer[*ast.File](func(f *ast.File) string {
-		return f.Package
-	})
-	generationTargets.AppendOneToOne(
-		golang.GoRawTypes{},
-		golang.GoBuilder{},
-	)
-	generationTargets.AddPostprocessors(
-		golang.PostProcessFile,
-		jen.Prefixer(pkg),
-	)
-
+	generationTargets := jennies.All(pkg)
 	rootCodeJenFS := codejen.NewFS()
 
 	fs, err := generationTargets.GenerateFS(schemaAst)

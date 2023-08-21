@@ -6,10 +6,7 @@ import (
 	"cuelang.org/go/cue/cuecontext"
 	"cuelang.org/go/cue/load"
 	"github.com/grafana/codejen"
-	"github.com/grafana/grok/internal/jen"
-	"github.com/grafana/grok/internal/sandbox/gen/ast"
-	"github.com/grafana/grok/internal/sandbox/gen/jennies/golang"
-	"github.com/grafana/grok/internal/sandbox/gen/jennies/typescript"
+	"github.com/grafana/grok/internal/sandbox/gen/jennies"
 	"github.com/grafana/grok/internal/sandbox/gen/simplecue"
 )
 
@@ -40,22 +37,7 @@ func main() {
 	}
 
 	// Here begins the code generation setup
-	generationTargets := codejen.JennyListWithNamer[*ast.File](func(f *ast.File) string {
-		return f.Package
-	})
-	generationTargets.AppendOneToOne(
-		// Golang
-		golang.GoRawTypes{},
-		&golang.GoBuilder{},
-
-		// Typescript
-		typescript.TypescriptRawTypes{},
-	)
-	generationTargets.AddPostprocessors(
-		golang.PostProcessFile,
-		jen.Prefixer(pkg),
-	)
-
+	generationTargets := jennies.All(pkg)
 	rootCodeJenFS := codejen.NewFS()
 
 	fs, err := generationTargets.GenerateFS(schemaAst)

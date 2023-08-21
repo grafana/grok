@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/grafana/grok/newgen/dashboard"
+	"github.com/grafana/grok/newgen/dashboard/dashboard"
 	"github.com/grafana/grok/newgen/dashboard/types"
 )
 

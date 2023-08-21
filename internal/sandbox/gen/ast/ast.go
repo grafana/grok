@@ -139,12 +139,12 @@ type FieldDefinition struct {
 }
 
 type File struct {
-	Package string
-	Types   []Definition
+	Package     string
+	Definitions []Definition
 }
 
 func (file *File) EntryPointType() (Definition, bool) {
-	for _, typeDef := range file.Types {
+	for _, typeDef := range file.Definitions {
 		if typeDef.IsEntryPoint {
 			return typeDef, true
 		}
@@ -154,7 +154,7 @@ func (file *File) EntryPointType() (Definition, bool) {
 }
 
 func (file *File) LocateDefinition(name string) Definition {
-	for _, def := range file.Types {
+	for _, def := range file.Definitions {
 		if def.Name == name {
 			return def
 		}

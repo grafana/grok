@@ -41,7 +41,7 @@ func GenerateAST(schemaReader io.Reader, c Config) (*ast.File, error) {
 			return nil, err
 		}
 
-		g.file.Types = append(g.file.Types, *n)
+		g.file.Definitions = append(g.file.Definitions, *n)
 	}
 
 	return g.file, nil

@@ -47,7 +47,7 @@ func GenerateAST(val cue.Value, c Config) (*ast.File, error) {
 			return nil, err
 		}
 
-		g.file.Types = append(g.file.Types, *n)
+		g.file.Definitions = append(g.file.Definitions, *n)
 	}
 
 	return g.file, nil
@@ -281,7 +281,7 @@ func (g *newGenerator) declareNode(v cue.Value) (*ast.Definition, error) {
 				return nil, err
 			}
 
-			g.file.Types = append(g.file.Types, *def)
+			g.file.Definitions = append(g.file.Definitions, *def)
 
 			return nil, errSkip
 		}
@@ -336,7 +336,7 @@ func (g *newGenerator) declareAnonymousEnum(v cue.Value) (*ast.Definition, error
 		return nil, err
 	}
 
-	g.file.Types = append(g.file.Types, *enumType)
+	g.file.Definitions = append(g.file.Definitions, *enumType)
 
 	return &ast.Definition{
 		Kind: ast.Kind(enumType.Name),

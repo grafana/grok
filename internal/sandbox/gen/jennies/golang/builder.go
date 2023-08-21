@@ -18,32 +18,38 @@ func (jenny *GoBuilder) JennyName() string {
 	return "GoRawTypes"
 }
 
-func (jenny *GoBuilder) Generate(file *ast.File) (*codejen.File, error) {
+func (jenny *GoBuilder) Generate(file *ast.File) (codejen.Files, error) {
 	jenny.file = file
-	jenny.defaults = nil
 
-	output, err := jenny.generateFile(file)
-	if err != nil {
-		return nil, err
+	tr := newPreprocessor()
+	tr.translateDefinitions(file.Definitions)
+
+	var files []codejen.File
+	for _, definition := range tr.sortedTypes() {
+		fmt.Println(definition.Name)
+		if definition.Kind != ast.KindStruct {
+			continue
+		}
+
+		output, err := jenny.generateDefinition(definition)
+		if err != nil {
+			return nil, err
+		}
+
+		files = append(files, *codejen.NewFile(strings.ToLower(definition.Name)+"/builder_gen.go", output, jenny))
 	}
 
-	return codejen.NewFile(file.Package+"_builder_gen.go", output, jenny), nil
+	return files, nil
 }
 
-func (jenny *GoBuilder) generateFile(file *ast.File) ([]byte, error) {
+func (jenny *GoBuilder) generateDefinition(def ast.Definition) ([]byte, error) {
 	var buffer strings.Builder
-	tr := newPreprocessor()
-	entryPointType, ok := file.EntryPointType()
-	if !ok {
-		return nil, fmt.Errorf("coult not find entrypoint type")
-	}
+	jenny.defaults = nil
 
-	tr.translateDefinitions(file.Types)
-
-	buffer.WriteString(fmt.Sprintf("package %s\n\n", file.Package))
+	buffer.WriteString(fmt.Sprintf("package %s\n\n", jenny.file.Package))
 
 	// import generated types
-	buffer.WriteString(fmt.Sprintf("import \"github.com/grafana/grok/newgen/%s/types\"\n\n", file.Package))
+	buffer.WriteString(fmt.Sprintf("import \"github.com/grafana/grok/newgen/%s/types\"\n\n", jenny.file.Package))
 
 	// Option type declaration
 	buffer.WriteString("type Option func(builder *Builder) error\n\n")
@@ -52,10 +58,10 @@ func (jenny *GoBuilder) generateFile(file *ast.File) ([]byte, error) {
 	buffer.WriteString(fmt.Sprintf(`type Builder struct {
 	internal *types.%s
 }
-`, entryPointType.Name))
+`, def.Name))
 
 	// Include veneers if any
-	templateFile := fmt.Sprintf("%s.builder.go.tmpl", strings.ToLower(entryPointType.Name))
+	templateFile := fmt.Sprintf("%s.builder.go.tmpl", strings.ToLower(def.Name))
 	tmpl := templates.Lookup(templateFile)
 	if tmpl != nil {
 		buf := bytes.Buffer{}
@@ -66,21 +72,13 @@ func (jenny *GoBuilder) generateFile(file *ast.File) ([]byte, error) {
 		buffer.WriteString(buf.String())
 	}
 
-	// Define options from types
-	for _, typeDef := range tr.sortedTypes() {
-		typeDefGen, err := jenny.formatTypeDef(typeDef)
-		if err != nil {
-			return nil, err
-		}
-		if typeDefGen == nil {
-			continue
-		}
-
-		buffer.Write(typeDefGen)
-		buffer.WriteString("\n")
+	// Define options from fields
+	for _, fieldDef := range def.Fields {
+		buffer.WriteString(jenny.fieldToOption(fieldDef))
 	}
 
 	// add calls to set default values
+	buffer.WriteString("\n")
 	buffer.WriteString("func defaults() []Option {\n")
 	buffer.WriteString("return []Option{\n")
 	for _, defaultCall := range jenny.defaults {
@@ -88,30 +86,6 @@ func (jenny *GoBuilder) generateFile(file *ast.File) ([]byte, error) {
 	}
 	buffer.WriteString("}\n")
 	buffer.WriteString("}\n")
-
-	return []byte(buffer.String()), nil
-}
-
-func (jenny *GoBuilder) formatTypeDef(def ast.Definition) ([]byte, error) {
-	// nothing to do for enums & other non-struct types
-	if def.Kind != ast.KindStruct {
-		return nil, nil
-	}
-
-	// No options if not main/entrypoint type
-	if !def.IsEntryPoint {
-		return nil, nil
-	}
-
-	return jenny.formatMainTypeOptions(def)
-}
-
-func (jenny *GoBuilder) formatMainTypeOptions(def ast.Definition) ([]byte, error) {
-	var buffer strings.Builder
-
-	for _, fieldDef := range def.Fields {
-		buffer.WriteString(jenny.fieldToOption(fieldDef))
-	}
 
 	return []byte(buffer.String()), nil
 }

@@ -27,7 +27,7 @@ func (jenny TypescriptRawTypes) Generate(file *ast.File) (*codejen.File, error) 
 func (jenny TypescriptRawTypes) generateFile(file *ast.File) ([]byte, error) {
 	var buffer strings.Builder
 
-	for _, typeDef := range file.Types {
+	for _, typeDef := range file.Definitions {
 		typeDefGen, err := jenny.formatTypeDef(typeDef)
 		if err != nil {
 			return nil, err

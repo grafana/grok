@@ -28,7 +28,7 @@ func (jenny GoRawTypes) generateFile(file *ast.File) ([]byte, error) {
 	var buffer strings.Builder
 	tr := newPreprocessor()
 
-	tr.translateDefinitions(file.Types)
+	tr.translateDefinitions(file.Definitions)
 
 	buffer.WriteString("package types\n\n")
 
