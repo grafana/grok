@@ -1,8 +1,12 @@
-package dashboard
+package panel
 
 import (
 	"errors"
 
+	"github.com/grafana/grok/newgen/dashboard/datasourceref"
+	"github.com/grafana/grok/newgen/dashboard/fieldconfigsource"
+	"github.com/grafana/grok/newgen/dashboard/gridpos"
+	"github.com/grafana/grok/newgen/dashboard/librarypanelref"
 	"github.com/grafana/grok/newgen/dashboard/types"
 )
 
@@ -23,6 +27,10 @@ func New(options ...Option) (Builder, error) {
 	}
 
 	return *builder, nil
+}
+
+func (builder *Builder) Internal() *types.Panel {
+	return builder.internal
 }
 
 func Type(typeArg string) Option {
@@ -100,19 +108,27 @@ func Transparent(transparent bool) Option {
 	}
 }
 
-func Datasource(datasource types.DataSourceRef) Option {
+func Datasource(opts ...datasourceref.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := datasourceref.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.Datasource = &datasource
+		builder.internal.Datasource = resource.Internal()
 
 		return nil
 	}
 }
 
-func GridPos(gridPos types.GridPos) Option {
+func GridPos(opts ...gridpos.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := gridpos.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.GridPos = &gridPos
+		builder.internal.GridPos = resource.Internal()
 
 		return nil
 	}
@@ -199,10 +215,14 @@ func TimeShift(timeShift string) Option {
 	}
 }
 
-func LibraryPanel(libraryPanel types.LibraryPanelRef) Option {
+func LibraryPanel(opts ...librarypanelref.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := librarypanelref.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.LibraryPanel = &libraryPanel
+		builder.internal.LibraryPanel = resource.Internal()
 
 		return nil
 	}
@@ -217,10 +237,14 @@ func Options(options any) Option {
 	}
 }
 
-func FieldConfig(fieldConfig types.FieldConfigSource) Option {
+func FieldConfig(opts ...fieldconfigsource.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := fieldconfigsource.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.FieldConfig = fieldConfig
+		builder.internal.FieldConfig = resource.Internal()
 
 		return nil
 	}

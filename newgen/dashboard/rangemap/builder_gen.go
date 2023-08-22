@@ -1,4 +1,4 @@
-package dashboard
+package rangemap
 
 import (
 	"errors"
@@ -23,6 +23,10 @@ func New(options ...Option) (Builder, error) {
 	}
 
 	return *builder, nil
+}
+
+func (builder *Builder) Internal() *types.RangeMap {
+	return builder.internal
 }
 
 func Type(typeArg string) Option {

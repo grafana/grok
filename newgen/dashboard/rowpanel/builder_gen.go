@@ -1,6 +1,10 @@
-package dashboard
+package rowpanel
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"github.com/grafana/grok/newgen/dashboard/datasourceref"
+	"github.com/grafana/grok/newgen/dashboard/gridpos"
+	"github.com/grafana/grok/newgen/dashboard/types"
+)
 
 type Option func(builder *Builder) error
 
@@ -19,6 +23,10 @@ func New(options ...Option) (Builder, error) {
 	}
 
 	return *builder, nil
+}
+
+func (builder *Builder) Internal() *types.RowPanel {
+	return builder.internal
 }
 
 func Type(typeArg string) Option {
@@ -48,19 +56,27 @@ func Title(title string) Option {
 	}
 }
 
-func Datasource(datasource types.DataSourceRef) Option {
+func Datasource(opts ...datasourceref.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := datasourceref.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.Datasource = &datasource
+		builder.internal.Datasource = resource.Internal()
 
 		return nil
 	}
 }
 
-func GridPos(gridPos types.GridPos) Option {
+func GridPos(opts ...gridpos.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := gridpos.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.GridPos = &gridPos
+		builder.internal.GridPos = resource.Internal()
 
 		return nil
 	}

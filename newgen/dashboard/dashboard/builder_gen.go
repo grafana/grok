@@ -3,6 +3,9 @@ package dashboard
 import (
 	"errors"
 
+	"github.com/grafana/grok/newgen/dashboard/annotationcontainer"
+	"github.com/grafana/grok/newgen/dashboard/dashboardtemplating"
+	"github.com/grafana/grok/newgen/dashboard/timepicker"
 	"github.com/grafana/grok/newgen/dashboard/types"
 )
 
@@ -26,6 +29,10 @@ func New(title string, options ...Option) (Builder, error) {
 	}
 
 	return *builder, nil
+}
+
+func (builder *Builder) Internal() *types.Dashboard {
+	return builder.internal
 }
 
 func Id(id int64) Option {
@@ -141,10 +148,14 @@ func Time(time struct {
 	}
 }
 
-func Timepicker(timepicker types.TimePicker) Option {
+func Timepicker(opts ...timepicker.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := timepicker.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.Timepicker = &timepicker
+		builder.internal.Timepicker = resource.Internal()
 
 		return nil
 	}
@@ -216,19 +227,27 @@ func Panels(panels []types.RowPanel) Option {
 	}
 }
 
-func Templating(templating types.DashboardTemplating) Option {
+func Templating(opts ...dashboardtemplating.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := dashboardtemplating.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.Templating = &templating
+		builder.internal.Templating = resource.Internal()
 
 		return nil
 	}
 }
 
-func Annotations(annotations types.AnnotationContainer) Option {
+func Annotations(opts ...annotationcontainer.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := annotationcontainer.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.Annotations = &annotations
+		builder.internal.Annotations = resource.Internal()
 
 		return nil
 	}

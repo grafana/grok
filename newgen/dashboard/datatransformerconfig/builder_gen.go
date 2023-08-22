@@ -1,6 +1,9 @@
-package dashboard
+package datatransformerconfig
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"github.com/grafana/grok/newgen/dashboard/matcherconfig"
+	"github.com/grafana/grok/newgen/dashboard/types"
+)
 
 type Option func(builder *Builder) error
 
@@ -21,6 +24,10 @@ func New(options ...Option) (Builder, error) {
 	return *builder, nil
 }
 
+func (builder *Builder) Internal() *types.DataTransformerConfig {
+	return builder.internal
+}
+
 func Id(id string) Option {
 	return func(builder *Builder) error {
 
@@ -39,10 +46,14 @@ func Disabled(disabled bool) Option {
 	}
 }
 
-func Filter(filter types.MatcherConfig) Option {
+func Filter(opts ...matcherconfig.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := matcherconfig.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.Filter = &filter
+		builder.internal.Filter = resource.Internal()
 
 		return nil
 	}

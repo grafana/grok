@@ -1,4 +1,4 @@
-package dashboard
+package fieldcolor
 
 import "github.com/grafana/grok/newgen/dashboard/types"
 
@@ -19,6 +19,10 @@ func New(options ...Option) (Builder, error) {
 	}
 
 	return *builder, nil
+}
+
+func (builder *Builder) Internal() *types.FieldColor {
+	return builder.internal
 }
 
 func Mode(mode types.FieldColorModeId) Option {

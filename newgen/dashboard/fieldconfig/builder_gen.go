@@ -1,6 +1,10 @@
-package dashboard
+package fieldconfig
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"github.com/grafana/grok/newgen/dashboard/fieldcolor"
+	"github.com/grafana/grok/newgen/dashboard/thresholdsconfig"
+	"github.com/grafana/grok/newgen/dashboard/types"
+)
 
 type Option func(builder *Builder) error
 
@@ -19,6 +23,10 @@ func New(options ...Option) (Builder, error) {
 	}
 
 	return *builder, nil
+}
+
+func (builder *Builder) Internal() *types.FieldConfig {
+	return builder.internal
 }
 
 func DisplayName(displayName string) Option {
@@ -120,19 +128,27 @@ func Mappings(mappings []types.ValueMapOrRangeMapOrRegexMapOrSpecialValueMap) Op
 	}
 }
 
-func Thresholds(thresholds types.ThresholdsConfig) Option {
+func Thresholds(opts ...thresholdsconfig.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := thresholdsconfig.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.Thresholds = &thresholds
+		builder.internal.Thresholds = resource.Internal()
 
 		return nil
 	}
 }
 
-func Color(color types.FieldColor) Option {
+func Color(opts ...fieldcolor.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := fieldcolor.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.Color = &color
+		builder.internal.Color = resource.Internal()
 
 		return nil
 	}

@@ -1,4 +1,4 @@
-package dashboard
+package timepicker
 
 import "github.com/grafana/grok/newgen/dashboard/types"
 
@@ -19,6 +19,10 @@ func New(options ...Option) (Builder, error) {
 	}
 
 	return *builder, nil
+}
+
+func (builder *Builder) Internal() *types.TimePicker {
+	return builder.internal
 }
 
 func Hidden(hidden bool) Option {
@@ -69,9 +73,9 @@ func Time_options(time_options []string) Option {
 func defaults() []Option {
 	return []Option{
 		Hidden(false),
-		Refresh_intervals([]interface{}{"5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"}),
+		Refresh_intervals([]string{"5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"}),
 		Collapse(false),
 		Enable(true),
-		Time_options([]interface{}{"5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"}),
+		Time_options([]string{"5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"}),
 	}
 }

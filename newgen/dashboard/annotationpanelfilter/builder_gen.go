@@ -1,4 +1,4 @@
-package dashboard
+package annotationpanelfilter
 
 import "github.com/grafana/grok/newgen/dashboard/types"
 
@@ -19,6 +19,10 @@ func New(options ...Option) (Builder, error) {
 	}
 
 	return *builder, nil
+}
+
+func (builder *Builder) Internal() *types.AnnotationPanelFilter {
+	return builder.internal
 }
 
 func Exclude(exclude bool) Option {

@@ -1,6 +1,9 @@
-package dashboard
+package fieldconfigsourceoverride
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"github.com/grafana/grok/newgen/dashboard/matcherconfig"
+	"github.com/grafana/grok/newgen/dashboard/types"
+)
 
 type Option func(builder *Builder) error
 
@@ -21,10 +24,18 @@ func New(options ...Option) (Builder, error) {
 	return *builder, nil
 }
 
-func Matcher(matcher types.MatcherConfig) Option {
-	return func(builder *Builder) error {
+func (builder *Builder) Internal() *types.FieldConfigSourceOverride {
+	return builder.internal
+}
 
-		builder.internal.Matcher = matcher
+func Matcher(opts ...matcherconfig.Option) Option {
+	return func(builder *Builder) error {
+		resource, err := matcherconfig.New(opts...)
+		if err != nil {
+			return err
+		}
+
+		builder.internal.Matcher = resource.Internal()
 
 		return nil
 	}

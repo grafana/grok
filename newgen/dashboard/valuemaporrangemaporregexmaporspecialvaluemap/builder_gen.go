@@ -1,6 +1,12 @@
-package dashboard
+package valuemaporrangemaporregexmaporspecialvaluemap
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"github.com/grafana/grok/newgen/dashboard/rangemap"
+	"github.com/grafana/grok/newgen/dashboard/regexmap"
+	"github.com/grafana/grok/newgen/dashboard/specialvaluemap"
+	"github.com/grafana/grok/newgen/dashboard/types"
+	"github.com/grafana/grok/newgen/dashboard/valuemap"
+)
 
 type Option func(builder *Builder) error
 
@@ -21,37 +27,57 @@ func New(options ...Option) (Builder, error) {
 	return *builder, nil
 }
 
-func ValValueMap(ValValueMap types.ValueMap) Option {
-	return func(builder *Builder) error {
+func (builder *Builder) Internal() *types.ValueMapOrRangeMapOrRegexMapOrSpecialValueMap {
+	return builder.internal
+}
 
-		builder.internal.ValValueMap = &ValValueMap
+func ValValueMap(opts ...valuemap.Option) Option {
+	return func(builder *Builder) error {
+		resource, err := valuemap.New(opts...)
+		if err != nil {
+			return err
+		}
+
+		builder.internal.ValValueMap = resource.Internal()
 
 		return nil
 	}
 }
 
-func ValRangeMap(ValRangeMap types.RangeMap) Option {
+func ValRangeMap(opts ...rangemap.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := rangemap.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.ValRangeMap = &ValRangeMap
+		builder.internal.ValRangeMap = resource.Internal()
 
 		return nil
 	}
 }
 
-func ValRegexMap(ValRegexMap types.RegexMap) Option {
+func ValRegexMap(opts ...regexmap.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := regexmap.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.ValRegexMap = &ValRegexMap
+		builder.internal.ValRegexMap = resource.Internal()
 
 		return nil
 	}
 }
 
-func ValSpecialValueMap(ValSpecialValueMap types.SpecialValueMap) Option {
+func ValSpecialValueMap(opts ...specialvaluemap.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := specialvaluemap.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.ValSpecialValueMap = &ValSpecialValueMap
+		builder.internal.ValSpecialValueMap = resource.Internal()
 
 		return nil
 	}

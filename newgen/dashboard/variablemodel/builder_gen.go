@@ -1,6 +1,10 @@
-package dashboard
+package variablemodel
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"github.com/grafana/grok/newgen/dashboard/datasourceref"
+	"github.com/grafana/grok/newgen/dashboard/types"
+	"github.com/grafana/grok/newgen/dashboard/variableoption"
+)
 
 type Option func(builder *Builder) error
 
@@ -19,6 +23,10 @@ func New(options ...Option) (Builder, error) {
 	}
 
 	return *builder, nil
+}
+
+func (builder *Builder) Internal() *types.VariableModel {
+	return builder.internal
 }
 
 func Id(id string) Option {
@@ -93,10 +101,14 @@ func Query(query any) Option {
 	}
 }
 
-func Datasource(datasource types.DataSourceRef) Option {
+func Datasource(opts ...datasourceref.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := datasourceref.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.Datasource = &datasource
+		builder.internal.Datasource = resource.Internal()
 
 		return nil
 	}
@@ -111,10 +123,14 @@ func AllFormat(allFormat string) Option {
 	}
 }
 
-func Current(current types.VariableOption) Option {
+func Current(opts ...variableoption.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := variableoption.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.Current = &current
+		builder.internal.Current = resource.Internal()
 
 		return nil
 	}

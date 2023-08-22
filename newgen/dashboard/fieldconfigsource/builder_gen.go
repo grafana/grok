@@ -1,6 +1,9 @@
-package dashboard
+package fieldconfigsource
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"github.com/grafana/grok/newgen/dashboard/fieldconfig"
+	"github.com/grafana/grok/newgen/dashboard/types"
+)
 
 type Option func(builder *Builder) error
 
@@ -21,10 +24,18 @@ func New(options ...Option) (Builder, error) {
 	return *builder, nil
 }
 
-func Defaults(defaults types.FieldConfig) Option {
-	return func(builder *Builder) error {
+func (builder *Builder) Internal() *types.FieldConfigSource {
+	return builder.internal
+}
 
-		builder.internal.Defaults = defaults
+func Defaults(opts ...fieldconfig.Option) Option {
+	return func(builder *Builder) error {
+		resource, err := fieldconfig.New(opts...)
+		if err != nil {
+			return err
+		}
+
+		builder.internal.Defaults = resource.Internal()
 
 		return nil
 	}

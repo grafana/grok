@@ -45,7 +45,7 @@ func (jenny *GoBuilder) generateDefinition(def ast.Definition) ([]byte, error) {
 	var buffer strings.Builder
 	jenny.defaults = nil
 
-	buffer.WriteString(fmt.Sprintf("package %s\n\n", jenny.file.Package))
+	buffer.WriteString(fmt.Sprintf("package %s\n\n", strings.ToLower(def.Name)))
 
 	// import generated types
 	buffer.WriteString(fmt.Sprintf("import \"github.com/grafana/grok/newgen/%s/types\"\n\n", jenny.file.Package))
@@ -66,6 +66,15 @@ func (jenny *GoBuilder) generateDefinition(def ast.Definition) ([]byte, error) {
 	}
 
 	buffer.WriteString(constructorCode)
+
+	// Allow builders to expose the resource they're building
+	// TODO: do we want to do this?
+	// TODO: better name, with less conflict chance
+	buffer.WriteString(fmt.Sprintf(`
+func (builder *Builder) Internal() *types.%s {
+	return builder.internal
+}
+`, def.Name))
 
 	// Define options from fields
 	for _, fieldDef := range def.Fields {
@@ -112,6 +121,14 @@ func (jenny *GoBuilder) veneer(veneerType string, def ast.Definition) (string, e
 func (jenny *GoBuilder) fieldToOption(def ast.FieldDefinition) string {
 	var buffer strings.Builder
 
+	// structs get their own builder
+	if def.Type.IsReference() {
+		referredDef := jenny.file.LocateDefinition(string(def.Type.Kind))
+		if referredDef.Kind == ast.KindStruct {
+			return jenny.referenceFieldToOption(def)
+		}
+	}
+
 	fieldName := strings.Title(def.Name)
 	typeName := strings.TrimPrefix(formatType(def.Type, def.Required, "types"), "*")
 	argumentName := def.Name
@@ -132,7 +149,7 @@ func (jenny *GoBuilder) fieldToOption(def ast.FieldDefinition) string {
 		defaultValue = referredType.Default
 	}
 	if defaultValue != nil {
-		jenny.defaults = append(jenny.defaults, fmt.Sprintf("%[1]s(%#[2]v)", fieldName, defaultValue))
+		jenny.defaults = append(jenny.defaults, fmt.Sprintf("%[1]s(%[2]s)", fieldName, jenny.formatScalar(defaultValue)))
 	}
 
 	buffer.WriteString(fmt.Sprintf(`
@@ -145,6 +162,45 @@ func %[1]s(%[2]s %[3]s) Option {
 	}
 }
 `, fieldName, argumentName, typeName, generatedConstraints, asPointer))
+
+	return buffer.String()
+}
+
+func (jenny *GoBuilder) formatScalar(val any) string {
+	if list, ok := val.([]any); ok {
+		items := make([]string, 0, len(list))
+
+		for _, item := range list {
+			items = append(items, jenny.formatScalar(item))
+		}
+
+		// TODO: we can't assume a list of strings
+		return fmt.Sprintf("[]string{%s}", strings.Join(items, ", "))
+	}
+
+	return fmt.Sprintf("%#v", val)
+}
+
+func (jenny *GoBuilder) referenceFieldToOption(def ast.FieldDefinition) string {
+	var buffer strings.Builder
+
+	fieldName := strings.Title(def.Name)
+	referredPackage := strings.ToLower(string(def.Type.Kind))
+
+	buffer.WriteString(fmt.Sprintf(`
+func %[1]s(opts ...%[2]s.Option) Option {
+	return func(builder *Builder) error {
+		resource, err := %[2]s.New(opts...)
+		if err != nil {
+			return err
+		}
+
+		builder.internal.%[1]s = resource.Internal()
+
+		return nil
+	}
+}
+`, fieldName, referredPackage))
 
 	return buffer.String()
 }

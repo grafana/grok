@@ -1,6 +1,11 @@
-package dashboard
+package annotationquery
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"github.com/grafana/grok/newgen/dashboard/annotationpanelfilter"
+	"github.com/grafana/grok/newgen/dashboard/annotationtarget"
+	"github.com/grafana/grok/newgen/dashboard/datasourceref"
+	"github.com/grafana/grok/newgen/dashboard/types"
+)
 
 type Option func(builder *Builder) error
 
@@ -21,6 +26,10 @@ func New(options ...Option) (Builder, error) {
 	return *builder, nil
 }
 
+func (builder *Builder) Internal() *types.AnnotationQuery {
+	return builder.internal
+}
+
 func Name(name string) Option {
 	return func(builder *Builder) error {
 
@@ -30,10 +39,14 @@ func Name(name string) Option {
 	}
 }
 
-func Datasource(datasource types.DataSourceRef) Option {
+func Datasource(opts ...datasourceref.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := datasourceref.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.Datasource = datasource
+		builder.internal.Datasource = resource.Internal()
 
 		return nil
 	}
@@ -66,19 +79,27 @@ func IconColor(iconColor string) Option {
 	}
 }
 
-func Filter(filter types.AnnotationPanelFilter) Option {
+func Filter(opts ...annotationpanelfilter.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := annotationpanelfilter.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.Filter = &filter
+		builder.internal.Filter = resource.Internal()
 
 		return nil
 	}
 }
 
-func Target(target types.AnnotationTarget) Option {
+func Target(opts ...annotationtarget.Option) Option {
 	return func(builder *Builder) error {
+		resource, err := annotationtarget.New(opts...)
+		if err != nil {
+			return err
+		}
 
-		builder.internal.Target = &target
+		builder.internal.Target = resource.Internal()
 
 		return nil
 	}
