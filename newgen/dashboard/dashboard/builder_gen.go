@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/grafana/grok/newgen/dashboard/types"
 )
@@ -170,6 +171,9 @@ func Timepicker(timepicker types.TimePicker) Option {
 
 func FiscalYearStartMonth(fiscalYearStartMonth uint8) Option {
 	return func(builder *Builder) error {
+		if !(fiscalYearStartMonth < 12) {
+			return errors.New("fiscalYearStartMonth must be < 12")
+		}
 
 		builder.internal.FiscalYearStartMonth = &fiscalYearStartMonth
 

@@ -1,6 +1,10 @@
 package dashboard
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"errors"
+
+	"github.com/grafana/grok/newgen/dashboard/types"
+)
 
 type Option func(builder *Builder) error
 
@@ -10,6 +14,9 @@ type Builder struct {
 
 func H(h uint32) Option {
 	return func(builder *Builder) error {
+		if !(h > 0) {
+			return errors.New("h must be > 0")
+		}
 
 		builder.internal.H = h
 
@@ -19,6 +26,13 @@ func H(h uint32) Option {
 
 func W(w uint32) Option {
 	return func(builder *Builder) error {
+		if !(w > 0) {
+			return errors.New("w must be > 0")
+		}
+
+		if !(w <= 24) {
+			return errors.New("w must be <= 24")
+		}
 
 		builder.internal.W = w
 
@@ -28,6 +42,13 @@ func W(w uint32) Option {
 
 func X(x uint32) Option {
 	return func(builder *Builder) error {
+		if !(x >= 0) {
+			return errors.New("x must be >= 0")
+		}
+
+		if !(x < 24) {
+			return errors.New("x must be < 24")
+		}
 
 		builder.internal.X = x
 
@@ -37,6 +58,9 @@ func X(x uint32) Option {
 
 func Y(y uint32) Option {
 	return func(builder *Builder) error {
+		if !(y >= 0) {
+			return errors.New("y must be >= 0")
+		}
 
 		builder.internal.Y = y
 

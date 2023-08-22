@@ -505,6 +505,15 @@ func (g *newGenerator) declareNumber(v cue.Value) (*ast.Definition, error) {
 
 	typeDef.Default = defVal
 
+	// If the default (all lists have a default, usually self, ugh) differs from the
+	// input list, peel it off. Otherwise our AnyIndex lookup may end up getting
+	// sent on the wrong path.
+	defv, _ := v.Default()
+	if !defv.Equals(v) {
+		_, dvals := v.Expr()
+		v = dvals[0]
+	}
+
 	// extract constraints
 	constraints, err := g.declareNumberConstraints(v)
 	if err != nil {
