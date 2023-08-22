@@ -10,7 +10,7 @@ type Builder struct {
 
 func List(list []types.VariableModel) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.List = list
 
 		return nil
@@ -18,6 +18,5 @@ func List(list []types.VariableModel) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

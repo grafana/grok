@@ -8,10 +8,10 @@ type Builder struct {
 	internal *types.DataSourceRef
 }
 
-func Type(type string) Option {
+func Type(typeArg string) Option {
 	return func(builder *Builder) error {
-		
-		builder.internal.Type = &type
+
+		builder.internal.Type = &typeArg
 
 		return nil
 	}
@@ -19,7 +19,7 @@ func Type(type string) Option {
 
 func Uid(uid string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Uid = &uid
 
 		return nil
@@ -27,6 +27,5 @@ func Uid(uid string) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

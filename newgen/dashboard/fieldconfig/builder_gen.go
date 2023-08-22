@@ -10,7 +10,7 @@ type Builder struct {
 
 func DisplayName(displayName string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.DisplayName = &displayName
 
 		return nil
@@ -19,7 +19,7 @@ func DisplayName(displayName string) Option {
 
 func DisplayNameFromDS(displayNameFromDS string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.DisplayNameFromDS = &displayNameFromDS
 
 		return nil
@@ -28,7 +28,7 @@ func DisplayNameFromDS(displayNameFromDS string) Option {
 
 func Description(description string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Description = &description
 
 		return nil
@@ -37,7 +37,7 @@ func Description(description string) Option {
 
 func Path(path string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Path = &path
 
 		return nil
@@ -46,7 +46,7 @@ func Path(path string) Option {
 
 func Writeable(writeable bool) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Writeable = &writeable
 
 		return nil
@@ -55,7 +55,7 @@ func Writeable(writeable bool) Option {
 
 func Filterable(filterable bool) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Filterable = &filterable
 
 		return nil
@@ -64,7 +64,7 @@ func Filterable(filterable bool) Option {
 
 func Unit(unit string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Unit = &unit
 
 		return nil
@@ -73,7 +73,7 @@ func Unit(unit string) Option {
 
 func Decimals(decimals float64) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Decimals = &decimals
 
 		return nil
@@ -82,7 +82,7 @@ func Decimals(decimals float64) Option {
 
 func Min(min float64) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Min = &min
 
 		return nil
@@ -91,7 +91,7 @@ func Min(min float64) Option {
 
 func Max(max float64) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Max = &max
 
 		return nil
@@ -100,7 +100,7 @@ func Max(max float64) Option {
 
 func Mappings(mappings []types.ValueMapOrRangeMapOrRegexMapOrSpecialValueMap) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Mappings = mappings
 
 		return nil
@@ -109,7 +109,7 @@ func Mappings(mappings []types.ValueMapOrRangeMapOrRegexMapOrSpecialValueMap) Op
 
 func Thresholds(thresholds types.ThresholdsConfig) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Thresholds = &thresholds
 
 		return nil
@@ -118,7 +118,7 @@ func Thresholds(thresholds types.ThresholdsConfig) Option {
 
 func Color(color types.FieldColor) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Color = &color
 
 		return nil
@@ -127,7 +127,7 @@ func Color(color types.FieldColor) Option {
 
 func Links(links []any) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Links = links
 
 		return nil
@@ -136,7 +136,7 @@ func Links(links []any) Option {
 
 func NoValue(noValue string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.NoValue = &noValue
 
 		return nil
@@ -145,7 +145,7 @@ func NoValue(noValue string) Option {
 
 func Custom(custom any) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Custom = &custom
 
 		return nil
@@ -153,6 +153,5 @@ func Custom(custom any) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

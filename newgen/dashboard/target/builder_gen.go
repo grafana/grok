@@ -9,6 +9,5 @@ type Builder struct {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

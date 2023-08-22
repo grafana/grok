@@ -10,7 +10,7 @@ type Builder struct {
 
 func Name(name string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Name = name
 
 		return nil
@@ -19,7 +19,7 @@ func Name(name string) Option {
 
 func Uid(uid string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Uid = uid
 
 		return nil
@@ -27,6 +27,5 @@ func Uid(uid string) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

@@ -10,7 +10,7 @@ type Builder struct {
 
 func Limit(limit int64) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Limit = limit
 
 		return nil
@@ -19,7 +19,7 @@ func Limit(limit int64) Option {
 
 func MatchAny(matchAny bool) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.MatchAny = matchAny
 
 		return nil
@@ -28,23 +28,22 @@ func MatchAny(matchAny bool) Option {
 
 func Tags(tags []string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Tags = tags
 
 		return nil
 	}
 }
 
-func Type(type string) Option {
+func Type(typeArg string) Option {
 	return func(builder *Builder) error {
-		
-		builder.internal.Type = type
+
+		builder.internal.Type = typeArg
 
 		return nil
 	}
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

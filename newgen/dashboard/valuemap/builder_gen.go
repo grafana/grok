@@ -1,6 +1,10 @@
 package dashboard
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"errors"
+
+	"github.com/grafana/grok/newgen/dashboard/types"
+)
 
 type Option func(builder *Builder) error
 
@@ -8,13 +12,13 @@ type Builder struct {
 	internal *types.ValueMap
 }
 
-func Type(type string) Option {
+func Type(typeArg string) Option {
 	return func(builder *Builder) error {
-		if !(type == value) {
-return errors.New("type must be == value")
-}
+		if !(typeArg == "value") {
+			return errors.New("typeArg must be == value")
+		}
 
-		builder.internal.Type = type
+		builder.internal.Type = typeArg
 
 		return nil
 	}
@@ -22,7 +26,7 @@ return errors.New("type must be == value")
 
 func Options(options map[string]types.ValueMappingResult) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Options = options
 
 		return nil
@@ -30,6 +34,5 @@ func Options(options map[string]types.ValueMappingResult) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

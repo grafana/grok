@@ -10,7 +10,7 @@ type Builder struct {
 
 func From(from string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.From = from
 
 		return nil
@@ -19,7 +19,7 @@ func From(from string) Option {
 
 func To(to string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.To = to
 
 		return nil
@@ -27,8 +27,8 @@ func To(to string) Option {
 }
 
 func defaults() []Option {
-return []Option{
-From("now-6h"),
-To("now"),
-}
+	return []Option{
+		From("now-6h"),
+		To("now"),
+	}
 }

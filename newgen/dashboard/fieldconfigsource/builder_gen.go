@@ -10,7 +10,7 @@ type Builder struct {
 
 func Defaults(defaults types.FieldConfig) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Defaults = defaults
 
 		return nil
@@ -19,7 +19,7 @@ func Defaults(defaults types.FieldConfig) Option {
 
 func Overrides(overrides []types.FieldConfigSourceOverride) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Overrides = overrides
 
 		return nil
@@ -27,6 +27,5 @@ func Overrides(overrides []types.FieldConfigSourceOverride) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

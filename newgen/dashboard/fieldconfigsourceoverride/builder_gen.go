@@ -10,7 +10,7 @@ type Builder struct {
 
 func Matcher(matcher types.MatcherConfig) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Matcher = matcher
 
 		return nil
@@ -19,7 +19,7 @@ func Matcher(matcher types.MatcherConfig) Option {
 
 func Properties(properties []types.DynamicConfigValue) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Properties = properties
 
 		return nil
@@ -27,6 +27,5 @@ func Properties(properties []types.DynamicConfigValue) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

@@ -94,8 +94,12 @@ func (jenny *GoBuilder) fieldToOption(def ast.FieldDefinition) string {
 
 	fieldName := strings.Title(def.Name)
 	typeName := strings.TrimPrefix(formatType(def.Type, def.Required, "types"), "*")
+	argumentName := def.Name
+	if isReservedGoKeyword(argumentName) {
+		argumentName = argumentName + "Arg"
+	}
 
-	generatedConstraints := strings.Join(jenny.constraints(def.Name, def.Type.Constraints), "\n")
+	generatedConstraints := strings.Join(jenny.constraints(argumentName, def.Type.Constraints), "\n")
 	asPointer := ""
 	// FIXME: this condition is probably wrong
 	if def.Type.Nullable || (def.Type.Kind != ast.KindArray && def.Type.Kind != ast.KindStruct && !def.Required) {
@@ -120,7 +124,7 @@ func %[1]s(%[2]s %[3]s) Option {
 		return nil
 	}
 }
-`, fieldName, def.Name, typeName, generatedConstraints, asPointer))
+`, fieldName, argumentName, typeName, generatedConstraints, asPointer))
 
 	return buffer.String()
 }
@@ -153,5 +157,14 @@ func (jenny *GoBuilder) constraintComparison(argumentName string, constraint ast
 		return fmt.Sprintf("len([]rune(%[1]s)) <= %[2]v", argumentName, constraint.Args[0])
 	}
 
-	return fmt.Sprintf("%[1]s %[2]s %[3]v", argumentName, constraint.Op, constraint.Args[0])
+	return fmt.Sprintf("%[1]s %[2]s %#[3]v", argumentName, constraint.Op, constraint.Args[0])
+}
+
+func isReservedGoKeyword(input string) bool {
+	// TODO
+	if input == "type" {
+		return true
+	}
+
+	return false
 }

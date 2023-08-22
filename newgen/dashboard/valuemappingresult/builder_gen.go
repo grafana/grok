@@ -10,7 +10,7 @@ type Builder struct {
 
 func Text(text string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Text = &text
 
 		return nil
@@ -19,7 +19,7 @@ func Text(text string) Option {
 
 func Color(color string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Color = &color
 
 		return nil
@@ -28,7 +28,7 @@ func Color(color string) Option {
 
 func Icon(icon string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Icon = &icon
 
 		return nil
@@ -37,7 +37,7 @@ func Icon(icon string) Option {
 
 func Index(index int32) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Index = &index
 
 		return nil
@@ -45,6 +45,5 @@ func Index(index int32) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

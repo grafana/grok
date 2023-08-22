@@ -10,7 +10,7 @@ type Builder struct {
 
 func Id(id string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Id = id
 
 		return nil
@@ -19,7 +19,7 @@ func Id(id string) Option {
 
 func Disabled(disabled bool) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Disabled = &disabled
 
 		return nil
@@ -28,7 +28,7 @@ func Disabled(disabled bool) Option {
 
 func Filter(filter types.MatcherConfig) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Filter = &filter
 
 		return nil
@@ -37,7 +37,7 @@ func Filter(filter types.MatcherConfig) Option {
 
 func Options(options any) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Options = options
 
 		return nil
@@ -45,6 +45,5 @@ func Options(options any) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

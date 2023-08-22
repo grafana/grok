@@ -10,7 +10,7 @@ type Builder struct {
 
 func Value(value float64) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Value = &value
 
 		return nil
@@ -19,7 +19,7 @@ func Value(value float64) Option {
 
 func Color(color string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Color = color
 
 		return nil
@@ -27,6 +27,5 @@ func Color(color string) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

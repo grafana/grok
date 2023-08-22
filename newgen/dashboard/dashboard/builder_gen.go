@@ -1,12 +1,17 @@
 package dashboard
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"encoding/json"
+
+	"github.com/grafana/grok/newgen/dashboard/types"
+)
 
 type Option func(builder *Builder) error
 
 type Builder struct {
 	internal *types.Dashboard
 }
+
 func New(title string, options ...Option) (Builder, error) {
 	dashboard := &types.Dashboard{
 		Title: &title,
@@ -43,7 +48,7 @@ func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 
 func Id(id int64) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Id = &id
 
 		return nil
@@ -52,7 +57,7 @@ func Id(id int64) Option {
 
 func Uid(uid string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Uid = &uid
 
 		return nil
@@ -61,7 +66,7 @@ func Uid(uid string) Option {
 
 func Title(title string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Title = &title
 
 		return nil
@@ -70,7 +75,7 @@ func Title(title string) Option {
 
 func Description(description string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Description = &description
 
 		return nil
@@ -79,7 +84,7 @@ func Description(description string) Option {
 
 func Revision(revision int64) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Revision = &revision
 
 		return nil
@@ -88,7 +93,7 @@ func Revision(revision int64) Option {
 
 func GnetId(gnetId string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.GnetId = &gnetId
 
 		return nil
@@ -97,7 +102,7 @@ func GnetId(gnetId string) Option {
 
 func Tags(tags []string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Tags = tags
 
 		return nil
@@ -106,7 +111,7 @@ func Tags(tags []string) Option {
 
 func Style(style types.DashboardStyle) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Style = style
 
 		return nil
@@ -115,7 +120,7 @@ func Style(style types.DashboardStyle) Option {
 
 func Timezone(timezone string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Timezone = &timezone
 
 		return nil
@@ -124,7 +129,7 @@ func Timezone(timezone string) Option {
 
 func Editable(editable bool) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Editable = editable
 
 		return nil
@@ -133,7 +138,7 @@ func Editable(editable bool) Option {
 
 func GraphTooltip(graphTooltip types.DashboardCursorSync) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.GraphTooltip = graphTooltip
 
 		return nil
@@ -142,12 +147,12 @@ func GraphTooltip(graphTooltip types.DashboardCursorSync) Option {
 
 func Time(time struct {
 	// Default: "now-6h"
-From string `json:"from"`
+	From string `json:"from"`
 	// Default: "now"
-To string `json:"to"`
+	To string `json:"to"`
 }) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Time = time
 
 		return nil
@@ -156,7 +161,7 @@ To string `json:"to"`
 
 func Timepicker(timepicker types.TimePicker) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Timepicker = &timepicker
 
 		return nil
@@ -165,7 +170,7 @@ func Timepicker(timepicker types.TimePicker) Option {
 
 func FiscalYearStartMonth(fiscalYearStartMonth uint8) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.FiscalYearStartMonth = &fiscalYearStartMonth
 
 		return nil
@@ -174,7 +179,7 @@ func FiscalYearStartMonth(fiscalYearStartMonth uint8) Option {
 
 func LiveNow(liveNow bool) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.LiveNow = &liveNow
 
 		return nil
@@ -183,7 +188,7 @@ func LiveNow(liveNow bool) Option {
 
 func WeekStart(weekStart string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.WeekStart = &weekStart
 
 		return nil
@@ -192,7 +197,7 @@ func WeekStart(weekStart string) Option {
 
 func Refresh(refresh types.StringOrBool) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Refresh = &refresh
 
 		return nil
@@ -201,7 +206,7 @@ func Refresh(refresh types.StringOrBool) Option {
 
 func SchemaVersion(schemaVersion uint16) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.SchemaVersion = schemaVersion
 
 		return nil
@@ -210,7 +215,7 @@ func SchemaVersion(schemaVersion uint16) Option {
 
 func Version(version uint32) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Version = &version
 
 		return nil
@@ -219,7 +224,7 @@ func Version(version uint32) Option {
 
 func Panels(panels []types.RowPanel) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Panels = panels
 
 		return nil
@@ -228,7 +233,7 @@ func Panels(panels []types.RowPanel) Option {
 
 func Templating(templating types.DashboardTemplating) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Templating = &templating
 
 		return nil
@@ -237,7 +242,7 @@ func Templating(templating types.DashboardTemplating) Option {
 
 func Annotations(annotations types.AnnotationContainer) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Annotations = &annotations
 
 		return nil
@@ -246,7 +251,7 @@ func Annotations(annotations types.AnnotationContainer) Option {
 
 func Links(links []types.DashboardLink) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Links = links
 
 		return nil
@@ -254,12 +259,12 @@ func Links(links []types.DashboardLink) Option {
 }
 
 func defaults() []Option {
-return []Option{
-Style("dark"),
-Timezone("browser"),
-Editable(true),
-GraphTooltip(0),
-FiscalYearStartMonth(0),
-SchemaVersion(36),
-}
+	return []Option{
+		Style("dark"),
+		Timezone("browser"),
+		Editable(true),
+		GraphTooltip(0),
+		FiscalYearStartMonth(0),
+		SchemaVersion(36),
+	}
 }

@@ -10,7 +10,7 @@ type Builder struct {
 
 func Selected(selected bool) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Selected = &selected
 
 		return nil
@@ -19,7 +19,7 @@ func Selected(selected bool) Option {
 
 func Text(text types.StringOrArray) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Text = text
 
 		return nil
@@ -28,7 +28,7 @@ func Text(text types.StringOrArray) Option {
 
 func Value(value types.StringOrArray) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Value = value
 
 		return nil
@@ -36,6 +36,5 @@ func Value(value types.StringOrArray) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

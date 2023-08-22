@@ -10,7 +10,7 @@ type Builder struct {
 
 func Name(name string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Name = name
 
 		return nil
@@ -19,7 +19,7 @@ func Name(name string) Option {
 
 func Datasource(datasource types.DataSourceRef) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Datasource = datasource
 
 		return nil
@@ -28,7 +28,7 @@ func Datasource(datasource types.DataSourceRef) Option {
 
 func Enable(enable bool) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Enable = enable
 
 		return nil
@@ -37,7 +37,7 @@ func Enable(enable bool) Option {
 
 func Hide(hide bool) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Hide = &hide
 
 		return nil
@@ -46,7 +46,7 @@ func Hide(hide bool) Option {
 
 func IconColor(iconColor string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.IconColor = iconColor
 
 		return nil
@@ -55,7 +55,7 @@ func IconColor(iconColor string) Option {
 
 func Filter(filter types.AnnotationPanelFilter) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Filter = &filter
 
 		return nil
@@ -64,25 +64,25 @@ func Filter(filter types.AnnotationPanelFilter) Option {
 
 func Target(target types.AnnotationTarget) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Target = &target
 
 		return nil
 	}
 }
 
-func Type(type string) Option {
+func Type(typeArg string) Option {
 	return func(builder *Builder) error {
-		
-		builder.internal.Type = &type
+
+		builder.internal.Type = &typeArg
 
 		return nil
 	}
 }
 
 func defaults() []Option {
-return []Option{
-Enable(true),
-Hide(false),
-}
+	return []Option{
+		Enable(true),
+		Hide(false),
+	}
 }

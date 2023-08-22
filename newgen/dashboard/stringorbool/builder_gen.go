@@ -10,7 +10,7 @@ type Builder struct {
 
 func ValString(ValString string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.ValString = &ValString
 
 		return nil
@@ -19,7 +19,7 @@ func ValString(ValString string) Option {
 
 func ValBool(ValBool bool) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.ValBool = &ValBool
 
 		return nil
@@ -27,6 +27,5 @@ func ValBool(ValBool bool) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

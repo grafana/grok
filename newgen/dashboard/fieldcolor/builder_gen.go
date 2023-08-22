@@ -10,7 +10,7 @@ type Builder struct {
 
 func Mode(mode types.FieldColorModeId) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Mode = mode
 
 		return nil
@@ -19,7 +19,7 @@ func Mode(mode types.FieldColorModeId) Option {
 
 func FixedColor(fixedColor string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.FixedColor = &fixedColor
 
 		return nil
@@ -28,7 +28,7 @@ func FixedColor(fixedColor string) Option {
 
 func SeriesBy(seriesBy types.FieldColorSeriesByMode) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.SeriesBy = &seriesBy
 
 		return nil
@@ -36,6 +36,5 @@ func SeriesBy(seriesBy types.FieldColorSeriesByMode) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

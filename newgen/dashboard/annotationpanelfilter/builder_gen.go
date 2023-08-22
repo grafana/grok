@@ -10,7 +10,7 @@ type Builder struct {
 
 func Exclude(exclude bool) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Exclude = &exclude
 
 		return nil
@@ -19,7 +19,7 @@ func Exclude(exclude bool) Option {
 
 func Ids(ids []uint8) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Ids = ids
 
 		return nil
@@ -27,7 +27,7 @@ func Ids(ids []uint8) Option {
 }
 
 func defaults() []Option {
-return []Option{
-Exclude(false),
-}
+	return []Option{
+		Exclude(false),
+	}
 }

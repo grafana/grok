@@ -10,7 +10,7 @@ type Builder struct {
 
 func Mode(mode types.ThresholdsMode) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Mode = mode
 
 		return nil
@@ -19,7 +19,7 @@ func Mode(mode types.ThresholdsMode) Option {
 
 func Steps(steps []types.Threshold) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Steps = steps
 
 		return nil
@@ -27,6 +27,5 @@ func Steps(steps []types.Threshold) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }
