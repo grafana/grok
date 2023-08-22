@@ -1,0 +1,16 @@
+func New(title string, options ...Option) (Builder, error) {
+	dashboard := &types.Dashboard{
+		Title: &title,
+	}
+
+	builder := &Builder{internal: dashboard}
+
+	for _, opt := range append(defaults(), options...) {
+		if err := opt(builder); err != nil {
+			return *builder, err
+		}
+	}
+
+	return *builder, nil
+}
+

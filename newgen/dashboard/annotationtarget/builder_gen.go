@@ -8,6 +8,19 @@ type Builder struct {
 	internal *types.AnnotationTarget
 }
 
+func New(options ...Option) (Builder, error) {
+	resource := &types.AnnotationTarget{}
+	builder := &Builder{internal: resource}
+
+	for _, opt := range append(defaults(), options...) {
+		if err := opt(builder); err != nil {
+			return *builder, err
+		}
+	}
+
+	return *builder, nil
+}
+
 func Limit(limit int64) Option {
 	return func(builder *Builder) error {
 

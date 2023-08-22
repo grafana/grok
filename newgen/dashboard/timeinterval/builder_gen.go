@@ -8,6 +8,19 @@ type Builder struct {
 	internal *types.TimeInterval
 }
 
+func New(options ...Option) (Builder, error) {
+	resource := &types.TimeInterval{}
+	builder := &Builder{internal: resource}
+
+	for _, opt := range append(defaults(), options...) {
+		if err := opt(builder); err != nil {
+			return *builder, err
+		}
+	}
+
+	return *builder, nil
+}
+
 func From(from string) Option {
 	return func(builder *Builder) error {
 

@@ -8,6 +8,19 @@ type Builder struct {
 	internal *types.ValueMapOrRangeMapOrRegexMapOrSpecialValueMap
 }
 
+func New(options ...Option) (Builder, error) {
+	resource := &types.ValueMapOrRangeMapOrRegexMapOrSpecialValueMap{}
+	builder := &Builder{internal: resource}
+
+	for _, opt := range append(defaults(), options...) {
+		if err := opt(builder); err != nil {
+			return *builder, err
+		}
+	}
+
+	return *builder, nil
+}
+
 func ValValueMap(ValValueMap types.ValueMap) Option {
 	return func(builder *Builder) error {
 

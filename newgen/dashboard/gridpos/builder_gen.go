@@ -12,6 +12,19 @@ type Builder struct {
 	internal *types.GridPos
 }
 
+func New(options ...Option) (Builder, error) {
+	resource := &types.GridPos{}
+	builder := &Builder{internal: resource}
+
+	for _, opt := range append(defaults(), options...) {
+		if err := opt(builder); err != nil {
+			return *builder, err
+		}
+	}
+
+	return *builder, nil
+}
+
 func H(h uint32) Option {
 	return func(builder *Builder) error {
 		if !(h > 0) {

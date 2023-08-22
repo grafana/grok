@@ -59,17 +59,13 @@ func (jenny *GoBuilder) generateDefinition(def ast.Definition) ([]byte, error) {
 }
 `, def.Name))
 
-	// Include veneers if any
-	templateFile := fmt.Sprintf("%s.builder.go.tmpl", strings.ToLower(def.Name))
-	tmpl := templates.Lookup(templateFile)
-	if tmpl != nil {
-		buf := bytes.Buffer{}
-		if err := tmpl.Execute(&buf, nil); err != nil {
-			return nil, fmt.Errorf("failed executing veneer template: %w", err)
-		}
-
-		buffer.WriteString(buf.String())
+	// Add a constructor for the builder
+	constructorCode, err := jenny.veneer("constructor", def)
+	if err != nil {
+		return nil, err
 	}
+
+	buffer.WriteString(constructorCode)
 
 	// Define options from fields
 	for _, fieldDef := range def.Fields {
@@ -87,6 +83,30 @@ func (jenny *GoBuilder) generateDefinition(def ast.Definition) ([]byte, error) {
 	buffer.WriteString("}\n")
 
 	return []byte(buffer.String()), nil
+}
+
+func (jenny *GoBuilder) veneer(veneerType string, def ast.Definition) (string, error) {
+	// First, see if there is a definition-specific veneer
+	templateFile := fmt.Sprintf("%s.builder.%s.go.tmpl", strings.ToLower(def.Name), veneerType)
+	tmpl := templates.Lookup(templateFile)
+
+	// If not, get the generic one
+	if tmpl == nil {
+		tmpl = templates.Lookup(fmt.Sprintf("builder.%s.go.tmpl", veneerType))
+	}
+	// If not, something went wrong.
+	if tmpl == nil {
+		return "", fmt.Errorf("veneer '%s' not found", veneerType)
+	}
+
+	buf := bytes.Buffer{}
+	if err := tmpl.Execute(&buf, map[string]any{
+		"def": def,
+	}); err != nil {
+		return "", fmt.Errorf("failed executing veneer template: %w", err)
+	}
+
+	return buf.String(), nil
 }
 
 func (jenny *GoBuilder) fieldToOption(def ast.FieldDefinition) string {

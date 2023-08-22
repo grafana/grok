@@ -12,6 +12,19 @@ type Builder struct {
 	internal *types.ValueMap
 }
 
+func New(options ...Option) (Builder, error) {
+	resource := &types.ValueMap{}
+	builder := &Builder{internal: resource}
+
+	for _, opt := range append(defaults(), options...) {
+		if err := opt(builder); err != nil {
+			return *builder, err
+		}
+	}
+
+	return *builder, nil
+}
+
 func Type(typeArg string) Option {
 	return func(builder *Builder) error {
 		if !(typeArg == "value") {
