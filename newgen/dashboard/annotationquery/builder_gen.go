@@ -1,6 +1,8 @@
 package annotationquery
 
 import (
+	"encoding/json"
+
 	"github.com/grafana/grok/newgen/dashboard/annotationpanelfilter"
 	"github.com/grafana/grok/newgen/dashboard/annotationtarget"
 	"github.com/grafana/grok/newgen/dashboard/datasourceref"
@@ -24,6 +26,22 @@ func New(options ...Option) (Builder, error) {
 	}
 
 	return *builder, nil
+}
+
+// MarshalJSON implements the encoding/json.Marshaler interface.
+//
+// This method can be used to render the resource as JSON
+// which your configuration management tool of choice can then feed into
+// Grafana.
+func (builder *Builder) MarshalJSON() ([]byte, error) {
+	return json.Marshal(builder.internal)
+}
+
+// MarshalIndentJSON renders the resource as indented JSON
+// which your configuration management tool of choice can then feed into
+// Grafana.
+func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
+	return json.MarshalIndent(builder.internal, "", "  ")
 }
 
 func (builder *Builder) Internal() *types.AnnotationQuery {

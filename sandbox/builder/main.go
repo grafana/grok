@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/grafana/grok/newgen/dashboard/dashboard"
+	"github.com/grafana/grok/newgen/dashboard/timepicker"
 	"github.com/grafana/grok/newgen/dashboard/types"
 )
 
@@ -11,6 +12,9 @@ func main() {
 	builder, err := dashboard.New(
 		"Some title",
 		dashboard.Description("Some description"),
+		dashboard.Timepicker(
+			timepicker.Refresh_intervals([]string{"30s", "1m", "5m"}),
+		),
 		dashboard.Tags([]string{"generated", "from", "cue"}),
 		dashboard.Links([]types.DashboardLink{
 			{

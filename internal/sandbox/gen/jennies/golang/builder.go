@@ -15,7 +15,7 @@ type GoBuilder struct {
 }
 
 func (jenny *GoBuilder) JennyName() string {
-	return "GoRawTypes"
+	return "GoBuilder"
 }
 
 func (jenny *GoBuilder) Generate(file *ast.File) (codejen.Files, error) {
@@ -64,8 +64,14 @@ func (jenny *GoBuilder) generateDefinition(def ast.Definition) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	buffer.WriteString(constructorCode)
+
+	// Add JSON (un)marshaling shortcuts
+	jsonMarshal, err := jenny.veneer("json_marshal", def)
+	if err != nil {
+		return nil, err
+	}
+	buffer.WriteString(jsonMarshal)
 
 	// Allow builders to expose the resource they're building
 	// TODO: do we want to do this?
