@@ -26,7 +26,7 @@ func All(outputPrefix string) *codejen.JennyList[*ast.File] {
 		&golang.GoBuilder{},
 	)
 	generationTargets.AddPostprocessors(
-		golang.PostProcessFile,
+		//golang.PostProcessFile,
 		jen.Prefixer(outputPrefix),
 	)
 

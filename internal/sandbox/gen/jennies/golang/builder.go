@@ -26,7 +26,6 @@ func (jenny *GoBuilder) Generate(file *ast.File) (codejen.Files, error) {
 
 	var files []codejen.File
 	for _, definition := range tr.sortedTypes() {
-		fmt.Println(definition.Name)
 		if definition.Kind != ast.KindStruct {
 			continue
 		}
