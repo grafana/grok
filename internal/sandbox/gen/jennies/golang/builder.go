@@ -149,13 +149,8 @@ func (jenny *GoBuilder) fieldToOption(def ast.FieldDefinition) string {
 		asPointer = "&"
 	}
 
-	defaultValue := def.Type.Default
-	if def.Type.IsReference() {
-		referredType := jenny.file.LocateDefinition(string(def.Type.Kind))
-		defaultValue = referredType.Default
-	}
-	if defaultValue != nil {
-		jenny.defaults = append(jenny.defaults, fmt.Sprintf("%[1]s(%[2]s)", fieldName, jenny.formatScalar(defaultValue)))
+	if def.HasDefaultValue() {
+		jenny.defaults = append(jenny.defaults, jenny.formatDefaultValue(def))
 	}
 
 	buffer.WriteString(fmt.Sprintf(`
@@ -168,6 +163,42 @@ func %[1]s(%[2]s %[3]s) Option {
 	}
 }
 `, fieldName, argumentName, typeName, generatedConstraints, asPointer))
+
+	return buffer.String()
+}
+
+func (jenny *GoBuilder) formatDefaultValue(field ast.FieldDefinition) string {
+	fieldName := strings.Title(field.Name)
+
+	if field.Type.Kind != ast.KindStruct {
+		defaultValue := field.Type.Default
+		if field.Type.IsReference() {
+			referredType := jenny.file.LocateDefinition(string(field.Type.Kind))
+			defaultValue = referredType.Default
+		}
+
+		return fmt.Sprintf("%[1]s(%[2]s)", fieldName, jenny.formatScalar(defaultValue))
+	}
+
+	return fmt.Sprintf("%[1]s(%[2]s)", fieldName, jenny.formatAnonymousStructDefaultValue(field.Type))
+}
+
+// FIXME: this breaks for anonymous structs with anonymous types defined in one or more of their fields
+func (jenny *GoBuilder) formatAnonymousStructDefaultValue(structDef ast.Definition) string {
+	var buffer bytes.Buffer
+
+	buffer.WriteString(formatStructBody(structDef, "types"))
+	buffer.WriteString("{\n")
+	for _, field := range structDef.Fields {
+		if !field.HasDefaultValue() {
+			continue
+		}
+
+		fieldName := strings.Title(field.Name)
+
+		buffer.WriteString(fmt.Sprintf("%s: %s,\n", fieldName, jenny.formatScalar(field.Type.Default)))
+	}
+	buffer.WriteString("\n}")
 
 	return buffer.String()
 }

@@ -138,6 +138,20 @@ type FieldDefinition struct {
 	Type     Definition
 }
 
+func (fieldDef FieldDefinition) HasDefaultValue() bool {
+	if fieldDef.Type.Kind == KindStruct {
+		for _, subField := range fieldDef.Type.Fields {
+			if subField.HasDefaultValue() {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	return fieldDef.Type.Default != nil
+}
+
 type File struct {
 	Package     string
 	Definitions []Definition

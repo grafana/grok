@@ -281,10 +281,17 @@ func Links(links []types.DashboardLink) Option {
 
 func defaults() []Option {
 	return []Option{
-		Style("dark"),
 		Timezone("browser"),
 		Editable(true),
-		GraphTooltip(0),
+		Time(struct {
+			// Default: "now-6h"
+			From string `json:"from"`
+			// Default: "now"
+			To string `json:"to"`
+		}{
+			From: "now-6h",
+			To:   "now",
+		}),
 		FiscalYearStartMonth(0),
 		SchemaVersion(36),
 	}
