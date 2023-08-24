@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"cuelang.org/go/cue/cuecontext"
 	"cuelang.org/go/cue/load"
@@ -37,17 +38,21 @@ func main() {
 	}
 
 	// Here begins the code generation setup
-	generationTargets := jennies.All(pkg)
+	jenniesByLanguage := jennies.All(pkg)
 	rootCodeJenFS := codejen.NewFS()
 
-	fs, err := generationTargets.GenerateFS(schemaAst)
-	if err != nil {
-		panic(err)
-	}
+	for language, targets := range jenniesByLanguage {
+		fmt.Printf("Running '%s' jennies...\n", language)
 
-	err = rootCodeJenFS.Merge(fs)
-	if err != nil {
-		panic(err)
+		fs, err := targets.GenerateFS(schemaAst)
+		if err != nil {
+			panic(err)
+		}
+
+		err = rootCodeJenFS.Merge(fs)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	err = rootCodeJenFS.Write(context.Background(), "newgen")
