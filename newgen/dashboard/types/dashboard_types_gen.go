@@ -612,7 +612,7 @@ type TimePicker struct {
 	Hidden bool `json:"hidden"`
 	// Interval options available in the refresh picker dropdown.
 	// Default: []interface {}{"5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"}
-	Refresh_intervals []string `json:"refresh_intervals"`
+	RefreshIntervals []string `json:"refresh_intervals"`
 	// Whether timepicker is collapsed or not. Has no effect on provisioned dashboard.
 	// Default: false
 	Collapse bool `json:"collapse"`
@@ -621,7 +621,7 @@ type TimePicker struct {
 	Enable bool `json:"enable"`
 	// Selectable options available in the time picker dropdown. Has no effect on provisioned dashboard.
 	// Default: []interface {}{"5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"}
-	Time_options []string `json:"time_options"`
+	TimeOptions []string `json:"time_options"`
 }
 
 // Maps text values to a color or different display text and color.

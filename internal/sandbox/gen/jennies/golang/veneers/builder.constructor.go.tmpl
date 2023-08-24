@@ -1,5 +1,5 @@
 func New(options ...Option) (Builder, error) {
-	resource := &types.{{ .def.Name }}{}
+	resource := &types.{{ .def.Name | formatIdentifier }}{}
 	builder := &Builder{internal: resource}
 
 	for _, opt := range append(defaults(), options...) {

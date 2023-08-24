@@ -31,15 +31,14 @@ const (
 )
 
 type Definition struct {
-	Kind         Kind
-	Name         string
-	Comments     []string
-	IndexType    Kind              // for maps & arrays
-	ValueType    *Definition       // for maps & arrays
-	Branches     Definitions       // for disjunctions
-	Fields       []FieldDefinition // for structs
-	Values       []EnumValue       // for enums
-	IsEntryPoint bool              // Dashboard is an entryPoint type. DashboardStyle isn't.
+	Kind      Kind
+	Name      string
+	Comments  []string
+	IndexType Kind              // for maps & arrays
+	ValueType *Definition       // for maps & arrays
+	Branches  Definitions       // for disjunctions
+	Fields    []FieldDefinition // for structs
+	Values    []EnumValue       // for enums
 
 	Nullable    bool
 	Constraints []TypeConstraint
@@ -155,16 +154,6 @@ func (fieldDef FieldDefinition) HasDefaultValue() bool {
 type File struct {
 	Package     string
 	Definitions []Definition
-}
-
-func (file *File) EntryPointType() (Definition, bool) {
-	for _, typeDef := range file.Definitions {
-		if typeDef.IsEntryPoint {
-			return typeDef, true
-		}
-	}
-
-	return Definition{}, false
 }
 
 func (file *File) LocateDefinition(name string) Definition {

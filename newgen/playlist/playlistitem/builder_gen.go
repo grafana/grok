@@ -1,19 +1,19 @@
-package timepicker
+package playlistitem
 
 import (
 	"encoding/json"
 
-	"github.com/grafana/grok/newgen/dashboard/types"
+	"github.com/grafana/grok/newgen/playlist/types"
 )
 
 type Option func(builder *Builder) error
 
 type Builder struct {
-	internal *types.TimePicker
+	internal *types.PlaylistItem
 }
 
 func New(options ...Option) (Builder, error) {
-	resource := &types.TimePicker{}
+	resource := &types.PlaylistItem{}
 	builder := &Builder{internal: resource}
 
 	for _, opt := range append(defaults(), options...) {
@@ -41,61 +41,28 @@ func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 	return json.MarshalIndent(builder.internal, "", "  ")
 }
 
-func (builder *Builder) Internal() *types.TimePicker {
+func (builder *Builder) Internal() *types.PlaylistItem {
 	return builder.internal
 }
 
-func Hidden(hidden bool) Option {
+func Type(typeArg types.PlaylistItemType) Option {
 	return func(builder *Builder) error {
 
-		builder.internal.Hidden = hidden
+		builder.internal.Type = typeArg
 
 		return nil
 	}
 }
 
-func RefreshIntervals(refreshIntervals []string) Option {
+func Value(value string) Option {
 	return func(builder *Builder) error {
 
-		builder.internal.RefreshIntervals = refreshIntervals
-
-		return nil
-	}
-}
-
-func Collapse(collapse bool) Option {
-	return func(builder *Builder) error {
-
-		builder.internal.Collapse = collapse
-
-		return nil
-	}
-}
-
-func Enable(enable bool) Option {
-	return func(builder *Builder) error {
-
-		builder.internal.Enable = enable
-
-		return nil
-	}
-}
-
-func TimeOptions(timeOptions []string) Option {
-	return func(builder *Builder) error {
-
-		builder.internal.TimeOptions = timeOptions
+		builder.internal.Value = value
 
 		return nil
 	}
 }
 
 func defaults() []Option {
-	return []Option{
-		Hidden(false),
-		RefreshIntervals([]string{"5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"}),
-		Collapse(false),
-		Enable(true),
-		TimeOptions([]string{"5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"}),
-	}
+	return []Option{}
 }

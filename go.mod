@@ -4,10 +4,12 @@ go 1.19
 
 require (
 	cuelang.org/go v0.5.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/grafana/codejen v0.0.4-0.20221122220907-a5e7cc5407b3
 	github.com/grafana/grafana v1.9.2-0.20230609164553-81d85ce8028d
 	github.com/grafana/kindsys v0.0.0-20230615185749-1424263c17c7
 	github.com/grafana/thema v0.0.0-20230628103417-8f63313207a5
+	github.com/santhosh-tekuri/jsonschema v1.2.4
 	github.com/spf13/cobra v1.4.0
 	github.com/yalue/merged_fs v1.2.2
 	golang.org/x/tools v0.10.0

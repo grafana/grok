@@ -1,12 +1,25 @@
 package jsonschema
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
 
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
+	schemaparser "github.com/santhosh-tekuri/jsonschema"
+)
+
+var errUndescriptiveSchema = fmt.Errorf("the schema does not appear to be describing anything")
+
+const (
+	typeNull    = "null"
+	typeBoolean = "boolean"
+	typeObject  = "object"
+	typeArray   = "array"
+	typeString  = "string"
+	typeNumber  = "number"
+	typeInteger = "integer"
 )
 
 type Config struct {
@@ -15,8 +28,6 @@ type Config struct {
 }
 
 type newGenerator struct {
-	schemaRootDefinition string
-
 	file *ast.File
 }
 
@@ -27,164 +38,267 @@ func GenerateAST(schemaReader io.Reader, c Config) (*ast.File, error) {
 		},
 	}
 
-	schema := Schema{}
-	err := json.NewDecoder(schemaReader).Decode(&schema)
+	compiler := schemaparser.NewCompiler()
+	compiler.ExtractAnnotations = true
+	if err := compiler.AddResource("schema", schemaReader); err != nil {
+		return nil, err
+	}
+
+	schema, err := compiler.Compile("schema")
 	if err != nil {
 		return nil, err
 	}
 
-	g.schemaRootDefinition = schema.Ref
-
-	for name, definition := range schema.Definitions {
-		n, err := g.declareTopLevelType(name, definition)
-		if err != nil {
+	// The root of the schema is an actual type/object
+	if schema.Ref == nil {
+		if err := g.declareDefinition(c.Package, schema); err != nil {
 			return nil, err
 		}
-
-		g.file.Definitions = append(g.file.Definitions, *n)
+	} else {
+		// The root of the schema contains definitions, and a reference to the "main" object
+		if err := g.declareDefinition(c.Package, schema.Ref); err != nil {
+			return nil, err
+		}
 	}
 
 	return g.file, nil
 }
 
-func (g *newGenerator) declareTopLevelType(name string, schema Schema) (*ast.Definition, error) {
-	if schema.Enum != nil {
-		return g.declareTopLevelEnum(name, schema)
-	}
-
-	if schema.Type.Exactly(TypeObject) {
-		return g.declareTopLevelStruct(name, schema)
-	}
-
-	return nil, fmt.Errorf("unexpected top-level type '%s'", schema.Type)
-}
-
-func (g *newGenerator) declareTopLevelEnum(name string, schema Schema) (*ast.Definition, error) {
-	if schema.Type.IsDisjunction() {
-		return nil, fmt.Errorf("enums may only be generated from values of a single type: got '%s'", schema.Type)
-	}
-
-	if !schema.Type.Any(TypeString, TypeInteger, TypeNumber) {
-		return nil, fmt.Errorf("enums may only be generated from strings, ints or numbers")
-	}
-
-	values, err := g.extractEnumValues(schema)
+func (g *newGenerator) declareDefinition(definitionName string, schema *schemaparser.Schema) error {
+	def, err := g.walkDefinition(schema)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("%s: %w", definitionName, err)
 	}
 
-	typeDef := &ast.Definition{
-		Kind:         ast.KindEnum,
-		Values:       values,
-		Name:         name,
-		Comments:     schemaComments(schema),
-		IsEntryPoint: "#/definitions/"+name == g.schemaRootDefinition,
-	}
+	def.Name = definitionName
 
-	return typeDef, nil
+	g.file.Definitions = append(g.file.Definitions, *def)
+
+	return nil
 }
 
-func (g *newGenerator) extractEnumValues(schema Schema) ([]ast.EnumValue, error) {
-	fields := make([]ast.EnumValue, 0, len(schema.Enum))
+func (g *newGenerator) walkDefinition(schema *schemaparser.Schema) (*ast.Definition, error) {
+	var def *ast.Definition
+	var err error
 
-	for _, value := range schema.Enum {
-		fields = append(fields, ast.EnumValue{
-			Type:  ast.KindString,           // TODO
-			Name:  fmt.Sprintf("%v", value), // TODO
-			Value: value,
-		})
+	if len(schema.Types) == 0 {
+		if schema.Ref != nil {
+			return g.walkRef(schema)
+		}
+
+		if schema.OneOf != nil {
+			return g.walkOneOf(schema)
+		}
+
+		if schema.AnyOf != nil {
+			return g.walkAnyOf(schema)
+		}
+
+		if schema.AllOf != nil {
+			return g.walkOneOf(schema)
+		}
+
+		if schema.Properties != nil || schema.PatternProperties != nil {
+			return g.walkObject(schema)
+		}
+
+		if schema.Enum != nil {
+			return g.walkEnum(schema)
+		}
+
+		return nil, errUndescriptiveSchema
 	}
 
-	return fields, nil
+	if len(schema.Types) > 1 {
+		def, err = g.walkDisjunction(schema)
+	} else if schema.Enum != nil {
+		def, err = g.walkEnum(schema)
+	} else {
+		switch schema.Types[0] {
+		case typeNull:
+			def = &ast.Definition{Kind: ast.KindNull, Comments: schemaComments(schema)}
+		case typeBoolean:
+			def = &ast.Definition{Kind: ast.KindBool, Comments: schemaComments(schema)}
+		case typeString:
+			def, err = g.walkString(schema)
+		case typeObject:
+			def, err = g.walkObject(schema)
+		case typeNumber, typeInteger:
+			def, err = g.walkNumber(schema)
+		case typeArray:
+			def, err = g.walkList(schema)
+
+		default:
+			return nil, fmt.Errorf("unexpected schema with type '%s'", schema.Types[0])
+		}
+	}
+
+	return def, err
 }
 
-func (g *newGenerator) declareTopLevelStruct(name string, schema Schema) (*ast.Definition, error) {
-	typeDef := &ast.Definition{
-		Kind:         ast.KindStruct,
-		Name:         name,
-		Comments:     schemaComments(schema),
-		IsEntryPoint: "#/definitions/"+name == g.schemaRootDefinition,
-	}
+func (g *newGenerator) walkDisjunction(schema *schemaparser.Schema) (*ast.Definition, error) {
+	// TODO: finish implementation
+	return &ast.Definition{Kind: ast.KindDisjunction, Comments: schemaComments(schema)}, nil
+}
 
-	// explore struct fields
-	for fieldName, property := range schema.Properties {
-		node, err := g.declareNode(property)
+func (g *newGenerator) walkDisjunctionBranches(branches []*schemaparser.Schema) (ast.Definitions, error) {
+	definitions := make([]ast.Definition, 0, len(branches))
+	for _, oneOf := range branches {
+		branch, err := g.walkDefinition(oneOf)
 		if err != nil {
 			return nil, err
 		}
 
-		typeDef.Fields = append(typeDef.Fields, ast.FieldDefinition{
-			Name:     fieldName,
-			Comments: schemaComments(property),
-			Required: stringInList(schema.Required, fieldName),
-			Type:     *node,
-		})
+		definitions = append(definitions, *branch)
 	}
 
-	return typeDef, nil
+	return definitions, nil
 }
 
-func (g *newGenerator) declareNode(schema Schema) (*ast.Definition, error) {
-	// This node is referring to another definition
-	if schema.Ref != "" {
-		parts := strings.Split(schema.Ref, "/")
-
-		return &ast.Definition{
-			Nullable: false,                         // TODO
-			Kind:     ast.Kind(parts[len(parts)-1]), // this is definitely too naive
-		}, nil
+func (g *newGenerator) walkOneOf(schema *schemaparser.Schema) (*ast.Definition, error) {
+	if len(schema.OneOf) == 0 {
+		return nil, fmt.Errorf("oneOf with no branches")
 	}
 
-	// Disjunctions
-	if schema.Type.IsDisjunction() {
-		return &ast.Definition{
-			Kind:     ast.KindDisjunction,
-			Branches: nil,   // TODO
-			Nullable: false, // TODO
-		}, nil
-	}
-
-	switch schema.Type[0] {
-	case TypeNull:
-		return &ast.Definition{Kind: ast.KindNull}, nil
-	case TypeBoolean:
-		return &ast.Definition{Kind: ast.KindBool}, nil
-	case TypeString:
-		return &ast.Definition{Kind: ast.KindString}, nil
-	case TypeNumber, TypeInteger:
-		return g.declareNumber(schema)
-	case TypeArray:
-		return g.declareList(schema)
-	case TypeObject:
-		return nil, fmt.Errorf("nested object definitions are not supported")
-	default:
-		return nil, fmt.Errorf("unexpected node with type '%s'", schema.Type.String())
-	}
-}
-
-func (g *newGenerator) declareNumber(schema Schema) (*ast.Definition, error) {
-	// TODO
-	return &ast.Definition{
-		Kind:        ast.KindInt64,
-		Nullable:    false,
-		Constraints: nil,
-	}, nil
-}
-
-func (g *newGenerator) declareList(schema Schema) (*ast.Definition, error) {
-	typeDef := &ast.Definition{
-		Kind:        ast.KindArray,
-		Nullable:    false,
-		IndexType:   ast.KindInt64,
-		Constraints: nil,
-	}
-
-	expr, err := g.declareNode(*schema.Items)
+	branches, err := g.walkDisjunctionBranches(schema.OneOf)
 	if err != nil {
 		return nil, err
 	}
 
-	typeDef.ValueType = expr
+	return &ast.Definition{
+		Kind:     ast.KindDisjunction,
+		Comments: schemaComments(schema),
+		Branches: branches,
+	}, nil
+}
 
-	return typeDef, nil
+// TODO: what's the difference between oneOf and anyOf?
+func (g *newGenerator) walkAnyOf(schema *schemaparser.Schema) (*ast.Definition, error) {
+	if len(schema.AnyOf) == 0 {
+		return nil, fmt.Errorf("anyOf with no branches")
+	}
+
+	branches, err := g.walkDisjunctionBranches(schema.AnyOf)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ast.Definition{
+		Kind:     ast.KindDisjunction,
+		Comments: schemaComments(schema),
+		Branches: branches,
+	}, nil
+}
+
+func (g *newGenerator) walkAllOf(schema *schemaparser.Schema) (*ast.Definition, error) {
+	// TODO: finish implementation and use correct type
+	return &ast.Definition{Kind: ast.KindDisjunction, Comments: schemaComments(schema)}, nil
+}
+
+func (g *newGenerator) walkRef(schema *schemaparser.Schema) (*ast.Definition, error) {
+	parts := strings.Split(schema.Ref.Ptr, "/")
+	referredKindName := parts[len(parts)-1] // Very naive
+
+	if err := g.declareDefinition(referredKindName, schema.Ref); err != nil {
+		return nil, err
+	}
+
+	return &ast.Definition{
+		Kind:     ast.Kind(referredKindName),
+		Comments: schemaComments(schema),
+	}, nil
+}
+
+func (g *newGenerator) walkString(schema *schemaparser.Schema) (*ast.Definition, error) {
+	def := &ast.Definition{Kind: ast.KindString, Comments: schemaComments(schema)}
+
+	if len(schema.Enum) != 0 {
+		def.Constraints = append(def.Constraints, ast.TypeConstraint{
+			Op:   "in",
+			Args: []any{schema.Enum},
+		})
+	}
+
+	return def, nil
+}
+
+func (g *newGenerator) walkNumber(schema *schemaparser.Schema) (*ast.Definition, error) {
+	// TODO: finish implementation
+	return &ast.Definition{Kind: ast.KindInt64, Comments: schemaComments(schema)}, nil
+}
+
+func (g *newGenerator) walkList(schema *schemaparser.Schema) (*ast.Definition, error) {
+	var itemsDef *ast.Definition
+	var err error
+
+	if schema.Items == nil {
+		itemsDef = &ast.Definition{
+			Kind: ast.KindAny,
+		}
+	} else {
+		// TODO: schema.Items might not be a schema?
+		itemsDef, err = g.walkDefinition(schema.Items.(*schemaparser.Schema))
+		// items contains an empty schema: `{}`
+		if errors.Is(err, errUndescriptiveSchema) {
+			itemsDef = &ast.Definition{
+				Kind: ast.KindAny,
+			}
+		} else if err != nil {
+			return nil, err
+		}
+	}
+
+	return &ast.Definition{
+		Kind:      ast.KindArray,
+		IndexType: ast.KindInt64,
+		ValueType: itemsDef,
+
+		Comments: schemaComments(schema),
+	}, nil
+}
+
+func (g *newGenerator) walkEnum(schema *schemaparser.Schema) (*ast.Definition, error) {
+	if len(schema.Enum) == 0 {
+		return nil, fmt.Errorf("enum with no values")
+	}
+
+	values := make([]ast.EnumValue, 0, len(schema.Enum))
+	for _, enumValue := range schema.Enum {
+		values = append(values, ast.EnumValue{
+			Type: ast.KindString, // TODO: identify that correctly
+
+			// Simple mapping of all enum values (which we are assuming are in
+			// lowerCamelCase) to corresponding CamelCase
+			Name:  enumValue.(string),
+			Value: enumValue.(string),
+		})
+	}
+
+	return &ast.Definition{
+		Kind:     ast.KindEnum,
+		Comments: schemaComments(schema),
+		Values:   values,
+		// TODO: default value?
+	}, nil
+}
+
+func (g *newGenerator) walkObject(schema *schemaparser.Schema) (*ast.Definition, error) {
+	// TODO: finish implementation
+	def := &ast.Definition{Kind: ast.KindStruct, Comments: schemaComments(schema)}
+
+	for name, property := range schema.Properties {
+		fieldDef, err := g.walkDefinition(property)
+		if err != nil {
+			return nil, err
+		}
+
+		def.Fields = append(def.Fields, ast.FieldDefinition{
+			Name:     name,
+			Comments: schemaComments(schema),
+			Required: stringInList(schema.Required, name),
+			Type:     *fieldDef,
+		})
+	}
+
+	return def, nil
 }

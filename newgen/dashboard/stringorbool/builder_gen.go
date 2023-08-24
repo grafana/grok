@@ -45,19 +45,19 @@ func (builder *Builder) Internal() *types.StringOrBool {
 	return builder.internal
 }
 
-func ValString(ValString string) Option {
+func ValString(valString string) Option {
 	return func(builder *Builder) error {
 
-		builder.internal.ValString = &ValString
+		builder.internal.ValString = &valString
 
 		return nil
 	}
 }
 
-func ValBool(ValBool bool) Option {
+func ValBool(valBool bool) Option {
 	return func(builder *Builder) error {
 
-		builder.internal.ValBool = &ValBool
+		builder.internal.ValBool = &valBool
 
 		return nil
 	}

@@ -32,7 +32,9 @@ func (jenny GoRawTypes) generateFile(file *ast.File) ([]byte, error) {
 
 	buffer.WriteString("package types\n\n")
 
-	for _, typeDef := range tr.sortedTypes() {
+	// FIXME
+	for _, typeDef := range tr.sortedDefinitions() {
+		//for _, typeDef := range file.Definitions {
 		typeDefGen, err := jenny.formatTypeDef(typeDef)
 		if err != nil {
 			return nil, err
@@ -50,6 +52,10 @@ func (jenny GoRawTypes) formatTypeDef(def ast.Definition) ([]byte, error) {
 		return jenny.formatStructDef(def)
 	}
 
+	if def.IsReference() {
+		return []byte(fmt.Sprintf("type %s %s", formatIdentifier(def.Name), def.Kind)), nil
+	}
+
 	return jenny.formatEnumDef(def)
 }
 
@@ -60,11 +66,13 @@ func (jenny GoRawTypes) formatEnumDef(def ast.Definition) ([]byte, error) {
 		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
 	}
 
-	buffer.WriteString(fmt.Sprintf("type %s %s\n", def.Name, def.Values[0].Type))
+	enumName := formatIdentifier(def.Name)
+
+	buffer.WriteString(fmt.Sprintf("type %s %s\n", enumName, def.Values[0].Type))
 
 	buffer.WriteString("const (\n")
 	for _, val := range def.Values {
-		buffer.WriteString(fmt.Sprintf("\t%s %s = %#v\n", strings.Title(val.Name), def.Name, val.Value))
+		buffer.WriteString(fmt.Sprintf("\t%s %s = %#v\n", formatIdentifier(val.Name), enumName, val.Value))
 	}
 	buffer.WriteString(")\n")
 
@@ -78,7 +86,7 @@ func (jenny GoRawTypes) formatStructDef(def ast.Definition) ([]byte, error) {
 		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
 	}
 
-	buffer.WriteString(fmt.Sprintf("type %s ", def.Name))
+	buffer.WriteString(fmt.Sprintf("type %s ", formatIdentifier(def.Name)))
 	buffer.WriteString(formatStructBody(def, ""))
 	buffer.WriteString("\n")
 
@@ -118,7 +126,7 @@ func formatField(def ast.FieldDefinition, typesPkg string) string {
 
 	buffer.WriteString(fmt.Sprintf(
 		"%s %s `json:\"%s%s\"`\n",
-		strings.Title(def.Name),
+		formatIdentifier(def.Name),
 		formatType(def.Type, def.Required, typesPkg),
 		def.Name,
 		jsonOmitEmpty,
@@ -126,7 +134,6 @@ func formatField(def ast.FieldDefinition, typesPkg string) string {
 
 	return buffer.String()
 }
-
 func formatType(def ast.Definition, fieldIsRequired bool, typesPkg string) string {
 	if def.Kind == ast.KindAny {
 		return "any"

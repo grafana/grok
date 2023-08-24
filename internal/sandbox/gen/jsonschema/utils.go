@@ -2,11 +2,13 @@ package jsonschema
 
 import (
 	"strings"
+
+	schemaparser "github.com/santhosh-tekuri/jsonschema"
 )
 
-func stringInList(haystack []string, needle string) bool {
-	for _, val := range haystack {
-		if val == needle {
+func stringInList(list []string, input string) bool {
+	for _, value := range list {
+		if value == input {
 			return true
 		}
 	}
@@ -14,11 +16,8 @@ func stringInList(haystack []string, needle string) bool {
 	return false
 }
 
-func schemaComments(schema Schema) []string {
-	comment := schema.Comment
-	if comment == "" {
-		comment = schema.Description
-	}
+func schemaComments(schema *schemaparser.Schema) []string {
+	comment := schema.Description
 
 	lines := strings.Split(comment, "\n")
 	filtered := make([]string, 0, len(lines))

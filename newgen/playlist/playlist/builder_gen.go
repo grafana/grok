@@ -1,19 +1,19 @@
-package timepicker
+package playlist
 
 import (
 	"encoding/json"
 
-	"github.com/grafana/grok/newgen/dashboard/types"
+	"github.com/grafana/grok/newgen/playlist/types"
 )
 
 type Option func(builder *Builder) error
 
 type Builder struct {
-	internal *types.TimePicker
+	internal *types.Playlist
 }
 
 func New(options ...Option) (Builder, error) {
-	resource := &types.TimePicker{}
+	resource := &types.Playlist{}
 	builder := &Builder{internal: resource}
 
 	for _, opt := range append(defaults(), options...) {
@@ -41,61 +41,46 @@ func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 	return json.MarshalIndent(builder.internal, "", "  ")
 }
 
-func (builder *Builder) Internal() *types.TimePicker {
+func (builder *Builder) Internal() *types.Playlist {
 	return builder.internal
 }
 
-func Hidden(hidden bool) Option {
+func Interval(interval string) Option {
 	return func(builder *Builder) error {
 
-		builder.internal.Hidden = hidden
+		builder.internal.Interval = interval
 
 		return nil
 	}
 }
 
-func RefreshIntervals(refreshIntervals []string) Option {
+func Items(items []types.PlaylistItem) Option {
 	return func(builder *Builder) error {
 
-		builder.internal.RefreshIntervals = refreshIntervals
+		builder.internal.Items = items
 
 		return nil
 	}
 }
 
-func Collapse(collapse bool) Option {
+func Name(name string) Option {
 	return func(builder *Builder) error {
 
-		builder.internal.Collapse = collapse
+		builder.internal.Name = name
 
 		return nil
 	}
 }
 
-func Enable(enable bool) Option {
+func Xxx(xxx string) Option {
 	return func(builder *Builder) error {
 
-		builder.internal.Enable = enable
-
-		return nil
-	}
-}
-
-func TimeOptions(timeOptions []string) Option {
-	return func(builder *Builder) error {
-
-		builder.internal.TimeOptions = timeOptions
+		builder.internal.Xxx = xxx
 
 		return nil
 	}
 }
 
 func defaults() []Option {
-	return []Option{
-		Hidden(false),
-		RefreshIntervals([]string{"5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"}),
-		Collapse(false),
-		Enable(true),
-		TimeOptions([]string{"5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"}),
-	}
+	return []Option{}
 }

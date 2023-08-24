@@ -10,8 +10,11 @@ import (
 )
 
 func main() {
-	entrypoint := "./schemas/jsonschema/core/playlist/playlist.json"
-	pkg := "playlist"
+	//entrypoint := "./schemas/jsonschema/core/playlist/playlist.json"
+	//pkg := "playlist"
+
+	entrypoint := "./schemas/jsonschema/core/dockerd/dockerd.json"
+	pkg := "dockerd"
 
 	reader, err := os.Open(entrypoint)
 	if err != nil {

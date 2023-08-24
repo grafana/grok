@@ -12,5 +12,8 @@ var veneersFS embed.FS
 
 func init() {
 	base := template.New("golang")
+	base.Funcs(map[string]any{
+		"formatIdentifier": formatIdentifier,
+	})
 	templates = template.Must(base.ParseFS(veneersFS, "veneers/*.tmpl"))
 }

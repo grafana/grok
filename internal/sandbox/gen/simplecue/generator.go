@@ -171,10 +171,9 @@ func (g *newGenerator) declareTopLevelStruct(name string, v cue.Value, isCueDefi
 	}
 
 	typeDef := &ast.Definition{
-		Kind:         ast.KindStruct,
-		Name:         name,
-		Comments:     commentsFromCueValue(v),
-		IsEntryPoint: !isCueDefinition,
+		Kind:     ast.KindStruct,
+		Name:     name,
+		Comments: commentsFromCueValue(v),
 	}
 
 	// explore struct fields
