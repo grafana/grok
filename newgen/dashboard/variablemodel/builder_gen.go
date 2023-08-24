@@ -47,6 +47,7 @@ func (builder *Builder) Internal() *types.VariableModel {
 	return builder.internal
 }
 
+// Unique numeric identifier for the variable.
 func Id(id string) Option {
 	return func(builder *Builder) error {
 
@@ -56,6 +57,7 @@ func Id(id string) Option {
 	}
 }
 
+// Type of variable
 func Type(typeArg types.VariableType) Option {
 	return func(builder *Builder) error {
 
@@ -65,6 +67,7 @@ func Type(typeArg types.VariableType) Option {
 	}
 }
 
+// Name of variable
 func Name(name string) Option {
 	return func(builder *Builder) error {
 
@@ -74,6 +77,7 @@ func Name(name string) Option {
 	}
 }
 
+// Optional display name
 func Label(label string) Option {
 	return func(builder *Builder) error {
 
@@ -83,6 +87,7 @@ func Label(label string) Option {
 	}
 }
 
+// Visibility configuration for the variable
 func Hide(hide types.VariableHide) Option {
 	return func(builder *Builder) error {
 
@@ -92,6 +97,7 @@ func Hide(hide types.VariableHide) Option {
 	}
 }
 
+// Whether the variable value should be managed by URL query params or not
 func SkipUrlSync(skipUrlSync bool) Option {
 	return func(builder *Builder) error {
 
@@ -101,6 +107,7 @@ func SkipUrlSync(skipUrlSync bool) Option {
 	}
 }
 
+// Description of variable. It can be defined but `null`.
 func Description(description string) Option {
 	return func(builder *Builder) error {
 
@@ -110,6 +117,7 @@ func Description(description string) Option {
 	}
 }
 
+// Query used to fetch values for a variable
 func Query(query any) Option {
 	return func(builder *Builder) error {
 
@@ -132,6 +140,7 @@ func Datasource(opts ...datasourceref.Option) Option {
 	}
 }
 
+// Format to use while fetching all values from data source, eg: wildcard, glob, regex, pipe, etc.
 func AllFormat(allFormat string) Option {
 	return func(builder *Builder) error {
 
@@ -154,6 +163,7 @@ func Current(opts ...variableoption.Option) Option {
 	}
 }
 
+// Whether multiple values can be selected or not from variable value list
 func Multi(multi bool) Option {
 	return func(builder *Builder) error {
 
@@ -163,6 +173,7 @@ func Multi(multi bool) Option {
 	}
 }
 
+// Options that can be selected for a variable.
 func Options(options []types.VariableOption) Option {
 	return func(builder *Builder) error {
 
@@ -171,7 +182,6 @@ func Options(options []types.VariableOption) Option {
 		return nil
 	}
 }
-
 func Refresh(refresh types.VariableRefresh) Option {
 	return func(builder *Builder) error {
 

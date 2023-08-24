@@ -45,6 +45,7 @@ func (builder *Builder) Internal() *types.DataSourceRef {
 	return builder.internal
 }
 
+// The plugin type-id
 func Type(typeArg string) Option {
 	return func(builder *Builder) error {
 
@@ -54,6 +55,7 @@ func Type(typeArg string) Option {
 	}
 }
 
+// Specific datasource instance
 func Uid(uid string) Option {
 	return func(builder *Builder) error {
 

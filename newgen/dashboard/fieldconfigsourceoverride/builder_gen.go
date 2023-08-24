@@ -58,7 +58,6 @@ func Matcher(opts ...matcherconfig.Option) Option {
 		return nil
 	}
 }
-
 func Properties(properties []types.DynamicConfigValue) Option {
 	return func(builder *Builder) error {
 

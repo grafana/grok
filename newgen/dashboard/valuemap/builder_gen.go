@@ -45,7 +45,6 @@ func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 func (builder *Builder) Internal() *types.ValueMap {
 	return builder.internal
 }
-
 func Type(typeArg string) Option {
 	return func(builder *Builder) error {
 		if !(typeArg == "value") {
@@ -58,6 +57,7 @@ func Type(typeArg string) Option {
 	}
 }
 
+// Map with <value_to_match>: ValueMappingResult. For example: { "10": { text: "Perfection!", color: "green" } }
 func Options(options map[string]types.ValueMappingResult) Option {
 	return func(builder *Builder) error {
 

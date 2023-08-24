@@ -45,7 +45,6 @@ func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 func (builder *Builder) Internal() *types.SpecialValueMap {
 	return builder.internal
 }
-
 func Type(typeArg string) Option {
 	return func(builder *Builder) error {
 		if !(typeArg == "special") {
@@ -57,7 +56,6 @@ func Type(typeArg string) Option {
 		return nil
 	}
 }
-
 func Options(options struct {
 	// Special value to match against
 	Match types.SpecialValueMatch `json:"match"`

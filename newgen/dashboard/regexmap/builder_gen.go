@@ -45,7 +45,6 @@ func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 func (builder *Builder) Internal() *types.RegexMap {
 	return builder.internal
 }
-
 func Type(typeArg string) Option {
 	return func(builder *Builder) error {
 		if !(typeArg == "regex") {
@@ -58,6 +57,7 @@ func Type(typeArg string) Option {
 	}
 }
 
+// Regular expression to match against and the result to apply when the value matches the regex
 func Options(options struct {
 	// Regular expression to match against
 	Pattern string `json:"pattern"`

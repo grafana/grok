@@ -46,6 +46,7 @@ func (builder *Builder) Internal() *types.DataTransformerConfig {
 	return builder.internal
 }
 
+// Unique identifier of transformer
 func Id(id string) Option {
 	return func(builder *Builder) error {
 
@@ -55,6 +56,7 @@ func Id(id string) Option {
 	}
 }
 
+// Disabled transformations are skipped
 func Disabled(disabled bool) Option {
 	return func(builder *Builder) error {
 
@@ -77,6 +79,8 @@ func Filter(opts ...matcherconfig.Option) Option {
 	}
 }
 
+// Options to be passed to the transformer
+// Valid options depend on the transformer id
 func Options(options any) Option {
 	return func(builder *Builder) error {
 

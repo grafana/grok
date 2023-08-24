@@ -44,7 +44,6 @@ func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 func (builder *Builder) Internal() *types.StringOrBool {
 	return builder.internal
 }
-
 func ValString(valString string) Option {
 	return func(builder *Builder) error {
 
@@ -53,7 +52,6 @@ func ValString(valString string) Option {
 		return nil
 	}
 }
-
 func ValBool(valBool bool) Option {
 	return func(builder *Builder) error {
 

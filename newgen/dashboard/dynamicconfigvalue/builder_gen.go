@@ -44,7 +44,6 @@ func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 func (builder *Builder) Internal() *types.DynamicConfigValue {
 	return builder.internal
 }
-
 func Id(id string) Option {
 	return func(builder *Builder) error {
 
@@ -53,7 +52,6 @@ func Id(id string) Option {
 		return nil
 	}
 }
-
 func Value(value any) Option {
 	return func(builder *Builder) error {
 

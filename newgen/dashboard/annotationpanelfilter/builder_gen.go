@@ -45,6 +45,7 @@ func (builder *Builder) Internal() *types.AnnotationPanelFilter {
 	return builder.internal
 }
 
+// Should the specified panels be included or excluded
 func Exclude(exclude bool) Option {
 	return func(builder *Builder) error {
 
@@ -54,6 +55,7 @@ func Exclude(exclude bool) Option {
 	}
 }
 
+// Panel IDs that should be included or excluded
 func Ids(ids []uint8) Option {
 	return func(builder *Builder) error {
 

@@ -59,6 +59,7 @@ func Defaults(opts ...fieldconfig.Option) Option {
 	}
 }
 
+// Overrides are the options applied to specific fields overriding the defaults.
 func Overrides(overrides []types.FieldConfigSourceOverride) Option {
 	return func(builder *Builder) error {
 

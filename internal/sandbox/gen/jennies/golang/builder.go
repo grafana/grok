@@ -128,6 +128,10 @@ func (jenny *GoBuilder) veneer(veneerType string, def ast.Definition) (string, e
 func (jenny *GoBuilder) fieldToOption(def ast.FieldDefinition) string {
 	var buffer strings.Builder
 
+	for _, commentLine := range def.Comments {
+		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
+	}
+
 	// structs get their own builder
 	if def.Type.IsReference() {
 		referredDef := jenny.file.LocateDefinition(string(def.Type.Kind))
@@ -154,8 +158,7 @@ func (jenny *GoBuilder) fieldToOption(def ast.FieldDefinition) string {
 		jenny.defaults = append(jenny.defaults, jenny.formatDefaultValue(def))
 	}
 
-	buffer.WriteString(fmt.Sprintf(`
-func %[1]s(%[2]s %[3]s) Option {
+	buffer.WriteString(fmt.Sprintf(`func %[1]s(%[2]s %[3]s) Option {
 	return func(builder *Builder) error {
 		%[4]s
 		builder.internal.%[1]s = %[5]s%[2]s

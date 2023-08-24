@@ -45,6 +45,7 @@ func (builder *Builder) Internal() *types.DashboardLink {
 	return builder.internal
 }
 
+// Title to display with the link
 func Title(title string) Option {
 	return func(builder *Builder) error {
 
@@ -54,6 +55,7 @@ func Title(title string) Option {
 	}
 }
 
+// Link type. Accepted values are dashboards (to refer to another dashboard) and link (to refer to an external resource)
 func Type(typeArg types.DashboardLinkType) Option {
 	return func(builder *Builder) error {
 
@@ -63,6 +65,7 @@ func Type(typeArg types.DashboardLinkType) Option {
 	}
 }
 
+// Icon name to be displayed with the link
 func Icon(icon string) Option {
 	return func(builder *Builder) error {
 
@@ -72,6 +75,7 @@ func Icon(icon string) Option {
 	}
 }
 
+// Tooltip to display when the user hovers their mouse over it
 func Tooltip(tooltip string) Option {
 	return func(builder *Builder) error {
 
@@ -81,6 +85,7 @@ func Tooltip(tooltip string) Option {
 	}
 }
 
+// Link URL. Only required/valid if the type is link
 func Url(url string) Option {
 	return func(builder *Builder) error {
 
@@ -90,6 +95,7 @@ func Url(url string) Option {
 	}
 }
 
+// List of tags to limit the linked dashboards. If empty, all dashboards will be displayed. Only valid if the type is dashboards
 func Tags(tags []string) Option {
 	return func(builder *Builder) error {
 
@@ -99,6 +105,7 @@ func Tags(tags []string) Option {
 	}
 }
 
+// If true, all dashboards links will be displayed in a dropdown. If false, all dashboards links will be displayed side by side. Only valid if the type is dashboards
 func AsDropdown(asDropdown bool) Option {
 	return func(builder *Builder) error {
 
@@ -108,6 +115,7 @@ func AsDropdown(asDropdown bool) Option {
 	}
 }
 
+// If true, the link will be opened in a new tab
 func TargetBlank(targetBlank bool) Option {
 	return func(builder *Builder) error {
 
@@ -117,6 +125,7 @@ func TargetBlank(targetBlank bool) Option {
 	}
 }
 
+// If true, includes current template variables values in the link as query params
 func IncludeVars(includeVars bool) Option {
 	return func(builder *Builder) error {
 
@@ -126,6 +135,7 @@ func IncludeVars(includeVars bool) Option {
 	}
 }
 
+// If true, includes current time range in the link as query params
 func KeepTime(keepTime bool) Option {
 	return func(builder *Builder) error {
 

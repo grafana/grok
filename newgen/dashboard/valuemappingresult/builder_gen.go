@@ -45,6 +45,7 @@ func (builder *Builder) Internal() *types.ValueMappingResult {
 	return builder.internal
 }
 
+// Text to display when the value matches
 func Text(text string) Option {
 	return func(builder *Builder) error {
 
@@ -54,6 +55,7 @@ func Text(text string) Option {
 	}
 }
 
+// Text to use when the value matches
 func Color(color string) Option {
 	return func(builder *Builder) error {
 
@@ -63,6 +65,7 @@ func Color(color string) Option {
 	}
 }
 
+// Icon to display when the value matches. Only specific visualizations.
 func Icon(icon string) Option {
 	return func(builder *Builder) error {
 
@@ -72,6 +75,7 @@ func Icon(icon string) Option {
 	}
 }
 
+// Position in the mapping array. Only used internally.
 func Index(index int32) Option {
 	return func(builder *Builder) error {
 

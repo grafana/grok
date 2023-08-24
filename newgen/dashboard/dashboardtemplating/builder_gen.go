@@ -45,6 +45,7 @@ func (builder *Builder) Internal() *types.DashboardTemplating {
 	return builder.internal
 }
 
+// List of configured template variables with their saved values along with some other metadata
 func List(list []types.VariableModel) Option {
 	return func(builder *Builder) error {
 

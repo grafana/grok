@@ -45,6 +45,7 @@ func (builder *Builder) Internal() *types.MatcherConfig {
 	return builder.internal
 }
 
+// The matcher id. This is used to find the matcher implementation from registry.
 func Id(id string) Option {
 	return func(builder *Builder) error {
 
@@ -54,6 +55,7 @@ func Id(id string) Option {
 	}
 }
 
+// The matcher options. This is specific to the matcher implementation.
 func Options(options any) Option {
 	return func(builder *Builder) error {
 

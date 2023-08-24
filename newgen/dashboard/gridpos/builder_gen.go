@@ -46,6 +46,7 @@ func (builder *Builder) Internal() *types.GridPos {
 	return builder.internal
 }
 
+// Panel height. The height is the number of rows from the top edge of the panel.
 func H(h uint32) Option {
 	return func(builder *Builder) error {
 		if !(h > 0) {
@@ -58,6 +59,7 @@ func H(h uint32) Option {
 	}
 }
 
+// Panel width. The width is the number of columns from the left edge of the panel.
 func W(w uint32) Option {
 	return func(builder *Builder) error {
 		if !(w > 0) {
@@ -74,6 +76,7 @@ func W(w uint32) Option {
 	}
 }
 
+// Panel x. The x coordinate is the number of columns from the left edge of the grid
 func X(x uint32) Option {
 	return func(builder *Builder) error {
 		if !(x >= 0) {
@@ -90,6 +93,7 @@ func X(x uint32) Option {
 	}
 }
 
+// Panel y. The y coordinate is the number of rows from the top edge of the grid
 func Y(y uint32) Option {
 	return func(builder *Builder) error {
 		if !(y >= 0) {
@@ -102,6 +106,7 @@ func Y(y uint32) Option {
 	}
 }
 
+// Whether the panel is fixed within the grid. If true, the panel will not be affected by other panels' interactions
 func Static(static bool) Option {
 	return func(builder *Builder) error {
 

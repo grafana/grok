@@ -45,6 +45,8 @@ func (builder *Builder) Internal() *types.Threshold {
 	return builder.internal
 }
 
+// Value represents a specified metric for the threshold, which triggers a visual change in the dashboard when this value is met or exceeded.
+// Nulls currently appear here when serializing -Infinity to JSON.
 func Value(value float64) Option {
 	return func(builder *Builder) error {
 
@@ -54,6 +56,7 @@ func Value(value float64) Option {
 	}
 }
 
+// Color represents the color of the visual change that will occur in the dashboard when the threshold value is met or exceeded.
 func Color(color string) Option {
 	return func(builder *Builder) error {
 

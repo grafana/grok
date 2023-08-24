@@ -48,6 +48,7 @@ func (builder *Builder) Internal() *types.AnnotationQuery {
 	return builder.internal
 }
 
+// Name of annotation.
 func Name(name string) Option {
 	return func(builder *Builder) error {
 
@@ -70,6 +71,7 @@ func Datasource(opts ...datasourceref.Option) Option {
 	}
 }
 
+// When enabled the annotation query is issued with every dashboard refresh
 func Enable(enable bool) Option {
 	return func(builder *Builder) error {
 
@@ -79,6 +81,8 @@ func Enable(enable bool) Option {
 	}
 }
 
+// Annotation queries can be toggled on or off at the top of the dashboard.
+// When hide is true, the toggle is not shown in the dashboard.
 func Hide(hide bool) Option {
 	return func(builder *Builder) error {
 
@@ -88,6 +92,7 @@ func Hide(hide bool) Option {
 	}
 }
 
+// Color to use for the annotation event markers
 func IconColor(iconColor string) Option {
 	return func(builder *Builder) error {
 
@@ -123,6 +128,7 @@ func Target(opts ...annotationtarget.Option) Option {
 	}
 }
 
+// TODO -- this should not exist here, it is based on the --grafana-- datasource
 func Type(typeArg string) Option {
 	return func(builder *Builder) error {
 

@@ -45,7 +45,6 @@ func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 func (builder *Builder) Internal() *types.RangeMap {
 	return builder.internal
 }
-
 func Type(typeArg string) Option {
 	return func(builder *Builder) error {
 		if !(typeArg == "range") {
@@ -58,6 +57,7 @@ func Type(typeArg string) Option {
 	}
 }
 
+// Range to match against and the result to apply when the value is within the range
 func Options(options struct {
 	// Min value of the range. It can be null which means -Infinity
 	From *float64 `json:"from"`

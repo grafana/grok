@@ -45,6 +45,7 @@ func (builder *Builder) Internal() *types.TimePicker {
 	return builder.internal
 }
 
+// Whether timepicker is visible or not.
 func Hidden(hidden bool) Option {
 	return func(builder *Builder) error {
 
@@ -54,6 +55,7 @@ func Hidden(hidden bool) Option {
 	}
 }
 
+// Interval options available in the refresh picker dropdown.
 func RefreshIntervals(refreshIntervals []string) Option {
 	return func(builder *Builder) error {
 
@@ -63,6 +65,7 @@ func RefreshIntervals(refreshIntervals []string) Option {
 	}
 }
 
+// Whether timepicker is collapsed or not. Has no effect on provisioned dashboard.
 func Collapse(collapse bool) Option {
 	return func(builder *Builder) error {
 
@@ -72,6 +75,7 @@ func Collapse(collapse bool) Option {
 	}
 }
 
+// Whether timepicker is enabled or not. Has no effect on provisioned dashboard.
 func Enable(enable bool) Option {
 	return func(builder *Builder) error {
 
@@ -81,6 +85,7 @@ func Enable(enable bool) Option {
 	}
 }
 
+// Selectable options available in the time picker dropdown. Has no effect on provisioned dashboard.
 func TimeOptions(timeOptions []string) Option {
 	return func(builder *Builder) error {
 

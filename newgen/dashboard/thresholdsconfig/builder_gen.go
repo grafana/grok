@@ -45,6 +45,7 @@ func (builder *Builder) Internal() *types.ThresholdsConfig {
 	return builder.internal
 }
 
+// Thresholds mode.
 func Mode(mode types.ThresholdsMode) Option {
 	return func(builder *Builder) error {
 
@@ -54,6 +55,7 @@ func Mode(mode types.ThresholdsMode) Option {
 	}
 }
 
+// Must be sorted by 'value', first value is always -Infinity
 func Steps(steps []types.Threshold) Option {
 	return func(builder *Builder) error {
 

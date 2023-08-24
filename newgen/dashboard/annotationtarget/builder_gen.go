@@ -45,6 +45,8 @@ func (builder *Builder) Internal() *types.AnnotationTarget {
 	return builder.internal
 }
 
+// Only required/valid for the grafana datasource...
+// but code+tests is already depending on it so hard to change
 func Limit(limit int64) Option {
 	return func(builder *Builder) error {
 
@@ -54,6 +56,8 @@ func Limit(limit int64) Option {
 	}
 }
 
+// Only required/valid for the grafana datasource...
+// but code+tests is already depending on it so hard to change
 func MatchAny(matchAny bool) Option {
 	return func(builder *Builder) error {
 
@@ -63,6 +67,8 @@ func MatchAny(matchAny bool) Option {
 	}
 }
 
+// Only required/valid for the grafana datasource...
+// but code+tests is already depending on it so hard to change
 func Tags(tags []string) Option {
 	return func(builder *Builder) error {
 
@@ -72,6 +78,8 @@ func Tags(tags []string) Option {
 	}
 }
 
+// Only required/valid for the grafana datasource...
+// but code+tests is already depending on it so hard to change
 func Type(typeArg string) Option {
 	return func(builder *Builder) error {
 

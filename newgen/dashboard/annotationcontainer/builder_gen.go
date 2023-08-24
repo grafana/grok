@@ -45,6 +45,7 @@ func (builder *Builder) Internal() *types.AnnotationContainer {
 	return builder.internal
 }
 
+// List of annotations
 func List(list []types.AnnotationQuery) Option {
 	return func(builder *Builder) error {
 

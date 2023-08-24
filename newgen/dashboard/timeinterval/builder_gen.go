@@ -44,7 +44,6 @@ func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 func (builder *Builder) Internal() *types.TimeInterval {
 	return builder.internal
 }
-
 func From(from string) Option {
 	return func(builder *Builder) error {
 
@@ -53,7 +52,6 @@ func From(from string) Option {
 		return nil
 	}
 }
-
 func To(to string) Option {
 	return func(builder *Builder) error {
 

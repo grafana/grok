@@ -45,6 +45,7 @@ func (builder *Builder) Internal() *types.VariableOption {
 	return builder.internal
 }
 
+// Whether the option is selected or not
 func Selected(selected bool) Option {
 	return func(builder *Builder) error {
 
@@ -54,6 +55,7 @@ func Selected(selected bool) Option {
 	}
 }
 
+// Text to be displayed for the option
 func Text(text types.StringOrArray) Option {
 	return func(builder *Builder) error {
 
@@ -63,6 +65,7 @@ func Text(text types.StringOrArray) Option {
 	}
 }
 
+// Value of the option
 func Value(value types.StringOrArray) Option {
 	return func(builder *Builder) error {
 

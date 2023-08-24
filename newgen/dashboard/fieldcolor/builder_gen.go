@@ -45,6 +45,7 @@ func (builder *Builder) Internal() *types.FieldColor {
 	return builder.internal
 }
 
+// The main color scheme mode.
 func Mode(mode types.FieldColorModeId) Option {
 	return func(builder *Builder) error {
 
@@ -54,6 +55,7 @@ func Mode(mode types.FieldColorModeId) Option {
 	}
 }
 
+// The fixed color value for fixed or shades color modes.
 func FixedColor(fixedColor string) Option {
 	return func(builder *Builder) error {
 
@@ -63,6 +65,7 @@ func FixedColor(fixedColor string) Option {
 	}
 }
 
+// Some visualizations need to know how to assign a series color from by value color schemes.
 func SeriesBy(seriesBy types.FieldColorSeriesByMode) Option {
 	return func(builder *Builder) error {
 

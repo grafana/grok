@@ -45,6 +45,7 @@ func (builder *Builder) Internal() *types.LibraryPanelRef {
 	return builder.internal
 }
 
+// Library panel name
 func Name(name string) Option {
 	return func(builder *Builder) error {
 
@@ -54,6 +55,7 @@ func Name(name string) Option {
 	}
 }
 
+// Library panel uid
 func Uid(uid string) Option {
 	return func(builder *Builder) error {
 
