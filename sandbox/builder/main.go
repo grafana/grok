@@ -15,6 +15,9 @@ func main() {
 		dashboard.Timepicker(
 			timepicker.RefreshIntervals([]string{"30s", "1m", "5m"}),
 		),
+		dashboard.Style(types.Dark),
+		dashboard.Timezone("utc"),
+		dashboard.GraphTooltip(types.Crosshair),
 		dashboard.Tags([]string{"generated", "from", "cue"}),
 		dashboard.Links([]types.DashboardLink{
 			{
