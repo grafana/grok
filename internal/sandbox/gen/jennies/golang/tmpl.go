@@ -3,6 +3,8 @@ package golang
 import (
 	"embed"
 	"html/template"
+
+	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
 )
 
 var templates *template.Template
@@ -13,7 +15,7 @@ var veneersFS embed.FS
 func init() {
 	base := template.New("golang")
 	base.Funcs(map[string]any{
-		"formatIdentifier": formatIdentifier,
+		"formatIdentifier": tools.UpperCamelCase,
 	})
 	templates = template.Must(base.ParseFS(veneersFS, "veneers/*.tmpl"))
 }

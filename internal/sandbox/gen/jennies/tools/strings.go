@@ -1,4 +1,4 @@
-package golang
+package tools
 
 import (
 	"strings"
@@ -7,8 +7,8 @@ import (
 	"golang.org/x/text/language"
 )
 
-func formatIdentifier(s string) string {
-	s = formatArgument(s)
+func UpperCamelCase(s string) string {
+	s = LowerCamelCase(s)
 
 	// Uppercase the first letter
 	if len(s) > 0 {
@@ -18,7 +18,7 @@ func formatIdentifier(s string) string {
 	return s
 }
 
-func formatArgument(s string) string {
+func LowerCamelCase(s string) string {
 	// Replace all underscores/dashes with spaces
 	s = strings.ReplaceAll(s, "_", " ")
 	s = strings.ReplaceAll(s, "-", " ")

@@ -1,180 +1,180 @@
 // https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-export interface dockerd {
+export interface Dockerd {
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	dns-opts?: string[];
+	usernsRemap?: string;
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	tls?: boolean;
+	seccompProfile?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	ip6tables?: boolean;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	allowNondistributableArtifacts?: any[];
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	apiCorsHeader?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	dnsSearch?: string[];
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	cgroupParent?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	dataRoot?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	debug?: boolean;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	ip?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	maxDownloadAttempts?: number;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	storageDriver?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	group?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	labels?: any[];
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	bip?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	userlandProxy?: boolean;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	insecureRegistries?: string[];
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	defaultShmSize?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	liveRestore?: boolean;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	defaultIpcMode?: "shareable" | "private";
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	containerdNamespace?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	logLevel?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	icc?: boolean;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	logOpts?: {
+		cacheMaxSize?: string;
+		cacheCompress?: string;
+		env?: string;
+		labels?: string;
+		maxFile?: string;
+		maxSize?: string;
+		cacheDisabled?: string;
+		cacheMaxFile?: string;
+	};
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	authorizationPlugins?: any[];
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	dnsOpts?: string[];
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	tlsverify?: boolean;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	logDriver?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	defaultCgroupnsMode?: "private" | "host";
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	defaultGateway?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	userlandProxyPath?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	tlscacert?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	clusterStoreOpts?: {
+	
+	};
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	execOpts?: string[];
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	runtimes?: {
+		custom?: {
+			runtimeArgs?: string[];
+			path?: string;
+		};
+		ccRuntime?: {
+			path?: string;
+		};
+	};
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	containerdPluginNamespace?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	ipMasq?: boolean;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	ipv6?: boolean;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	oomScoreAdjust?: number;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	tlskey?: string;
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
 	dns?: any[];
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	default-ipc-mode?: enum;
+	initPath?: string;
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	max-concurrent-downloads?: number;
+	tlscert?: string;
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	log-driver?: string;
+	clusterStore?: string;
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	default-address-pools?: {
+	defaultAddressPools?: {
 		size?: number;
 		base?: string;
 	}[];
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	containerd-plugin-namespace?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	log-opts?: {
-		cache-max-size?: string;
-		cache-compress?: string;
-		env?: string;
-		labels?: string;
-		max-file?: string;
-		max-size?: string;
-		cache-disabled?: string;
-		cache-max-file?: string;
-	};
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	mtu?: number;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	containerd-namespace?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	init?: boolean;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	ip6tables?: boolean;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	group?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	tlscert?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	iptables?: boolean;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	bip?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	userland-proxy?: boolean;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	dns-search?: string[];
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	experimental?: boolean;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	cgroup-parent?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
 	hosts?: string[];
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	storage-driver?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	data-root?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	default-ulimits?: {
+	defaultUlimits?: {
 		nofile?: {
-			Hard?: number;
-			Name?: string;
-			Soft?: number;
+			name?: string;
+			soft?: number;
+			hard?: number;
 		};
 	};
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	exec-opts?: string[];
+	fixedCidrV6?: string;
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	userland-proxy-path?: string;
+	tls?: boolean;
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	registry-mirrors?: string[];
+	noNewPrivileges?: boolean;
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	ip-forward?: boolean;
+	nodeGenericResources?: string[];
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	debug?: boolean;
+	experimental?: boolean;
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	labels?: any[];
+	selinuxEnabled?: boolean;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	rawLogs?: boolean;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	shutdownTimeout?: number;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	maxConcurrentUploads?: number;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	mtu?: number;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	defaultRuntime?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	defaultGatewayV6?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	swarmDefaultAdvertiseAddr?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	bridge?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	clusterAdvertise?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	iptables?: boolean;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	maxConcurrentDownloads?: number;
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
 	features?: {
 	
 	};
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	selinux-enabled?: boolean;
+	ipForward?: boolean;
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	ipv6?: boolean;
+	storageOpts?: any[];
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	shutdown-timeout?: number;
+	fixedCidr?: string;
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
 	containerd?: string;
 	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	registryMirrors?: string[];
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	execRoot?: string;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
+	init?: boolean;
+	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
 	pidfile?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	raw-logs?: boolean;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	swarm-default-advertise-addr?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	fixed-cidr?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	max-download-attempts?: number;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	userns-remap?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	cluster-advertise?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	cluster-store?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	default-shm-size?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	max-concurrent-uploads?: number;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	default-gateway?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	seccomp-profile?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	authorization-plugins?: any[];
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	cluster-store-opts?: {
-	
-	};
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	allow-nondistributable-artifacts?: any[];
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	storage-opts?: any[];
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	insecure-registries?: string[];
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	exec-root?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	icc?: boolean;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	tlskey?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	default-cgroupns-mode?: enum;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	log-level?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	ip-masq?: boolean;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	default-runtime?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	api-cors-header?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	default-gateway-v6?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	no-new-privileges?: boolean;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	bridge?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	oom-score-adjust?: number;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	init-path?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	tlscacert?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	fixed-cidr-v6?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	ip?: string;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	runtimes?: {
-		cc-runtime?: {
-			path?: string;
-		};
-		custom?: {
-			path?: string;
-			runtimeArgs?: string[];
-		};
-	};
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	tlsverify?: boolean;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	live-restore?: boolean;
-	// https://docs.docker.com/engine/reference/commandline/dockerd/#daemon
-	node-generic-resources?: string[];
 }
 

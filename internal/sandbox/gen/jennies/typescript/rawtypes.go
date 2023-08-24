@@ -6,6 +6,7 @@ import (
 
 	"github.com/grafana/codejen"
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
+	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
 )
 
 type TypescriptRawTypes struct {
@@ -71,7 +72,7 @@ func (jenny TypescriptRawTypes) formatStructDef(def ast.Definition) ([]byte, err
 		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
 	}
 
-	buffer.WriteString(fmt.Sprintf("export interface %s ", def.Name))
+	buffer.WriteString(fmt.Sprintf("export interface %s ", tools.UpperCamelCase(def.Name)))
 
 	body, err := jenny.formatStructBody(def)
 	if err != nil {
@@ -130,7 +131,7 @@ func (jenny TypescriptRawTypes) formatField(def ast.FieldDefinition) ([]byte, er
 
 	buffer.WriteString(fmt.Sprintf(
 		"%s%s: %s;\n",
-		def.Name,
+		tools.LowerCamelCase(def.Name),
 		required,
 		formattedType,
 	))
@@ -150,6 +151,8 @@ func (jenny TypescriptRawTypes) formatType(def ast.Definition) (string, error) {
 		return jenny.formatStructBody(def)
 	case ast.KindMap:
 		return jenny.formatMap(def)
+	case ast.KindEnum:
+		return jenny.formatAnonymousEnum(def)
 
 	case ast.KindNull:
 		return "null", nil
@@ -170,7 +173,7 @@ func (jenny TypescriptRawTypes) formatType(def ast.Definition) (string, error) {
 		return "boolean", nil
 
 	default:
-		return string(def.Kind), nil
+		return tools.UpperCamelCase(string(def.Kind)), nil
 	}
 }
 
@@ -209,6 +212,17 @@ func (jenny TypescriptRawTypes) formatMap(def ast.Definition) (string, error) {
 	}
 
 	return fmt.Sprintf("Record<%s, %s>", keyTypeString, valueTypeString), nil
+}
+
+func (jenny TypescriptRawTypes) formatAnonymousEnum(def ast.Definition) (string, error) {
+	values := make([]string, 0, len(def.Values))
+	for _, value := range def.Values {
+		values = append(values, fmt.Sprintf("%#v", value.Value))
+	}
+
+	enumeration := strings.Join(values, " | ")
+
+	return enumeration, nil
 }
 
 func prefixLinesWith(input string, prefix string) string {

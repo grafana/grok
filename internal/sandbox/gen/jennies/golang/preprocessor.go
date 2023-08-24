@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
+	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
 )
 
 type preprocessor struct {
@@ -93,14 +94,14 @@ func (preprocessor *preprocessor) anonymousEnumToExplicitEnum(def ast.FieldDefin
 		return def.Type
 	}
 
-	enumTypeName := formatIdentifier(def.Name) + "Enum"
+	enumTypeName := tools.UpperCamelCase(def.Name) + "Enum"
 	enumType := def.Type
 
 	values := make([]ast.EnumValue, 0, len(enumType.Values))
 	for _, val := range enumType.Values {
 		values = append(values, ast.EnumValue{
 			Type:  val.Type,
-			Name:  def.Name + formatIdentifier(val.Name),
+			Name:  def.Name + tools.UpperCamelCase(val.Name),
 			Value: val.Value,
 		})
 	}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/grafana/codejen"
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
+	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
 )
 
 type GoBuilder struct {
@@ -57,7 +58,7 @@ func (jenny *GoBuilder) generateDefinition(def ast.Definition) ([]byte, error) {
 	buffer.WriteString(fmt.Sprintf(`type Builder struct {
 	internal *types.%s
 }
-`, formatIdentifier(def.Name)))
+`, tools.UpperCamelCase(def.Name)))
 
 	// Add a constructor for the builder
 	constructorCode, err := jenny.veneer("constructor", def)
@@ -80,7 +81,7 @@ func (jenny *GoBuilder) generateDefinition(def ast.Definition) ([]byte, error) {
 func (builder *Builder) Internal() *types.%s {
 	return builder.internal
 }
-`, formatIdentifier(def.Name)))
+`, tools.UpperCamelCase(def.Name)))
 
 	// Define options from fields
 	for _, fieldDef := range def.Fields {
@@ -135,9 +136,9 @@ func (jenny *GoBuilder) fieldToOption(def ast.FieldDefinition) string {
 		}
 	}
 
-	fieldName := formatIdentifier(def.Name)
+	fieldName := tools.UpperCamelCase(def.Name)
 	typeName := strings.TrimPrefix(formatType(def.Type, def.Required, "types"), "*")
-	argumentName := formatArgument(def.Name)
+	argumentName := tools.LowerCamelCase(def.Name)
 	if isReservedGoKeyword(argumentName) {
 		argumentName = argumentName + "Arg"
 	}
@@ -168,7 +169,7 @@ func %[1]s(%[2]s %[3]s) Option {
 }
 
 func (jenny *GoBuilder) formatDefaultValue(field ast.FieldDefinition) string {
-	fieldName := formatIdentifier(field.Name)
+	fieldName := tools.UpperCamelCase(field.Name)
 
 	if field.Type.Kind != ast.KindStruct {
 		defaultValue := field.Type.Default
@@ -221,7 +222,7 @@ func (jenny *GoBuilder) formatScalar(val any) string {
 func (jenny *GoBuilder) referenceFieldToOption(def ast.FieldDefinition) string {
 	var buffer strings.Builder
 
-	fieldName := formatIdentifier(def.Name)
+	fieldName := tools.UpperCamelCase(def.Name)
 	referredPackage := strings.ToLower(string(def.Type.Kind))
 
 	buffer.WriteString(fmt.Sprintf(`

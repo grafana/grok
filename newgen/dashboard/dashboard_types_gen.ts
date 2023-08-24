@@ -81,13 +81,13 @@ export interface TimePicker {
 	// Whether timepicker is visible or not.
 	hidden: boolean;
 	// Interval options available in the refresh picker dropdown.
-	refresh_intervals: string[];
+	refreshIntervals: string[];
 	// Whether timepicker is collapsed or not. Has no effect on provisioned dashboard.
 	collapse: boolean;
 	// Whether timepicker is enabled or not. Has no effect on provisioned dashboard.
 	enable: boolean;
 	// Selectable options available in the time picker dropdown. Has no effect on provisioned dashboard.
-	time_options: string[];
+	timeOptions: string[];
 }
 
 export interface TimeInterval {

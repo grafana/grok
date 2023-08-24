@@ -6,6 +6,7 @@ import (
 
 	"github.com/grafana/codejen"
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
+	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
 )
 
 type GoRawTypes struct {
@@ -53,7 +54,7 @@ func (jenny GoRawTypes) formatTypeDef(def ast.Definition) ([]byte, error) {
 	}
 
 	if def.IsReference() {
-		return []byte(fmt.Sprintf("type %s %s", formatIdentifier(def.Name), def.Kind)), nil
+		return []byte(fmt.Sprintf("type %s %s", tools.UpperCamelCase(def.Name), def.Kind)), nil
 	}
 
 	return jenny.formatEnumDef(def)
@@ -66,13 +67,13 @@ func (jenny GoRawTypes) formatEnumDef(def ast.Definition) ([]byte, error) {
 		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
 	}
 
-	enumName := formatIdentifier(def.Name)
+	enumName := tools.UpperCamelCase(def.Name)
 
 	buffer.WriteString(fmt.Sprintf("type %s %s\n", enumName, def.Values[0].Type))
 
 	buffer.WriteString("const (\n")
 	for _, val := range def.Values {
-		buffer.WriteString(fmt.Sprintf("\t%s %s = %#v\n", formatIdentifier(val.Name), enumName, val.Value))
+		buffer.WriteString(fmt.Sprintf("\t%s %s = %#v\n", tools.UpperCamelCase(val.Name), enumName, val.Value))
 	}
 	buffer.WriteString(")\n")
 
@@ -86,7 +87,7 @@ func (jenny GoRawTypes) formatStructDef(def ast.Definition) ([]byte, error) {
 		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
 	}
 
-	buffer.WriteString(fmt.Sprintf("type %s ", formatIdentifier(def.Name)))
+	buffer.WriteString(fmt.Sprintf("type %s ", tools.UpperCamelCase(def.Name)))
 	buffer.WriteString(formatStructBody(def, ""))
 	buffer.WriteString("\n")
 
@@ -126,7 +127,7 @@ func formatField(def ast.FieldDefinition, typesPkg string) string {
 
 	buffer.WriteString(fmt.Sprintf(
 		"%s %s `json:\"%s%s\"`\n",
-		formatIdentifier(def.Name),
+		tools.UpperCamelCase(def.Name),
 		formatType(def.Type, def.Required, typesPkg),
 		def.Name,
 		jsonOmitEmpty,
