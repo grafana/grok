@@ -41,23 +41,28 @@ func (jenny TypescriptRawTypes) generateFile(file *ast.File) ([]byte, error) {
 	return []byte(buffer.String()), nil
 }
 
-func (jenny TypescriptRawTypes) formatTypeDef(def ast.Definition) ([]byte, error) {
-	if def.Kind == ast.KindStruct {
+func (jenny TypescriptRawTypes) formatTypeDef(def ast.Object) ([]byte, error) {
+	switch def.Type.Kind() {
+	case ast.KindStruct:
 		return jenny.formatStructDef(def)
+	case ast.KindEnum:
+		return jenny.formatEnumDef(def)
+	default:
+		return nil, fmt.Errorf("unhandled type def kind: %s", def.Type.Kind())
 	}
-
-	return jenny.formatEnumDef(def)
 }
 
-func (jenny TypescriptRawTypes) formatEnumDef(def ast.Definition) ([]byte, error) {
+func (jenny TypescriptRawTypes) formatEnumDef(def ast.Object) ([]byte, error) {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
 		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
 	}
 
+	enumType := def.Type.(*ast.EnumType)
+
 	buffer.WriteString(fmt.Sprintf("export enum %s {\n", def.Name))
-	for _, val := range def.Values {
+	for _, val := range enumType.Values {
 		buffer.WriteString(fmt.Sprintf("\t%s = %#v,\n", strings.Title(val.Name), val.Value))
 	}
 	buffer.WriteString("}\n")
@@ -65,7 +70,7 @@ func (jenny TypescriptRawTypes) formatEnumDef(def ast.Definition) ([]byte, error
 	return []byte(buffer.String()), nil
 }
 
-func (jenny TypescriptRawTypes) formatStructDef(def ast.Definition) ([]byte, error) {
+func (jenny TypescriptRawTypes) formatStructDef(def ast.Object) ([]byte, error) {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
@@ -74,7 +79,9 @@ func (jenny TypescriptRawTypes) formatStructDef(def ast.Definition) ([]byte, err
 
 	buffer.WriteString(fmt.Sprintf("export interface %s ", tools.UpperCamelCase(def.Name)))
 
-	body, err := jenny.formatStructBody(def)
+	structType := def.Type.(*ast.StructType)
+
+	body, err := jenny.formatStructFields(structType.Fields)
 	if err != nil {
 		return nil, nil
 	}
@@ -84,12 +91,12 @@ func (jenny TypescriptRawTypes) formatStructDef(def ast.Definition) ([]byte, err
 	return []byte(buffer.String()), nil
 }
 
-func (jenny TypescriptRawTypes) formatStructBody(def ast.Definition) (string, error) {
+func (jenny TypescriptRawTypes) formatStructFields(fields []ast.StructField) (string, error) {
 	var buffer strings.Builder
 
 	buffer.WriteString("{\n")
 
-	for i, fieldDef := range def.Fields {
+	for i, fieldDef := range fields {
 		fieldDefGen, err := jenny.formatField(fieldDef)
 		if err != nil {
 			return "", err
@@ -102,7 +109,7 @@ func (jenny TypescriptRawTypes) formatStructBody(def ast.Definition) (string, er
 			),
 		)
 
-		if i != len(def.Fields)-1 {
+		if i != len(fields)-1 {
 			buffer.WriteString("\n")
 		}
 	}
@@ -112,7 +119,7 @@ func (jenny TypescriptRawTypes) formatStructBody(def ast.Definition) (string, er
 	return buffer.String(), nil
 }
 
-func (jenny TypescriptRawTypes) formatField(def ast.FieldDefinition) ([]byte, error) {
+func (jenny TypescriptRawTypes) formatField(def ast.StructField) ([]byte, error) {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
@@ -139,20 +146,22 @@ func (jenny TypescriptRawTypes) formatField(def ast.FieldDefinition) ([]byte, er
 	return []byte(buffer.String()), nil
 }
 
-func (jenny TypescriptRawTypes) formatType(def ast.Definition) (string, error) {
+func (jenny TypescriptRawTypes) formatType(def ast.Type) (string, error) {
 	// todo: handle nullable
 	// maybe if nullable, append | null to the type?
-	switch def.Kind {
+	switch def.Kind() {
 	case ast.KindDisjunction:
-		return jenny.formatDisjunction(def)
+		return jenny.formatDisjunction(def.(*ast.DisjunctionType))
+	case ast.KindRef:
+		return (def.(*ast.RefType)).ReferredType, nil
 	case ast.KindArray:
-		return jenny.formatArray(def)
+		return jenny.formatArray(def.(*ast.ArrayType))
 	case ast.KindStruct:
-		return jenny.formatStructBody(def)
+		return jenny.formatStructFields(def.(*ast.StructType).Fields)
 	case ast.KindMap:
-		return jenny.formatMap(def)
+		return jenny.formatMap(def.(*ast.MapType))
 	case ast.KindEnum:
-		return jenny.formatAnonymousEnum(def)
+		return jenny.formatAnonymousEnum(def.(*ast.EnumType))
 
 	case ast.KindNull:
 		return "null", nil
@@ -173,13 +182,13 @@ func (jenny TypescriptRawTypes) formatType(def ast.Definition) (string, error) {
 		return "boolean", nil
 
 	default:
-		return tools.UpperCamelCase(string(def.Kind)), nil
+		return "", fmt.Errorf("unhandled type: %s", def.Kind())
 	}
 }
 
-func (jenny TypescriptRawTypes) formatArray(def ast.Definition) (string, error) {
+func (jenny TypescriptRawTypes) formatArray(def *ast.ArrayType) (string, error) {
 	// we don't know what to do here (yet)
-	subTypeString, err := jenny.formatType(*def.ValueType)
+	subTypeString, err := jenny.formatType(def.ValueType)
 	if err != nil {
 		return "", err
 	}
@@ -187,8 +196,7 @@ func (jenny TypescriptRawTypes) formatArray(def ast.Definition) (string, error) 
 	return fmt.Sprintf("%s[]", subTypeString), nil
 }
 
-func (jenny TypescriptRawTypes) formatDisjunction(def ast.Definition) (string, error) {
-	typeName := string(def.Kind)
+func (jenny TypescriptRawTypes) formatDisjunction(def *ast.DisjunctionType) (string, error) {
 	subTypes := make([]string, 0, len(def.Branches))
 	for _, subType := range def.Branches {
 		formatted, err := jenny.formatType(subType)
@@ -199,14 +207,12 @@ func (jenny TypescriptRawTypes) formatDisjunction(def ast.Definition) (string, e
 		subTypes = append(subTypes, formatted)
 	}
 
-	typeName = strings.Join(subTypes, " | ")
-
-	return typeName, nil
+	return strings.Join(subTypes, " | "), nil
 }
 
-func (jenny TypescriptRawTypes) formatMap(def ast.Definition) (string, error) {
+func (jenny TypescriptRawTypes) formatMap(def *ast.MapType) (string, error) {
 	keyTypeString := def.IndexType
-	valueTypeString, err := jenny.formatType(*def.ValueType)
+	valueTypeString, err := jenny.formatType(def.ValueType)
 	if err != nil {
 		return "", err
 	}
@@ -214,7 +220,7 @@ func (jenny TypescriptRawTypes) formatMap(def ast.Definition) (string, error) {
 	return fmt.Sprintf("Record<%s, %s>", keyTypeString, valueTypeString), nil
 }
 
-func (jenny TypescriptRawTypes) formatAnonymousEnum(def ast.Definition) (string, error) {
+func (jenny TypescriptRawTypes) formatAnonymousEnum(def *ast.EnumType) (string, error) {
 	values := make([]string, 0, len(def.Values))
 	for _, value := range def.Values {
 		values = append(values, fmt.Sprintf("%#v", value.Value))

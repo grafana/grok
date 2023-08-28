@@ -27,7 +27,7 @@ func (jenny *GoBuilder) Generate(file *ast.File) (codejen.Files, error) {
 
 	var files []codejen.File
 	for _, definition := range tr.sortedDefinitions() {
-		if definition.Kind != ast.KindStruct {
+		if definition.Type.Kind() != ast.KindStruct {
 			continue
 		}
 
@@ -42,9 +42,10 @@ func (jenny *GoBuilder) Generate(file *ast.File) (codejen.Files, error) {
 	return files, nil
 }
 
-func (jenny *GoBuilder) generateDefinition(def ast.Definition) ([]byte, error) {
+func (jenny *GoBuilder) generateDefinition(def ast.Object) ([]byte, error) {
 	var buffer strings.Builder
 	jenny.defaults = nil
+	structType := def.Type.(*ast.StructType)
 
 	buffer.WriteString(fmt.Sprintf("package %s\n\n", strings.ToLower(def.Name)))
 
@@ -84,7 +85,7 @@ func (builder *Builder) Internal() *types.%s {
 `, tools.UpperCamelCase(def.Name)))
 
 	// Define options from fields
-	for _, fieldDef := range def.Fields {
+	for _, fieldDef := range structType.Fields {
 		buffer.WriteString(jenny.fieldToOption(fieldDef))
 	}
 
@@ -101,7 +102,7 @@ func (builder *Builder) Internal() *types.%s {
 	return []byte(buffer.String()), nil
 }
 
-func (jenny *GoBuilder) veneer(veneerType string, def ast.Definition) (string, error) {
+func (jenny *GoBuilder) veneer(veneerType string, def ast.Object) (string, error) {
 	// First, see if there is a definition-specific veneer
 	templateFile := fmt.Sprintf("%s.builder.%s.go.tmpl", strings.ToLower(def.Name), veneerType)
 	tmpl := templates.Lookup(templateFile)
@@ -125,7 +126,7 @@ func (jenny *GoBuilder) veneer(veneerType string, def ast.Definition) (string, e
 	return buf.String(), nil
 }
 
-func (jenny *GoBuilder) fieldToOption(def ast.FieldDefinition) string {
+func (jenny *GoBuilder) fieldToOption(def ast.StructField) string {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
@@ -133,9 +134,9 @@ func (jenny *GoBuilder) fieldToOption(def ast.FieldDefinition) string {
 	}
 
 	// structs get their own builder
-	if def.Type.IsReference() {
-		referredDef := jenny.file.LocateDefinition(string(def.Type.Kind))
-		if referredDef.Kind == ast.KindStruct {
+	if def.Type.Kind() == ast.KindRef {
+		referredDef := jenny.file.LocateDefinition(def.Type.(*ast.RefType).ReferredType)
+		if referredDef.Type.Kind() == ast.KindStruct {
 			return jenny.referenceFieldToOption(def)
 		}
 	}
@@ -147,16 +148,20 @@ func (jenny *GoBuilder) fieldToOption(def ast.FieldDefinition) string {
 		argumentName = argumentName + "Arg"
 	}
 
-	generatedConstraints := strings.Join(jenny.constraints(argumentName, def.Type.Constraints), "\n")
+	generatedConstraints := ""
 	asPointer := ""
-	// FIXME: this condition is probably wrong
-	if def.Type.Nullable || (def.Type.Kind != ast.KindArray && def.Type.Kind != ast.KindStruct && !def.Required) {
-		asPointer = "&"
-	}
+	/*
+		generatedConstraints := strings.Join(jenny.constraints(argumentName, def.Type.Constraints), "\n")
+		asPointer := ""
+		// FIXME: this condition is probably wrong
+		if def.Type.Nullable || (def.Type.Kind != ast.KindArray && def.Type.Kind != ast.KindStruct && !def.Required) {
+			asPointer = "&"
+		}
 
-	if def.HasDefaultValue() {
-		jenny.defaults = append(jenny.defaults, jenny.formatDefaultValue(def))
-	}
+		if def.HasDefaultValue() {
+			jenny.defaults = append(jenny.defaults, jenny.formatDefaultValue(def))
+		}
+	*/
 
 	buffer.WriteString(fmt.Sprintf(`func %[1]s(%[2]s %[3]s) Option {
 	return func(builder *Builder) error {
@@ -171,6 +176,7 @@ func (jenny *GoBuilder) fieldToOption(def ast.FieldDefinition) string {
 	return buffer.String()
 }
 
+/*
 func (jenny *GoBuilder) formatDefaultValue(field ast.FieldDefinition) string {
 	fieldName := tools.UpperCamelCase(field.Name)
 
@@ -188,7 +194,7 @@ func (jenny *GoBuilder) formatDefaultValue(field ast.FieldDefinition) string {
 }
 
 // FIXME: this breaks for anonymous structs with anonymous types defined in one or more of their fields
-func (jenny *GoBuilder) formatAnonymousStructDefaultValue(structDef ast.Definition) string {
+func (jenny *GoBuilder) formatAnonymousStructDefaultValue(structDef ast.DefinitionImpl) string {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(formatStructBody(structDef, "types"))
@@ -206,6 +212,7 @@ func (jenny *GoBuilder) formatAnonymousStructDefaultValue(structDef ast.Definiti
 
 	return buffer.String()
 }
+*/
 
 func (jenny *GoBuilder) formatScalar(val any) string {
 	if list, ok := val.([]any); ok {
@@ -222,11 +229,11 @@ func (jenny *GoBuilder) formatScalar(val any) string {
 	return fmt.Sprintf("%#v", val)
 }
 
-func (jenny *GoBuilder) referenceFieldToOption(def ast.FieldDefinition) string {
+func (jenny *GoBuilder) referenceFieldToOption(def ast.StructField) string {
 	var buffer strings.Builder
 
 	fieldName := tools.UpperCamelCase(def.Name)
-	referredPackage := strings.ToLower(string(def.Type.Kind))
+	referredPackage := strings.ToLower(def.Type.(*ast.RefType).ReferredType)
 
 	buffer.WriteString(fmt.Sprintf(`
 func %[1]s(opts ...%[2]s.Option) Option {

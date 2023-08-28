@@ -404,7 +404,7 @@ export enum MappingType {
 export interface ValueMap {
 	type: string;
 	// Map with <value_to_match>: ValueMappingResult. For example: { "10": { text: "Perfection!", color: "green" } }
-	options: Record<string, ValueMappingResult>;
+	options: Record<&{string}, ValueMappingResult>;
 }
 
 // Maps numerical ranges to a display text and color.

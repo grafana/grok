@@ -2,24 +2,22 @@ package golang
 
 import (
 	"sort"
-	"strings"
 
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
-	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
 )
 
 type preprocessor struct {
-	defs map[string]ast.Definition
+	defs map[string]ast.Object
 }
 
 func newPreprocessor() *preprocessor {
 	return &preprocessor{
-		defs: make(map[string]ast.Definition),
+		defs: make(map[string]ast.Object),
 	}
 }
 
 // inefficient, but I'm lazy. It's only used during code generation anyway.
-func (preprocessor *preprocessor) sortedDefinitions() []ast.Definition {
+func (preprocessor *preprocessor) sortedDefinitions() []ast.Object {
 	typeNames := make([]string, 0, len(preprocessor.defs))
 	for typeName := range preprocessor.defs {
 		typeNames = append(typeNames, typeName)
@@ -27,7 +25,7 @@ func (preprocessor *preprocessor) sortedDefinitions() []ast.Definition {
 
 	sort.Strings(typeNames)
 
-	sorted := make([]ast.Definition, 0, len(preprocessor.defs))
+	sorted := make([]ast.Object, 0, len(preprocessor.defs))
 	for _, k := range typeNames {
 		sorted = append(sorted, preprocessor.defs[k])
 	}
@@ -35,29 +33,31 @@ func (preprocessor *preprocessor) sortedDefinitions() []ast.Definition {
 	return sorted
 }
 
-func (preprocessor *preprocessor) translateDefinitions(definitions []ast.Definition) {
+func (preprocessor *preprocessor) translateDefinitions(definitions []ast.Object) {
 	for _, typeDef := range definitions {
 		preprocessor.translate(typeDef)
 	}
 }
 
-func (preprocessor *preprocessor) translate(def ast.Definition) {
-	preprocessor.defs[def.Name] = preprocessor.translateDefinition(def)
+func (preprocessor *preprocessor) translate(def ast.Object) {
+	//preprocessor.defs[def.Name] = preprocessor.translateDefinition(def)
+	preprocessor.defs[def.Name] = def
 }
 
-func (preprocessor *preprocessor) translateDefinition(def ast.Definition) ast.Definition {
-	if def.Kind == ast.KindDisjunction {
+/*
+func (preprocessor *preprocessor) translateDefinition(def ast.Object) ast.Object {
+	if def.Type.Kind() == ast.KindDisjunction {
 		return preprocessor.expandDisjunction(def)
 	}
 
-	if def.Kind == ast.KindArray {
-		translated := preprocessor.translateDefinition(*def.ValueType)
+	if def.Type.Kind() == ast.KindArray {
+		translated := preprocessor.translateDefinition(def.ValueType)
 		def.ValueType = &translated
 
 		return def
 	}
 
-	if def.Kind != ast.KindStruct {
+	if def.Type.Kind() != ast.KindStruct {
 		return def
 	}
 
@@ -79,7 +79,7 @@ func (preprocessor *preprocessor) translateFieldDefinition(def ast.FieldDefiniti
 	if def.Type.Kind == ast.KindEnum {
 		newEnumType := preprocessor.anonymousEnumToExplicitEnum(def)
 		preprocessor.defs[newEnumType.Name] = newEnumType
-		newDef.Type = ast.Definition{
+		newDef.Type = ast.DefinitionImpl{
 			Kind: ast.Kind(newEnumType.Name),
 		}
 	} else {
@@ -89,7 +89,7 @@ func (preprocessor *preprocessor) translateFieldDefinition(def ast.FieldDefiniti
 	return newDef
 }
 
-func (preprocessor *preprocessor) anonymousEnumToExplicitEnum(def ast.FieldDefinition) ast.Definition {
+func (preprocessor *preprocessor) anonymousEnumToExplicitEnum(def ast.FieldDefinition) ast.DefinitionImpl {
 	if def.Type.Kind != ast.KindEnum {
 		return def.Type
 	}
@@ -106,7 +106,7 @@ func (preprocessor *preprocessor) anonymousEnumToExplicitEnum(def ast.FieldDefin
 		})
 	}
 
-	newType := ast.Definition{
+	newType := ast.DefinitionImpl{
 		Kind:   enumType.Values[0].Type,
 		Name:   enumTypeName,
 		Values: values,
@@ -116,8 +116,8 @@ func (preprocessor *preprocessor) anonymousEnumToExplicitEnum(def ast.FieldDefin
 }
 
 // def is either a disjunction or a list of unknown sub-types
-func (preprocessor *preprocessor) expandDisjunction(def ast.Definition) ast.Definition {
-	if def.Kind == ast.KindArray {
+func (preprocessor *preprocessor) expandDisjunction(def ast.Object) ast.DefinitionImpl {
+	if def.Type.Kind() == ast.KindArray {
 		translated := preprocessor.translateDefinition(*def.ValueType)
 		def.ValueType = &translated
 
@@ -138,7 +138,7 @@ func (preprocessor *preprocessor) expandDisjunction(def ast.Definition) ast.Defi
 	newTypeName := preprocessor.disjunctionTypeName(def.Branches)
 
 	if _, ok := preprocessor.defs[newTypeName]; !ok {
-		newType := ast.Definition{
+		newType := ast.DefinitionImpl{
 			Kind: ast.KindStruct,
 			Name: newTypeName,
 		}
@@ -150,7 +150,7 @@ func (preprocessor *preprocessor) expandDisjunction(def ast.Definition) ast.Defi
 
 			newType.Fields = append(newType.Fields, ast.FieldDefinition{
 				Name: "Val" + strings.Title(string(branch.Kind)),
-				Type: ast.Definition{
+				Type: ast.DefinitionImpl{
 					Nullable: true,
 					Kind:     branch.Kind,
 
@@ -165,7 +165,7 @@ func (preprocessor *preprocessor) expandDisjunction(def ast.Definition) ast.Defi
 		preprocessor.defs[newTypeName] = newType
 	}
 
-	return ast.Definition{
+	return ast.DefinitionImpl{
 		Kind:     ast.Kind(newTypeName),
 		Nullable: def.Branches.HasNullType(),
 	}
@@ -180,3 +180,5 @@ func (preprocessor *preprocessor) disjunctionTypeName(disjunctionTypes ast.Defin
 
 	return strings.Title(strings.Join(parts, "Or"))
 }
+
+*/

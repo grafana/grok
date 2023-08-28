@@ -33,9 +33,7 @@ func (jenny GoRawTypes) generateFile(file *ast.File) ([]byte, error) {
 
 	buffer.WriteString("package types\n\n")
 
-	// FIXME
 	for _, typeDef := range tr.sortedDefinitions() {
-		//for _, typeDef := range file.Definitions {
 		typeDefGen, err := jenny.formatTypeDef(typeDef)
 		if err != nil {
 			return nil, err
@@ -48,19 +46,20 @@ func (jenny GoRawTypes) generateFile(file *ast.File) ([]byte, error) {
 	return []byte(buffer.String()), nil
 }
 
-func (jenny GoRawTypes) formatTypeDef(def ast.Definition) ([]byte, error) {
-	if def.Kind == ast.KindStruct {
+func (jenny GoRawTypes) formatTypeDef(def ast.Object) ([]byte, error) {
+	switch def.Type.Kind() {
+	case ast.KindStruct:
 		return jenny.formatStructDef(def)
+	case ast.KindEnum:
+		return jenny.formatEnumDef(def)
+	case ast.KindRef:
+		return []byte(fmt.Sprintf("type %s %s", tools.UpperCamelCase(def.Name), def.Type.(*ast.RefType).ReferredType)), nil
+	default:
+		return nil, fmt.Errorf("unhandled type def kind: %s", def.Type.Kind())
 	}
-
-	if def.IsReference() {
-		return []byte(fmt.Sprintf("type %s %s", tools.UpperCamelCase(def.Name), def.Kind)), nil
-	}
-
-	return jenny.formatEnumDef(def)
 }
 
-func (jenny GoRawTypes) formatEnumDef(def ast.Definition) ([]byte, error) {
+func (jenny GoRawTypes) formatEnumDef(def ast.Object) ([]byte, error) {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
@@ -68,11 +67,12 @@ func (jenny GoRawTypes) formatEnumDef(def ast.Definition) ([]byte, error) {
 	}
 
 	enumName := tools.UpperCamelCase(def.Name)
+	enumType := def.Type.(*ast.EnumType)
 
-	buffer.WriteString(fmt.Sprintf("type %s %s\n", enumName, def.Values[0].Type))
+	buffer.WriteString(fmt.Sprintf("type %s %s\n", enumName, enumType.Values[0].Type.Kind()))
 
 	buffer.WriteString("const (\n")
-	for _, val := range def.Values {
+	for _, val := range enumType.Values {
 		buffer.WriteString(fmt.Sprintf("\t%s %s = %#v\n", tools.UpperCamelCase(val.Name), enumName, val.Value))
 	}
 	buffer.WriteString(")\n")
@@ -80,7 +80,7 @@ func (jenny GoRawTypes) formatEnumDef(def ast.Definition) ([]byte, error) {
 	return []byte(buffer.String()), nil
 }
 
-func (jenny GoRawTypes) formatStructDef(def ast.Definition) ([]byte, error) {
+func (jenny GoRawTypes) formatStructDef(def ast.Object) ([]byte, error) {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
@@ -88,13 +88,13 @@ func (jenny GoRawTypes) formatStructDef(def ast.Definition) ([]byte, error) {
 	}
 
 	buffer.WriteString(fmt.Sprintf("type %s ", tools.UpperCamelCase(def.Name)))
-	buffer.WriteString(formatStructBody(def, ""))
+	buffer.WriteString(formatStructBody(def.Type.(*ast.StructType), ""))
 	buffer.WriteString("\n")
 
 	return []byte(buffer.String()), nil
 }
 
-func formatStructBody(def ast.Definition, typesPkg string) string {
+func formatStructBody(def *ast.StructType, typesPkg string) string {
 	var buffer strings.Builder
 
 	buffer.WriteString("struct {\n")
@@ -108,7 +108,7 @@ func formatStructBody(def ast.Definition, typesPkg string) string {
 	return buffer.String()
 }
 
-func formatField(def ast.FieldDefinition, typesPkg string) string {
+func formatField(def ast.StructField, typesPkg string) string {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
@@ -116,9 +116,11 @@ func formatField(def ast.FieldDefinition, typesPkg string) string {
 	}
 
 	// ToDo: this doesn't follow references to other types like the builder jenny does
-	if def.Type.Default != nil {
-		buffer.WriteString(fmt.Sprintf("// Default: %#v\n", def.Type.Default))
-	}
+	/*
+		if def.Type.Default != nil {
+			buffer.WriteString(fmt.Sprintf("// Default: %#v\n", def.Type.Default))
+		}
+	*/
 
 	jsonOmitEmpty := ""
 	if !def.Required {
@@ -135,62 +137,72 @@ func formatField(def ast.FieldDefinition, typesPkg string) string {
 
 	return buffer.String()
 }
-func formatType(def ast.Definition, fieldIsRequired bool, typesPkg string) string {
-	if def.Kind == ast.KindAny {
+func formatType(def ast.Type, fieldIsRequired bool, typesPkg string) string {
+	if def.Kind() == ast.KindAny {
 		return "any"
 	}
 
-	if def.Kind == ast.KindDisjunction {
-		return formatDisjunction(def, typesPkg)
+	if def.Kind() == ast.KindDisjunction {
+		return formatDisjunction(def.(*ast.DisjunctionType), typesPkg)
 	}
 
-	if def.Kind == ast.KindArray {
-		return formatArray(def, typesPkg)
+	if def.Kind() == ast.KindArray {
+		return formatArray(def.(*ast.ArrayType), typesPkg)
 	}
 
-	if def.Kind == ast.KindMap {
-		return formatMap(def, typesPkg)
+	if def.Kind() == ast.KindMap {
+		return formatMap(def.(*ast.MapType), typesPkg)
+	}
+
+	if def.Kind() == ast.KindRef {
+		typeName := def.(*ast.RefType).ReferredType
+
+		if typesPkg != "" {
+			typeName = typesPkg + "." + typeName
+		}
+
+		return typeName
+	}
+
+	if def.Kind() == ast.KindEnum {
+		return "enum here"
 	}
 
 	// anonymous struct
-	if def.Kind == ast.KindStruct {
-		return formatStructBody(def, typesPkg)
+	if def.Kind() == ast.KindStruct {
+		return formatStructBody(def.(*ast.StructType), typesPkg)
 	}
 
-	typeName := string(def.Kind)
+	// TODO: there should be an ast.KindScalar with a matching type
+	typeName := string(def.(*ast.ScalarType).ScalarKind)
 
-	if def.IsReference() && typesPkg != "" {
-		typeName = typesPkg + "." + typeName
-	}
-
-	if def.Nullable || !fieldIsRequired {
-		typeName = "*" + typeName
-	}
+	/*
+		if def.Nullable || !fieldIsRequired {
+			typeName = "*" + typeName
+		}
+	*/
 
 	return typeName
 }
 
-func formatArray(def ast.Definition, typesPkg string) string {
-	subTypeString := formatType(*def.ValueType, true, typesPkg)
+func formatArray(def *ast.ArrayType, typesPkg string) string {
+	subTypeString := formatType(def.ValueType, true, typesPkg)
 
 	return fmt.Sprintf("[]%s", subTypeString)
 }
 
-func formatMap(def ast.Definition, typesPkg string) string {
-	keyTypeString := def.IndexType
-	valueTypeString := formatType(*def.ValueType, true, typesPkg)
+func formatMap(def *ast.MapType, typesPkg string) string {
+	keyTypeString := def.IndexType.Kind()
+	valueTypeString := formatType(def.ValueType, true, typesPkg)
 
 	return fmt.Sprintf("map[%s]%s", keyTypeString, valueTypeString)
 }
 
-func formatDisjunction(def ast.Definition, typesPkg string) string {
-	typeName := string(def.Kind)
+func formatDisjunction(def *ast.DisjunctionType, typesPkg string) string {
 	subTypes := make([]string, 0, len(def.Branches))
 	for _, subType := range def.Branches {
 		subTypes = append(subTypes, formatType(subType, true, typesPkg))
 	}
 
-	typeName = fmt.Sprintf("%s<%s>", typeName, strings.Join(subTypes, " | "))
-
-	return typeName
+	return fmt.Sprintf("disjunction<%s>", strings.Join(subTypes, " | "))
 }

@@ -4,6 +4,7 @@ type Kind string
 
 const (
 	KindDisjunction Kind = "disjunction"
+	KindRef         Kind = "ref"
 
 	KindStruct Kind = "struct"
 	KindEnum   Kind = "enum"
@@ -30,12 +31,12 @@ const (
 	KindBool Kind = "bool"
 )
 
-type Definition struct {
+type DefinitionImpl struct {
 	Kind      Kind
 	Name      string
 	Comments  []string
 	IndexType Kind              // for maps & arrays
-	ValueType *Definition       // for maps & arrays
+	ValueType *DefinitionImpl   // for maps & arrays
 	Branches  Definitions       // for disjunctions
 	Fields    []FieldDefinition // for structs
 	Values    []EnumValue       // for enums
@@ -46,7 +47,7 @@ type Definition struct {
 	Default any // the go type of the value depends on Kind
 }
 
-func (def Definition) IsReference() bool {
+func (def DefinitionImpl) IsReference() bool {
 	switch def.Kind {
 	case KindDisjunction:
 		return false
@@ -93,7 +94,7 @@ func (def Definition) IsReference() bool {
 	return true
 }
 
-type Definitions []Definition
+type Definitions []DefinitionImpl
 
 func (defs Definitions) HasNullType() bool {
 	for _, t := range defs {
@@ -124,17 +125,11 @@ type TypeConstraint struct {
 	Args []any
 }
 
-type EnumValue struct {
-	Type  Kind
-	Name  string
-	Value interface{}
-}
-
 type FieldDefinition struct {
 	Name     string
 	Comments []string
 	Required bool
-	Type     Definition
+	Type     DefinitionImpl
 }
 
 func (fieldDef FieldDefinition) HasDefaultValue() bool {
@@ -149,19 +144,4 @@ func (fieldDef FieldDefinition) HasDefaultValue() bool {
 	}
 
 	return fieldDef.Type.Default != nil
-}
-
-type File struct {
-	Package     string
-	Definitions []Definition
-}
-
-func (file *File) LocateDefinition(name string) Definition {
-	for _, def := range file.Definitions {
-		if def.Name == name {
-			return def
-		}
-	}
-
-	return Definition{}
 }

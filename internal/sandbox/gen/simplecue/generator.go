@@ -53,7 +53,7 @@ func GenerateAST(val cue.Value, c Config) (*ast.File, error) {
 	return g.file, nil
 }
 
-func (g *newGenerator) declareTopLevelType(name string, v cue.Value, isCueDefinition bool) (*ast.Definition, error) {
+func (g *newGenerator) declareTopLevelType(name string, v cue.Value, isCueDefinition bool) (*ast.Object, error) {
 	typeHint, err := getTypeHint(v)
 	if err != nil {
 		return nil, err
@@ -74,13 +74,13 @@ func (g *newGenerator) declareTopLevelType(name string, v cue.Value, isCueDefini
 
 	switch v.IncompleteKind() {
 	case cue.StructKind:
-		return g.declareTopLevelStruct(name, v, isCueDefinition)
+		return g.declareTopLevelStruct(name, v)
 	default:
 		return nil, errorWithCueRef(v, "unexpected top-level kind '%s'", v.IncompleteKind().String())
 	}
 }
 
-func (g *newGenerator) declareEnum(name string, v cue.Value) (*ast.Definition, error) {
+func (g *newGenerator) declareEnum(name string, v cue.Value) (*ast.Object, error) {
 	// Restrict the expression of enums to ints or strings.
 	allowed := cue.StringKind | cue.IntKind
 	ik := v.IncompleteKind()
@@ -93,17 +93,20 @@ func (g *newGenerator) declareEnum(name string, v cue.Value) (*ast.Definition, e
 		return nil, err
 	}
 
-	defaultValue, err := g.extractDefault(v)
-	if err != nil {
-		return nil, err
-	}
+	/*
+		defaultValue, err := g.extractDefault(v)
+		if err != nil {
+			return nil, err
+		}
+	*/
 
-	return &ast.Definition{
-		Kind:     ast.KindEnum,
+	return &ast.Object{
 		Name:     name,
 		Comments: commentsFromCueValue(v),
-		Values:   values,
-		Default:  defaultValue,
+		Type: &ast.EnumType{
+			Values: values,
+			//Default: defaultValue,
+		},
 	}, nil
 }
 
@@ -129,9 +132,9 @@ func (g *newGenerator) extractEnumValues(v cue.Value) ([]ast.EnumValue, error) {
 		return nil, errorWithCueRef(v, "numeric enums may only be generated from memberNames attribute")
 	}
 
-	subType := ast.KindString
+	subType := ast.ScalarType{ScalarKind: ast.KindString}
 	if v.IncompleteKind() == cue.IntKind {
-		subType = ast.KindInt64
+		subType = ast.ScalarType{ScalarKind: ast.KindInt64}
 	}
 
 	var fields []ast.EnumValue
@@ -164,16 +167,10 @@ func (g *newGenerator) extractEnumValues(v cue.Value) ([]ast.EnumValue, error) {
 	return fields, nil
 }
 
-func (g *newGenerator) declareTopLevelStruct(name string, v cue.Value, isCueDefinition bool) (*ast.Definition, error) {
+func (g *newGenerator) declareTopLevelStruct(name string, v cue.Value) (*ast.Object, error) {
 	// This check might be too restrictive
 	if v.IncompleteKind() != cue.StructKind {
 		return nil, errorWithCueRef(v, "top-level type definitions may only be generated from structs")
-	}
-
-	typeDef := &ast.Definition{
-		Kind:     ast.KindStruct,
-		Name:     name,
-		Comments: commentsFromCueValue(v),
 	}
 
 	// explore struct fields
@@ -182,18 +179,24 @@ func (g *newGenerator) declareTopLevelStruct(name string, v cue.Value, isCueDefi
 		return nil, err
 	}
 
-	typeDef.Fields = fields
+	typeDef := &ast.Object{
+		Name:     name,
+		Comments: commentsFromCueValue(v),
+		Type: &ast.StructType{
+			Fields: fields,
+		},
+	}
 
 	return typeDef, nil
 }
 
-func (g *newGenerator) structFields(v cue.Value) ([]ast.FieldDefinition, error) {
+func (g *newGenerator) structFields(v cue.Value) ([]ast.StructField, error) {
 	// This check might be too restrictive
 	if v.IncompleteKind() != cue.StructKind {
 		return nil, errorWithCueRef(v, "top-level type definitions may only be generated from structs")
 	}
 
-	var fields []ast.FieldDefinition
+	var fields []ast.StructField
 
 	// explore struct fields
 	for i, _ := v.Fields(cue.Optional(true), cue.Definitions(true)); i.Next(); {
@@ -207,25 +210,25 @@ func (g *newGenerator) structFields(v cue.Value) ([]ast.FieldDefinition, error) 
 			return nil, err
 		}
 
-		fields = append(fields, ast.FieldDefinition{
+		fields = append(fields, ast.StructField{
 			Name:     fieldLabel,
 			Comments: commentsFromCueValue(i.Value()),
 			Required: !i.IsOptional(),
-			Type:     *node,
+			Type:     node,
 		})
 	}
 
 	return fields, nil
 }
 
-func (g *newGenerator) declareNode(v cue.Value) (*ast.Definition, error) {
+func (g *newGenerator) declareNode(v cue.Value) (ast.Type, error) {
 	// This node is referring to another definition
 	_, path := v.ReferencePath()
 	if path.String() != "" {
 		selectors := path.Selectors()
 
-		return &ast.Definition{
-			Kind: ast.Kind(selectorLabel(selectors[len(selectors)-1])),
+		return &ast.RefType{
+			ReferredType: selectorLabel(selectors[len(selectors)-1]),
 		}, nil
 	}
 
@@ -237,32 +240,30 @@ func (g *newGenerator) declareNode(v cue.Value) (*ast.Definition, error) {
 			return g.declareAnonymousEnum(v)
 		}
 
-		branches := make([]ast.Definition, 0, len(disjunctions))
+		branches := make([]ast.Type, 0, len(disjunctions))
 		for _, subTypeValue := range disjunctions {
 			subType, err := g.declareNode(subTypeValue)
 			if err != nil {
 				return nil, err
 			}
 
-			branches = append(branches, *subType)
+			branches = append(branches, subType)
 		}
 
-		return &ast.Definition{
-			Kind:     ast.KindDisjunction,
+		return &ast.DisjunctionType{
 			Branches: branches,
-			Nullable: false,
 		}, nil
 	}
 
 	switch v.IncompleteKind() {
 	case cue.TopKind:
-		return &ast.Definition{Kind: ast.KindAny}, nil
+		return &ast.ScalarType{ScalarKind: ast.KindAny}, nil
 	case cue.NullKind:
-		return &ast.Definition{Kind: ast.KindNull}, nil
+		return &ast.ScalarType{ScalarKind: ast.KindNull}, nil
 	case cue.BoolKind:
 		return g.declareBool(v)
 	case cue.BytesKind:
-		return &ast.Definition{Kind: ast.KindBytes}, nil
+		return &ast.ScalarType{ScalarKind: ast.KindBytes}, nil
 	case cue.StringKind:
 		return g.declareString(v)
 	case cue.FloatKind, cue.NumberKind, cue.IntKind:
@@ -275,7 +276,7 @@ func (g *newGenerator) declareNode(v cue.Value) (*ast.Definition, error) {
 
 		// inline definition of a struct
 		if selector.IsDefinition() {
-			def, err := g.declareTopLevelStruct(selectorLabel(selector), v, true)
+			def, err := g.declareTopLevelStruct(selectorLabel(selector), v)
 			if err != nil {
 				return nil, err
 			}
@@ -299,9 +300,8 @@ func (g *newGenerator) declareNode(v cue.Value) (*ast.Definition, error) {
 					return nil, err
 				}
 
-				return &ast.Definition{
-					Kind:      ast.KindMap,
-					IndexType: ast.KindString,
+				return &ast.MapType{
+					IndexType: &ast.ScalarType{ScalarKind: ast.KindString},
 					ValueType: typeDef,
 				}, nil
 			}
@@ -314,16 +314,16 @@ func (g *newGenerator) declareNode(v cue.Value) (*ast.Definition, error) {
 
 		// {...}
 		if len(fields) == 0 {
-			return &ast.Definition{Kind: ast.KindAny}, nil
+			return &ast.ScalarType{ScalarKind: ast.KindAny}, nil
 		}
 
-		return &ast.Definition{Kind: ast.KindStruct, Fields: fields}, nil
+		return &ast.StructType{Fields: fields}, nil
 	default:
 		return nil, errorWithCueRef(v, "unexpected node with kind '%s'", v.IncompleteKind().String())
 	}
 }
 
-func (g *newGenerator) declareAnonymousEnum(v cue.Value) (*ast.Definition, error) {
+func (g *newGenerator) declareAnonymousEnum(v cue.Value) (ast.Type, error) {
 	fieldName, ok := v.Label()
 	if !ok {
 		return nil, errorWithCueRef(v, "could not determine field name")
@@ -337,50 +337,53 @@ func (g *newGenerator) declareAnonymousEnum(v cue.Value) (*ast.Definition, error
 
 	g.file.Definitions = append(g.file.Definitions, *enumType)
 
-	return &ast.Definition{
-		Kind: ast.Kind(enumType.Name),
+	return &ast.RefType{
+		ReferredType: enumType.Name,
 	}, nil
 }
 
-func (g *newGenerator) declareBool(v cue.Value) (*ast.Definition, error) {
-	typeDef := &ast.Definition{
-		Kind: ast.KindBool,
+func (g *newGenerator) declareBool(v cue.Value) (ast.Type, error) {
+	typeDef := &ast.ScalarType{
+		ScalarKind: ast.KindBool,
 	}
+	/*
+		// Extract the default value if it's there
+		defaultVal, ok := v.Default()
+		if ok {
+			defaultValBool, err := defaultVal.Bool()
+			if err != nil {
+				return nil, errorWithCueRef(v, "could not convert concrete value to bool")
+			}
 
-	// Extract the default value if it's there
-	defaultVal, ok := v.Default()
-	if ok {
-		defaultValBool, err := defaultVal.Bool()
-		if err != nil {
-			return nil, errorWithCueRef(v, "could not convert concrete value to bool")
+			typeDef.Default = defaultValBool
 		}
-
-		typeDef.Default = defaultValBool
-	}
+	*/
 
 	return typeDef, nil
 }
 
-func (g *newGenerator) declareString(v cue.Value) (*ast.Definition, error) {
-	typeDef := &ast.Definition{
-		Kind: ast.KindString,
+func (g *newGenerator) declareString(v cue.Value) (ast.Type, error) {
+	typeDef := &ast.ScalarType{
+		ScalarKind: ast.KindString,
 	}
 
-	// Extract the default value if it's there
-	defVal, err := g.extractDefault(v)
-	if err != nil {
-		return nil, err
-	}
+	/*
+		// Extract the default value if it's there
+		defVal, err := g.extractDefault(v)
+		if err != nil {
+			return nil, err
+		}
 
-	typeDef.Default = defVal
+		typeDef.Default = defVal
 
-	// Extract constraints
-	constraints, err := g.declareStringConstraints(v)
-	if err != nil {
-		return nil, err
-	}
+		// Extract constraints
+		constraints, err := g.declareStringConstraints(v)
+		if err != nil {
+			return nil, err
+		}
 
-	typeDef.Constraints = constraints
+		typeDef.Constraints = constraints
+	*/
 
 	return typeDef, nil
 }
@@ -460,7 +463,7 @@ func (g *newGenerator) declareStringConstraints(v cue.Value) ([]ast.TypeConstrai
 	return constraints, nil
 }
 
-func (g *newGenerator) declareNumber(v cue.Value) (*ast.Definition, error) {
+func (g *newGenerator) declareNumber(v cue.Value) (ast.Type, error) {
 	numberTypeWithConstraintsAsString, err := format.Node(v.Syntax())
 	if err != nil {
 		return nil, err
@@ -491,35 +494,35 @@ func (g *newGenerator) declareNumber(v cue.Value) (*ast.Definition, error) {
 		return nil, errorWithCueRef(v, "unknown number type '%s'", parts[0])
 	}
 
-	typeDef := &ast.Definition{
-		Kind:     numberType,
-		Nullable: false,
+	typeDef := &ast.ScalarType{
+		ScalarKind: numberType,
 	}
+	/*
+		// Extract the default value if it's there
+		defVal, err := g.extractDefault(v)
+		if err != nil {
+			return nil, err
+		}
 
-	// Extract the default value if it's there
-	defVal, err := g.extractDefault(v)
-	if err != nil {
-		return nil, err
-	}
+		typeDef.Default = defVal
 
-	typeDef.Default = defVal
+		// If the default (all lists have a default, usually self, ugh) differs from the
+		// input list, peel it off. Otherwise our AnyIndex lookup may end up getting
+		// sent on the wrong path.
+		defv, _ := v.Default()
+		if !defv.Equals(v) {
+			_, dvals := v.Expr()
+			v = dvals[0]
+		}
 
-	// If the default (all lists have a default, usually self, ugh) differs from the
-	// input list, peel it off. Otherwise our AnyIndex lookup may end up getting
-	// sent on the wrong path.
-	defv, _ := v.Default()
-	if !defv.Equals(v) {
-		_, dvals := v.Expr()
-		v = dvals[0]
-	}
+		// extract constraints
+		constraints, err := g.declareNumberConstraints(v)
+		if err != nil {
+			return nil, err
+		}
 
-	// extract constraints
-	constraints, err := g.declareNumberConstraints(v)
-	if err != nil {
-		return nil, err
-	}
-
-	typeDef.Constraints = constraints
+		typeDef.Constraints = constraints
+	*/
 
 	return typeDef, nil
 }
@@ -585,33 +588,30 @@ func (g *newGenerator) extractConstraint(v cue.Value) (ast.TypeConstraint, error
 	}
 }
 
-func (g *newGenerator) declareList(v cue.Value) (*ast.Definition, error) {
+func (g *newGenerator) declareList(v cue.Value) (ast.Type, error) {
 	i, err := v.List()
 	if err != nil {
 		return nil, err
 	}
 
-	typeDef := &ast.Definition{
-		Kind:      ast.KindArray,
-		IndexType: ast.KindInt64,
-
+	typeDef := &ast.ArrayType{
 		// FIXME: we set a default type because our logic is broken
-		ValueType: &ast.Definition{
-			Kind: ast.KindAny,
+		ValueType: &ast.ScalarType{
+			ScalarKind: ast.KindAny,
 		},
-
-		Nullable: false,
 	}
 
-	// Extract the default value if it's there
-	defVal, err := g.extractDefault(v)
-	if err != nil {
-		return nil, err
-	}
+	/*
+		// Extract the default value if it's there
+		defVal, err := g.extractDefault(v)
+		if err != nil {
+			return nil, err
+		}
 
-	if len(defVal.([]interface{})) != 0 {
-		typeDef.Default = defVal
-	}
+		if len(defVal.([]interface{})) != 0 {
+			typeDef.Default = defVal
+		}
+	*/
 
 	// works only for a closed/concrete list
 	if v.IsConcrete() {

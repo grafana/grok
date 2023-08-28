@@ -70,15 +70,16 @@ func (g *newGenerator) declareDefinition(definitionName string, schema *schemapa
 		return fmt.Errorf("%s: %w", definitionName, err)
 	}
 
-	def.Name = definitionName
-
-	g.file.Definitions = append(g.file.Definitions, *def)
+	g.file.Definitions = append(g.file.Definitions, ast.Object{
+		Name: definitionName,
+		Type: def,
+	})
 
 	return nil
 }
 
-func (g *newGenerator) walkDefinition(schema *schemaparser.Schema) (*ast.Definition, error) {
-	var def *ast.Definition
+func (g *newGenerator) walkDefinition(schema *schemaparser.Schema) (ast.Type, error) {
+	var def ast.Type
 	var err error
 
 	if len(schema.Types) == 0 {
@@ -116,9 +117,9 @@ func (g *newGenerator) walkDefinition(schema *schemaparser.Schema) (*ast.Definit
 	} else {
 		switch schema.Types[0] {
 		case typeNull:
-			def = &ast.Definition{Kind: ast.KindNull, Comments: schemaComments(schema)}
+			def = &ast.ScalarType{ScalarKind: ast.KindNull}
 		case typeBoolean:
-			def = &ast.Definition{Kind: ast.KindBool, Comments: schemaComments(schema)}
+			def = &ast.ScalarType{ScalarKind: ast.KindBool}
 		case typeString:
 			def, err = g.walkString(schema)
 		case typeObject:
@@ -136,26 +137,26 @@ func (g *newGenerator) walkDefinition(schema *schemaparser.Schema) (*ast.Definit
 	return def, err
 }
 
-func (g *newGenerator) walkDisjunction(schema *schemaparser.Schema) (*ast.Definition, error) {
+func (g *newGenerator) walkDisjunction(schema *schemaparser.Schema) (*ast.DisjunctionType, error) {
 	// TODO: finish implementation
-	return &ast.Definition{Kind: ast.KindDisjunction, Comments: schemaComments(schema)}, nil
+	return &ast.DisjunctionType{}, nil
 }
 
-func (g *newGenerator) walkDisjunctionBranches(branches []*schemaparser.Schema) (ast.Definitions, error) {
-	definitions := make([]ast.Definition, 0, len(branches))
+func (g *newGenerator) walkDisjunctionBranches(branches []*schemaparser.Schema) ([]ast.Type, error) {
+	definitions := make([]ast.Type, 0, len(branches))
 	for _, oneOf := range branches {
 		branch, err := g.walkDefinition(oneOf)
 		if err != nil {
 			return nil, err
 		}
 
-		definitions = append(definitions, *branch)
+		definitions = append(definitions, branch)
 	}
 
 	return definitions, nil
 }
 
-func (g *newGenerator) walkOneOf(schema *schemaparser.Schema) (*ast.Definition, error) {
+func (g *newGenerator) walkOneOf(schema *schemaparser.Schema) (*ast.DisjunctionType, error) {
 	if len(schema.OneOf) == 0 {
 		return nil, fmt.Errorf("oneOf with no branches")
 	}
@@ -165,15 +166,13 @@ func (g *newGenerator) walkOneOf(schema *schemaparser.Schema) (*ast.Definition, 
 		return nil, err
 	}
 
-	return &ast.Definition{
-		Kind:     ast.KindDisjunction,
-		Comments: schemaComments(schema),
+	return &ast.DisjunctionType{
 		Branches: branches,
 	}, nil
 }
 
 // TODO: what's the difference between oneOf and anyOf?
-func (g *newGenerator) walkAnyOf(schema *schemaparser.Schema) (*ast.Definition, error) {
+func (g *newGenerator) walkAnyOf(schema *schemaparser.Schema) (*ast.DisjunctionType, error) {
 	if len(schema.AnyOf) == 0 {
 		return nil, fmt.Errorf("anyOf with no branches")
 	}
@@ -183,19 +182,17 @@ func (g *newGenerator) walkAnyOf(schema *schemaparser.Schema) (*ast.Definition, 
 		return nil, err
 	}
 
-	return &ast.Definition{
-		Kind:     ast.KindDisjunction,
-		Comments: schemaComments(schema),
+	return &ast.DisjunctionType{
 		Branches: branches,
 	}, nil
 }
 
-func (g *newGenerator) walkAllOf(schema *schemaparser.Schema) (*ast.Definition, error) {
+func (g *newGenerator) walkAllOf(schema *schemaparser.Schema) (*ast.DisjunctionType, error) {
 	// TODO: finish implementation and use correct type
-	return &ast.Definition{Kind: ast.KindDisjunction, Comments: schemaComments(schema)}, nil
+	return &ast.DisjunctionType{}, nil
 }
 
-func (g *newGenerator) walkRef(schema *schemaparser.Schema) (*ast.Definition, error) {
+func (g *newGenerator) walkRef(schema *schemaparser.Schema) (*ast.RefType, error) {
 	parts := strings.Split(schema.Ref.Ptr, "/")
 	referredKindName := parts[len(parts)-1] // Very naive
 
@@ -203,61 +200,59 @@ func (g *newGenerator) walkRef(schema *schemaparser.Schema) (*ast.Definition, er
 		return nil, err
 	}
 
-	return &ast.Definition{
-		Kind:     ast.Kind(referredKindName),
-		Comments: schemaComments(schema),
+	return &ast.RefType{
+		ReferredType: referredKindName,
+		//Comments: schemaComments(schema),
 	}, nil
 }
 
-func (g *newGenerator) walkString(schema *schemaparser.Schema) (*ast.Definition, error) {
-	def := &ast.Definition{Kind: ast.KindString, Comments: schemaComments(schema)}
+func (g *newGenerator) walkString(schema *schemaparser.Schema) (*ast.ScalarType, error) {
+	def := &ast.ScalarType{ScalarKind: ast.KindString}
 
-	if len(schema.Enum) != 0 {
-		def.Constraints = append(def.Constraints, ast.TypeConstraint{
-			Op:   "in",
-			Args: []any{schema.Enum},
-		})
-	}
+	/*
+		if len(schema.Enum) != 0 {
+			def.Constraints = append(def.Constraints, ast.TypeConstraint{
+				Op:   "in",
+				Args: []any{schema.Enum},
+			})
+		}
+	*/
 
 	return def, nil
 }
 
-func (g *newGenerator) walkNumber(schema *schemaparser.Schema) (*ast.Definition, error) {
+func (g *newGenerator) walkNumber(schema *schemaparser.Schema) (*ast.ScalarType, error) {
 	// TODO: finish implementation
-	return &ast.Definition{Kind: ast.KindInt64, Comments: schemaComments(schema)}, nil
+	return &ast.ScalarType{ScalarKind: ast.KindInt64}, nil
 }
 
-func (g *newGenerator) walkList(schema *schemaparser.Schema) (*ast.Definition, error) {
-	var itemsDef *ast.Definition
+func (g *newGenerator) walkList(schema *schemaparser.Schema) (*ast.ArrayType, error) {
+	var itemsDef ast.Type
 	var err error
 
 	if schema.Items == nil {
-		itemsDef = &ast.Definition{
-			Kind: ast.KindAny,
+		itemsDef = &ast.ScalarType{
+			ScalarKind: ast.KindAny,
 		}
 	} else {
 		// TODO: schema.Items might not be a schema?
 		itemsDef, err = g.walkDefinition(schema.Items.(*schemaparser.Schema))
 		// items contains an empty schema: `{}`
 		if errors.Is(err, errUndescriptiveSchema) {
-			itemsDef = &ast.Definition{
-				Kind: ast.KindAny,
+			itemsDef = &ast.ScalarType{
+				ScalarKind: ast.KindAny,
 			}
 		} else if err != nil {
 			return nil, err
 		}
 	}
 
-	return &ast.Definition{
-		Kind:      ast.KindArray,
-		IndexType: ast.KindInt64,
+	return &ast.ArrayType{
 		ValueType: itemsDef,
-
-		Comments: schemaComments(schema),
 	}, nil
 }
 
-func (g *newGenerator) walkEnum(schema *schemaparser.Schema) (*ast.Definition, error) {
+func (g *newGenerator) walkEnum(schema *schemaparser.Schema) (*ast.EnumType, error) {
 	if len(schema.Enum) == 0 {
 		return nil, fmt.Errorf("enum with no values")
 	}
@@ -265,7 +260,7 @@ func (g *newGenerator) walkEnum(schema *schemaparser.Schema) (*ast.Definition, e
 	values := make([]ast.EnumValue, 0, len(schema.Enum))
 	for _, enumValue := range schema.Enum {
 		values = append(values, ast.EnumValue{
-			Type: ast.KindString, // TODO: identify that correctly
+			Type: ast.ScalarType{ScalarKind: ast.KindString}, // TODO: identify that correctly
 
 			// Simple mapping of all enum values (which we are assuming are in
 			// lowerCamelCase) to corresponding CamelCase
@@ -274,31 +269,30 @@ func (g *newGenerator) walkEnum(schema *schemaparser.Schema) (*ast.Definition, e
 		})
 	}
 
-	return &ast.Definition{
-		Kind:     ast.KindEnum,
-		Comments: schemaComments(schema),
-		Values:   values,
+	return &ast.EnumType{
+		Values: values,
 		// TODO: default value?
 	}, nil
 }
 
-func (g *newGenerator) walkObject(schema *schemaparser.Schema) (*ast.Definition, error) {
+func (g *newGenerator) walkObject(schema *schemaparser.Schema) (*ast.StructType, error) {
 	// TODO: finish implementation
-	def := &ast.Definition{Kind: ast.KindStruct, Comments: schemaComments(schema)}
-
+	fields := make([]ast.StructField, 0, len(schema.Properties))
 	for name, property := range schema.Properties {
 		fieldDef, err := g.walkDefinition(property)
 		if err != nil {
 			return nil, err
 		}
 
-		def.Fields = append(def.Fields, ast.FieldDefinition{
+		fields = append(fields, ast.StructField{
 			Name:     name,
 			Comments: schemaComments(schema),
 			Required: stringInList(schema.Required, name),
-			Type:     *fieldDef,
+			Type:     fieldDef,
 		})
 	}
 
-	return def, nil
+	return &ast.StructType{
+		Fields: fields,
+	}, nil
 }
