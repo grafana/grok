@@ -55,7 +55,7 @@ func ValString(valString string) Option {
 func ValArray(valArray []string) Option {
 	return func(builder *Builder) error {
 
-		builder.internal.ValArray = &valArray
+		builder.internal.ValArray = valArray
 
 		return nil
 	}

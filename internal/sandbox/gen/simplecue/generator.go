@@ -324,21 +324,19 @@ func (g *newGenerator) declareNode(v cue.Value) (ast.Type, error) {
 }
 
 func (g *newGenerator) declareAnonymousEnum(v cue.Value) (ast.Type, error) {
-	fieldName, ok := v.Label()
-	if !ok {
-		return nil, errorWithCueRef(v, "could not determine field name")
+	allowed := cue.StringKind | cue.IntKind
+	ik := v.IncompleteKind()
+	if ik&allowed != ik {
+		return nil, errorWithCueRef(v, "enums may only be generated from concrete strings, or ints")
 	}
 
-	enumName := g.currentTopLevelTypeName + strings.Title(fieldName)
-	enumType, err := g.declareEnum(enumName, v)
+	values, err := g.extractEnumValues(v)
 	if err != nil {
 		return nil, err
 	}
 
-	g.file.Definitions = append(g.file.Definitions, *enumType)
-
-	return &ast.RefType{
-		ReferredType: enumType.Name,
+	return &ast.EnumType{
+		Values: values,
 	}, nil
 }
 

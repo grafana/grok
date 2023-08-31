@@ -1,17 +1,12 @@
 package playlist
 
-import (
-	"encoding/json"
-
-	"github.com/grafana/grok/newgen/playlist/types"
-)
+import "github.com/grafana/grok/newgen/playlist/types"
 
 type Option func(builder *Builder) error
 
 type Builder struct {
 	internal *types.Playlist
 }
-
 func New(options ...Option) (Builder, error) {
 	resource := &types.Playlist{}
 	builder := &Builder{internal: resource}
@@ -24,7 +19,6 @@ func New(options ...Option) (Builder, error) {
 
 	return *builder, nil
 }
-
 // MarshalJSON implements the encoding/json.Marshaler interface.
 //
 // This method can be used to render the resource as JSON
@@ -44,37 +38,41 @@ func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 func (builder *Builder) Internal() *types.Playlist {
 	return builder.internal
 }
-
-func Interval(interval string) Option {
-	return func(builder *Builder) error {
-
-		builder.internal.Interval = interval
-
-		return nil
-	}
-}
-
-func Items(items []types.PlaylistItem) Option {
-	return func(builder *Builder) error {
-
-		builder.internal.Items = items
-
-		return nil
-	}
-}
-
+// Name of the playlist.
 func Name(name string) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.Name = name
 
 		return nil
 	}
 }
+// Interval sets the time between switching views in a playlist.
+// FIXME: Is this based on a standardized format or what options are available? Can datemath be used?
+func Interval(interval string) Option {
+	return func(builder *Builder) error {
+		
+		builder.internal.Interval = interval
 
+		return nil
+	}
+}
+// The ordered list of items that the playlist will iterate over.
+// FIXME! This should not be optional, but changing it makes the godegen awkward
+func Items(items []types.PlaylistItem) Option {
+	return func(builder *Builder) error {
+		
+		builder.internal.Items = items
+
+		return nil
+	}
+}
+// Adding a required new field...
+// This is only hear so that thema breaking change detection allows
+// defining this as a new major version
 func Xxx(xxx string) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.Xxx = xxx
 
 		return nil
@@ -82,5 +80,6 @@ func Xxx(xxx string) Option {
 }
 
 func defaults() []Option {
-	return []Option{}
+return []Option{
+}
 }

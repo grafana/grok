@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/grafana/codejen"
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
 	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
@@ -27,13 +28,10 @@ func (jenny GoRawTypes) Generate(file *ast.File) (*codejen.File, error) {
 
 func (jenny GoRawTypes) generateFile(file *ast.File) ([]byte, error) {
 	var buffer strings.Builder
-	tr := newPreprocessor()
-
-	tr.translateDefinitions(file.Definitions)
 
 	buffer.WriteString("package types\n\n")
 
-	for _, typeDef := range tr.sortedDefinitions() {
+	for _, typeDef := range file.Definitions {
 		typeDefGen, err := jenny.formatTypeDef(typeDef)
 		if err != nil {
 			return nil, err
@@ -47,6 +45,10 @@ func (jenny GoRawTypes) generateFile(file *ast.File) ([]byte, error) {
 }
 
 func (jenny GoRawTypes) formatTypeDef(def ast.Object) ([]byte, error) {
+	if def.Type == nil {
+		spew.Dump(def)
+		panic("lala")
+	}
 	switch def.Type.Kind() {
 	case ast.KindStruct:
 		return jenny.formatStructDef(def)
@@ -161,6 +163,10 @@ func formatType(def ast.Type, fieldIsRequired bool, typesPkg string) string {
 			typeName = typesPkg + "." + typeName
 		}
 
+		if !fieldIsRequired {
+			typeName = "*" + typeName
+		}
+
 		return typeName
 	}
 
@@ -176,6 +182,9 @@ func formatType(def ast.Type, fieldIsRequired bool, typesPkg string) string {
 	// TODO: there should be an ast.KindScalar with a matching type
 	typeName := string(def.(*ast.ScalarType).ScalarKind)
 
+	if !fieldIsRequired {
+		typeName = "*" + typeName
+	}
 	/*
 		if def.Nullable || !fieldIsRequired {
 			typeName = "*" + typeName

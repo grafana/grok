@@ -1,12 +1,17 @@
 package fieldconfigsource
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"encoding/json"
+
+	"github.com/grafana/grok/newgen/dashboard/types"
+)
 
 type Option func(builder *Builder) error
 
 type Builder struct {
 	internal *types.FieldConfigSource
 }
+
 func New(options ...Option) (Builder, error) {
 	resource := &types.FieldConfigSource{}
 	builder := &Builder{internal: resource}
@@ -19,6 +24,7 @@ func New(options ...Option) (Builder, error) {
 
 	return *builder, nil
 }
+
 // MarshalJSON implements the encoding/json.Marshaler interface.
 //
 // This method can be used to render the resource as JSON
@@ -51,10 +57,11 @@ func Defaults(opts ...fieldconfig.Option) Option {
 		return nil
 	}
 }
+
 // Overrides are the options applied to specific fields overriding the defaults.
 func Overrides(overrides []types.FieldConfigSourceOverride) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Overrides = overrides
 
 		return nil
@@ -62,6 +69,5 @@ func Overrides(overrides []types.FieldConfigSourceOverride) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

@@ -22,11 +22,8 @@ func (jenny *GoBuilder) JennyName() string {
 func (jenny *GoBuilder) Generate(file *ast.File) (codejen.Files, error) {
 	jenny.file = file
 
-	tr := newPreprocessor()
-	tr.translateDefinitions(file.Definitions)
-
 	var files []codejen.File
-	for _, definition := range tr.sortedDefinitions() {
+	for _, definition := range file.Definitions {
 		if definition.Type.Kind() != ast.KindStruct {
 			continue
 		}
@@ -150,6 +147,10 @@ func (jenny *GoBuilder) fieldToOption(def ast.StructField) string {
 
 	generatedConstraints := ""
 	asPointer := ""
+	// FIXME: this condition is probably wrong
+	if def.Type.Kind() != ast.KindArray && def.Type.Kind() != ast.KindStruct && !def.Required {
+		asPointer = "&"
+	}
 	/*
 		generatedConstraints := strings.Join(jenny.constraints(argumentName, def.Type.Constraints), "\n")
 		asPointer := ""

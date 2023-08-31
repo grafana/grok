@@ -38,13 +38,23 @@ func main() {
 	}
 
 	// Here begins the code generation setup
-	jenniesByLanguage := jennies.All(pkg)
+	targetsByLanguage := jennies.All(pkg)
 	rootCodeJenFS := codejen.NewFS()
 
-	for language, targets := range jenniesByLanguage {
+	for language, target := range targetsByLanguage {
 		fmt.Printf("Running '%s' jennies...\n", language)
 
-		fs, err := targets.GenerateFS(schemaAst)
+		var err error
+		processedAst := schemaAst
+
+		for _, compilerPass := range target.CompilerPasses {
+			processedAst, err = compilerPass.Process(processedAst)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		fs, err := target.Jennies.GenerateFS(processedAst)
 		if err != nil {
 			panic(err)
 		}

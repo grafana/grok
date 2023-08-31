@@ -3,11 +3,7 @@ package valuemaporrangemaporregexmaporspecialvaluemap
 import (
 	"encoding/json"
 
-	"github.com/grafana/grok/newgen/dashboard/rangemap"
-	"github.com/grafana/grok/newgen/dashboard/regexmap"
-	"github.com/grafana/grok/newgen/dashboard/specialvaluemap"
 	"github.com/grafana/grok/newgen/dashboard/types"
-	"github.com/grafana/grok/newgen/dashboard/valuemap"
 )
 
 type Option func(builder *Builder) error

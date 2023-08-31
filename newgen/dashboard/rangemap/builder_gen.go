@@ -1,12 +1,17 @@
 package rangemap
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"encoding/json"
+
+	"github.com/grafana/grok/newgen/dashboard/types"
+)
 
 type Option func(builder *Builder) error
 
 type Builder struct {
 	internal *types.RangeMap
 }
+
 func New(options ...Option) (Builder, error) {
 	resource := &types.RangeMap{}
 	builder := &Builder{internal: resource}
@@ -19,6 +24,7 @@ func New(options ...Option) (Builder, error) {
 
 	return *builder, nil
 }
+
 // MarshalJSON implements the encoding/json.Marshaler interface.
 //
 // This method can be used to render the resource as JSON
@@ -40,23 +46,24 @@ func (builder *Builder) Internal() *types.RangeMap {
 }
 func Type(typeArg string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Type = typeArg
 
 		return nil
 	}
 }
+
 // Range to match against and the result to apply when the value is within the range
 func Options(options struct {
 	// Min value of the range. It can be null which means -Infinity
-From disjunction<float64 | null> `json:"from"`
+	From float64 `json:"from"`
 	// Max value of the range. It can be null which means +Infinity
-To disjunction<float64 | null> `json:"to"`
+	To float64 `json:"to"`
 	// Config to apply when the value is within the range
-Result types.ValueMappingResult `json:"result"`
+	Result types.ValueMappingResult `json:"result"`
 }) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Options = options
 
 		return nil
@@ -64,6 +71,5 @@ Result types.ValueMappingResult `json:"result"`
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }

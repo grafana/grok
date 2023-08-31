@@ -1,12 +1,17 @@
 package annotationcontainer
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"encoding/json"
+
+	"github.com/grafana/grok/newgen/dashboard/types"
+)
 
 type Option func(builder *Builder) error
 
 type Builder struct {
 	internal *types.AnnotationContainer
 }
+
 func New(options ...Option) (Builder, error) {
 	resource := &types.AnnotationContainer{}
 	builder := &Builder{internal: resource}
@@ -19,6 +24,7 @@ func New(options ...Option) (Builder, error) {
 
 	return *builder, nil
 }
+
 // MarshalJSON implements the encoding/json.Marshaler interface.
 //
 // This method can be used to render the resource as JSON
@@ -38,10 +44,11 @@ func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 func (builder *Builder) Internal() *types.AnnotationContainer {
 	return builder.internal
 }
+
 // List of annotations
 func List(list []types.AnnotationQuery) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.List = list
 
 		return nil
@@ -49,6 +56,5 @@ func List(list []types.AnnotationQuery) Option {
 }
 
 func defaults() []Option {
-return []Option{
-}
+	return []Option{}
 }
