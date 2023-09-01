@@ -1,12 +1,15 @@
-export class FieldColorBuilder extends OptionsBuilder<FieldColor> {
-	internal: FieldColor;
+import * as types from "../fieldcolor_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): FieldColor {
+export class FieldColorBuilder implements OptionsBuilder<types.FieldColor> {
+	internal: types.FieldColor;
+
+	build(): types.FieldColor {
 		return this.internal;
 	}
 
 	// The main color scheme mode.
-	withMode(mode: FieldColorModeId): this {
+	withMode(mode: types.FieldColorModeId): this {
 		
 		this.internal.mode = mode;
 
@@ -22,7 +25,7 @@ export class FieldColorBuilder extends OptionsBuilder<FieldColor> {
 	}
 
 	// Some visualizations need to know how to assign a series color from by value color schemes.
-	withSeriesBy(seriesBy: FieldColorSeriesByMode): this {
+	withSeriesBy(seriesBy: types.FieldColorSeriesByMode): this {
 		
 		this.internal.seriesBy = seriesBy;
 

@@ -1,14 +1,17 @@
-export class RowPanelBuilder extends OptionsBuilder<RowPanel> {
-	internal: RowPanel;
+import * as types from "../rowpanel_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): RowPanel {
+export class RowPanelBuilder implements OptionsBuilder<types.RowPanel> {
+	internal: types.RowPanel;
+
+	build(): types.RowPanel {
 		return this.internal;
 	}
 
 	// The panel type
-	withType(typeArg: string): this {
+	withType(type: string): this {
 		
-		this.internal.type = typeArg;
+		this.internal.type = type;
 
 		return this;
 	}
@@ -29,18 +32,14 @@ export class RowPanelBuilder extends OptionsBuilder<RowPanel> {
 		return this;
 	}
 
-	// Name of default datasource for the row
-	withDatasource(datasource: DataSourceRef): this {
-		
-		this.internal.datasource = datasource;
+	withDatasource(builder: OptionsBuilder<types.DataSourceRef>): this {
+		this.internal.datasource = builder.build();
 
 		return this;
 	}
 
-	// Row grid position
-	withGridPos(gridPos: GridPos): this {
-		
-		this.internal.gridPos = gridPos;
+	withGridPos(builder: OptionsBuilder<types.GridPos>): this {
+		this.internal.gridPos = builder.build();
 
 		return this;
 	}
@@ -54,7 +53,7 @@ export class RowPanelBuilder extends OptionsBuilder<RowPanel> {
 	}
 
 	// List of panels in the row
-	withPanels(panels: Panel[]): this {
+	withPanels(panels: types.Panel[]): this {
 		
 		this.internal.panels = panels;
 

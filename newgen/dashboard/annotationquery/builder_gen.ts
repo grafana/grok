@@ -1,7 +1,10 @@
-export class AnnotationQueryBuilder extends OptionsBuilder<AnnotationQuery> {
-	internal: AnnotationQuery;
+import * as types from "../annotationquery_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): AnnotationQuery {
+export class AnnotationQueryBuilder implements OptionsBuilder<types.AnnotationQuery> {
+	internal: types.AnnotationQuery;
+
+	build(): types.AnnotationQuery {
 		return this.internal;
 	}
 
@@ -13,10 +16,8 @@ export class AnnotationQueryBuilder extends OptionsBuilder<AnnotationQuery> {
 		return this;
 	}
 
-	// Datasource where the annotations data is
-	withDatasource(datasource: DataSourceRef): this {
-		
-		this.internal.datasource = datasource;
+	withDatasource(builder: OptionsBuilder<types.DataSourceRef>): this {
+		this.internal.datasource = builder.build();
 
 		return this;
 	}
@@ -46,26 +47,22 @@ export class AnnotationQueryBuilder extends OptionsBuilder<AnnotationQuery> {
 		return this;
 	}
 
-	// Filters to apply when fetching annotations
-	withFilter(filter: AnnotationPanelFilter): this {
-		
-		this.internal.filter = filter;
+	withFilter(builder: OptionsBuilder<types.AnnotationPanelFilter>): this {
+		this.internal.filter = builder.build();
 
 		return this;
 	}
 
-	// TODO.. this should just be a normal query target
-	withTarget(target: AnnotationTarget): this {
-		
-		this.internal.target = target;
+	withTarget(builder: OptionsBuilder<types.AnnotationTarget>): this {
+		this.internal.target = builder.build();
 
 		return this;
 	}
 
 	// TODO -- this should not exist here, it is based on the --grafana-- datasource
-	withType(typeArg: string): this {
+	withType(type: string): this {
 		
-		this.internal.type = typeArg;
+		this.internal.type = type;
 
 		return this;
 	}

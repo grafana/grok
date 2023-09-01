@@ -1,7 +1,10 @@
-export class LibraryPanelRefBuilder extends OptionsBuilder<LibraryPanelRef> {
-	internal: LibraryPanelRef;
+import * as types from "../librarypanelref_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): LibraryPanelRef {
+export class LibraryPanelRefBuilder implements OptionsBuilder<types.LibraryPanelRef> {
+	internal: types.LibraryPanelRef;
+
+	build(): types.LibraryPanelRef {
 		return this.internal;
 	}
 

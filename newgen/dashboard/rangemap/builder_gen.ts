@@ -1,16 +1,19 @@
-export class RangeMapBuilder extends OptionsBuilder<RangeMap> {
-	internal: RangeMap;
+import * as types from "../rangemap_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): RangeMap {
+export class RangeMapBuilder implements OptionsBuilder<types.RangeMap> {
+	internal: types.RangeMap;
+
+	build(): types.RangeMap {
 		return this.internal;
 	}
 
-	withType(typeArg: string): this {
-		if (!(typeArg == "range")) {
-			throw new Error("typeArg must be == range");
+	withType(type: string): this {
+		if (!(type == "range")) {
+			throw new Error("type must be == range");
 		}
 
-		this.internal.type = typeArg;
+		this.internal.type = type;
 
 		return this;
 	}
@@ -22,7 +25,7 @@ export class RangeMapBuilder extends OptionsBuilder<RangeMap> {
 	// Max value of the range. It can be null which means +Infinity
 	to: number | null;
 	// Config to apply when the value is within the range
-	result: ValueMappingResult;
+	result: types.ValueMappingResult;
 }): this {
 		
 		this.internal.options = options;

@@ -51,15 +51,19 @@ func (jenny *TypescriptBuilder) generateDefinition(def ast.Object) ([]byte, erro
 	structType := def.Type.(*ast.StructType)
 	objectName := tools.UpperCamelCase(def.Name)
 
+	// imports
+	buffer.WriteString(fmt.Sprintf("import * as types from \"../%s_types_gen\";\n", strings.ToLower(objectName)))
+	buffer.WriteString(fmt.Sprintf("import { OptionsBuilder } from \"../options_builder_gen\";\n\n"))
+
 	// Builder class declaration
-	buffer.WriteString(fmt.Sprintf("export class %[1]sBuilder extends OptionsBuilder<%[1]s> {\n", objectName))
+	buffer.WriteString(fmt.Sprintf("export class %[1]sBuilder implements OptionsBuilder<types.%[1]s> {\n", objectName))
 
 	// internal property, representing the object being built
-	buffer.WriteString(fmt.Sprintf("\tinternal: %[1]s;\n", def.Name))
+	buffer.WriteString(fmt.Sprintf("\tinternal: types.%[1]s;\n", objectName))
 
 	// Allow builders to expose the resource they're building
 	buffer.WriteString(fmt.Sprintf(`
-	build(): %s {
+	build(): types.%s {
 		return this.internal;
 	}
 
@@ -87,21 +91,26 @@ func (jenny *TypescriptBuilder) fieldToOption(def ast.StructField) (string, erro
 		buffer.WriteString(fmt.Sprintf("\t// %s\n", commentLine))
 	}
 
+	// references to objects get their own builder
+	if def.Type.Kind() == ast.KindRef {
+		referredDef := jenny.file.LocateDefinition(def.Type.(*ast.RefType).ReferredType)
+		if referredDef.Type.Kind() == ast.KindStruct {
+			return jenny.referenceFieldToOption(def), nil
+		}
+	}
+
 	// literal options get their own simplified builder
 	if def.Type.Kind() == ast.KindLiteral {
 		return jenny.literalFieldToOption(def), nil
 	}
 
 	optionName := tools.UpperCamelCase(def.DisplayName)
-	typeName, err := formatType(def.Type)
+	argumentName := tools.LowerCamelCase(def.DisplayName)
+	typeName, err := formatType(def.Type, "types")
 	if err != nil {
 		return "", err
 	}
-	argumentName := tools.LowerCamelCase(def.DisplayName)
-	if isReservedGoKeyword(argumentName) {
-		argumentName = argumentName + "Arg"
-	}
-
+	
 	generatedConstraints := ""
 	if scalarType, ok := def.Type.(*ast.ScalarType); ok {
 		generatedConstraints = strings.Join(jenny.constraints(argumentName, scalarType.Constraints), "\n")
@@ -147,7 +156,7 @@ func (jenny *TypescriptBuilder) formatScalar(val any) string {
 		}
 
 		// TODO: we can't assume a list of strings
-		return fmt.Sprintf("[]string{%s}", strings.Join(items, ", "))
+		return fmt.Sprintf("[%s]", strings.Join(items, ", "))
 	}
 
 	return fmt.Sprintf("%#v", val)
@@ -156,23 +165,16 @@ func (jenny *TypescriptBuilder) formatScalar(val any) string {
 func (jenny *TypescriptBuilder) referenceFieldToOption(def ast.StructField) string {
 	var buffer strings.Builder
 
-	fieldName := tools.UpperCamelCase(def.Name)
-	referredPackage := strings.ToLower(def.Type.(*ast.RefType).ReferredType)
+	referredType := tools.UpperCamelCase(def.Type.(*ast.RefType).ReferredType)
+	optionName := tools.UpperCamelCase(def.DisplayName)
 
-	buffer.WriteString(fmt.Sprintf(`
-func %[1]s(opts ...%[2]s.Option) Option {
-	return func(builder *Builder) error {
-		resource, err := %[2]s.New(opts...)
-		if err != nil {
-			return err
-		}
+	buffer.WriteString(fmt.Sprintf(`	with%[1]s(builder: OptionsBuilder<types.%[2]s>): this {
+		this.internal.%[3]s = builder.build();
 
-		builder.internal.%[1]s = resource.Internal()
-
-		return nil
+		return this;
 	}
-}
-`, fieldName, referredPackage))
+
+`, optionName, referredType, def.Name))
 
 	return buffer.String()
 }
@@ -206,13 +208,4 @@ func (jenny *TypescriptBuilder) constraintComparison(argumentName string, constr
 	}
 
 	return fmt.Sprintf("%[1]s %[2]s %#[3]v", argumentName, constraint.Op, constraint.Args[0])
-}
-
-func isReservedGoKeyword(input string) bool {
-	// TODO
-	if input == "type" {
-		return true
-	}
-
-	return false
 }

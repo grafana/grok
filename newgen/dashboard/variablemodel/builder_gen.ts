@@ -1,7 +1,10 @@
-export class VariableModelBuilder extends OptionsBuilder<VariableModel> {
-	internal: VariableModel;
+import * as types from "../variablemodel_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): VariableModel {
+export class VariableModelBuilder implements OptionsBuilder<types.VariableModel> {
+	internal: types.VariableModel;
+
+	build(): types.VariableModel {
 		return this.internal;
 	}
 
@@ -14,9 +17,9 @@ export class VariableModelBuilder extends OptionsBuilder<VariableModel> {
 	}
 
 	// Type of variable
-	withType(typeArg: VariableType): this {
+	withType(type: types.VariableType): this {
 		
-		this.internal.type = typeArg;
+		this.internal.type = type;
 
 		return this;
 	}
@@ -38,7 +41,7 @@ export class VariableModelBuilder extends OptionsBuilder<VariableModel> {
 	}
 
 	// Visibility configuration for the variable
-	withHide(hide: VariableHide): this {
+	withHide(hide: types.VariableHide): this {
 		
 		this.internal.hide = hide;
 
@@ -69,10 +72,8 @@ export class VariableModelBuilder extends OptionsBuilder<VariableModel> {
 		return this;
 	}
 
-	// Data source used to fetch values for a variable. It can be defined but `null`.
-	withDatasource(datasource: DataSourceRef): this {
-		
-		this.internal.datasource = datasource;
+	withDatasource(builder: OptionsBuilder<types.DataSourceRef>): this {
+		this.internal.datasource = builder.build();
 
 		return this;
 	}
@@ -85,10 +86,8 @@ export class VariableModelBuilder extends OptionsBuilder<VariableModel> {
 		return this;
 	}
 
-	// Shows current selected variable text/value on the dashboard
-	withCurrent(current: VariableOption): this {
-		
-		this.internal.current = current;
+	withCurrent(builder: OptionsBuilder<types.VariableOption>): this {
+		this.internal.current = builder.build();
 
 		return this;
 	}
@@ -102,14 +101,14 @@ export class VariableModelBuilder extends OptionsBuilder<VariableModel> {
 	}
 
 	// Options that can be selected for a variable.
-	withOptions(options: VariableOption[]): this {
+	withOptions(options: types.VariableOption[]): this {
 		
 		this.internal.options = options;
 
 		return this;
 	}
 
-	withRefresh(refresh: VariableRefresh): this {
+	withRefresh(refresh: types.VariableRefresh): this {
 		
 		this.internal.refresh = refresh;
 

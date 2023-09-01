@@ -1,7 +1,10 @@
-export class DataTransformerConfigBuilder extends OptionsBuilder<DataTransformerConfig> {
-	internal: DataTransformerConfig;
+import * as types from "../datatransformerconfig_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): DataTransformerConfig {
+export class DataTransformerConfigBuilder implements OptionsBuilder<types.DataTransformerConfig> {
+	internal: types.DataTransformerConfig;
+
+	build(): types.DataTransformerConfig {
 		return this.internal;
 	}
 
@@ -21,10 +24,8 @@ export class DataTransformerConfigBuilder extends OptionsBuilder<DataTransformer
 		return this;
 	}
 
-	// Optional frame matcher. When missing it will be applied to all results
-	withFilter(filter: MatcherConfig): this {
-		
-		this.internal.filter = filter;
+	withFilter(builder: OptionsBuilder<types.MatcherConfig>): this {
+		this.internal.filter = builder.build();
 
 		return this;
 	}

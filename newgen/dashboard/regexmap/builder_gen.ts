@@ -1,16 +1,19 @@
-export class RegexMapBuilder extends OptionsBuilder<RegexMap> {
-	internal: RegexMap;
+import * as types from "../regexmap_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): RegexMap {
+export class RegexMapBuilder implements OptionsBuilder<types.RegexMap> {
+	internal: types.RegexMap;
+
+	build(): types.RegexMap {
 		return this.internal;
 	}
 
-	withType(typeArg: string): this {
-		if (!(typeArg == "regex")) {
-			throw new Error("typeArg must be == regex");
+	withType(type: string): this {
+		if (!(type == "regex")) {
+			throw new Error("type must be == regex");
 		}
 
-		this.internal.type = typeArg;
+		this.internal.type = type;
 
 		return this;
 	}
@@ -20,7 +23,7 @@ export class RegexMapBuilder extends OptionsBuilder<RegexMap> {
 	// Regular expression to match against
 	pattern: string;
 	// Config to apply when the value matches the regex
-	result: ValueMappingResult;
+	result: types.ValueMappingResult;
 }): this {
 		
 		this.internal.options = options;

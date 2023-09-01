@@ -1,12 +1,15 @@
-export class AnnotationContainerBuilder extends OptionsBuilder<AnnotationContainer> {
-	internal: AnnotationContainer;
+import * as types from "../annotationcontainer_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): AnnotationContainer {
+export class AnnotationContainerBuilder implements OptionsBuilder<types.AnnotationContainer> {
+	internal: types.AnnotationContainer;
+
+	build(): types.AnnotationContainer {
 		return this.internal;
 	}
 
 	// List of annotations
-	withList(list: AnnotationQuery[]): this {
+	withList(list: types.AnnotationQuery[]): this {
 		
 		this.internal.list = list;
 

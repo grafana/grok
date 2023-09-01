@@ -1,9 +1,10 @@
-import {Dashboard} from "../dashboard_types_gen";
+import * as types from "../dashboard_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-export class DashboardBuilder extends OptionsBuilder<Dashboard> {
-	internal: Dashboard;
+export class DashboardBuilder implements OptionsBuilder<types.Dashboard> {
+	internal: types.Dashboard;
 
-	build(): Dashboard {
+	build(): types.Dashboard {
 		return this.internal;
 	}
 
@@ -95,7 +96,7 @@ export class DashboardBuilder extends OptionsBuilder<Dashboard> {
 
 	// Configuration of dashboard cursor sync behavior.
 	// Accepted values are 0 (sync turned off), 1 (shared crosshair), 2 (shared crosshair and tooltip).
-	withTooltip(tooltip: DashboardCursorSync): this {
+	withTooltip(tooltip: types.DashboardCursorSync): this {
 		
 		this.internal.graphTooltip = tooltip;
 
@@ -114,10 +115,8 @@ export class DashboardBuilder extends OptionsBuilder<Dashboard> {
 		return this;
 	}
 
-	// Configuration of the time picker shown at the top of a dashboard.
-	withTimepicker(timepicker: TimePicker): this {
-		
-		this.internal.timepicker = timepicker;
+	withTimepicker(builder: OptionsBuilder<types.TimePicker>): this {
+		this.internal.timepicker = builder.build();
 
 		return this;
 	}
@@ -168,34 +167,27 @@ export class DashboardBuilder extends OptionsBuilder<Dashboard> {
 	}
 
 	// List of dashboard panels
-	withPanels(panels: RowPanel[]): this {
+	withPanels(panels: types.RowPanel[]): this {
 		
 		this.internal.panels = panels;
 
 		return this;
 	}
 
-	// Configured template variables
-	withTemplating(templating: DashboardTemplating): this {
-		
-		this.internal.templating = templating;
+	withTemplating(builder: OptionsBuilder<types.DashboardTemplating>): this {
+		this.internal.templating = builder.build();
 
 		return this;
 	}
 
-	// Contains the list of annotations that are associated with the dashboard.
-	// Annotations are used to overlay event markers and overlay event tags on graphs.
-	// Grafana comes with a native annotation store and the ability to add annotation events directly from the graph panel or via the HTTP API.
-	// See https://grafana.com/docs/grafana/latest/dashboards/build-dashboards/annotate-visualizations/
-	withAnnotations(annotations: AnnotationContainer): this {
-		
-		this.internal.annotations = annotations;
+	withAnnotations(builder: OptionsBuilder<types.AnnotationContainer>): this {
+		this.internal.annotations = builder.build();
 
 		return this;
 	}
 
 	// Links with references to other dashboards or external websites.
-	withLinks(links: DashboardLink[]): this {
+	withLinks(links: types.DashboardLink[]): this {
 		
 		this.internal.links = links;
 

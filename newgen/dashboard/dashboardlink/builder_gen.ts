@@ -1,7 +1,10 @@
-export class DashboardLinkBuilder extends OptionsBuilder<DashboardLink> {
-	internal: DashboardLink;
+import * as types from "../dashboardlink_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): DashboardLink {
+export class DashboardLinkBuilder implements OptionsBuilder<types.DashboardLink> {
+	internal: types.DashboardLink;
+
+	build(): types.DashboardLink {
 		return this.internal;
 	}
 
@@ -14,9 +17,9 @@ export class DashboardLinkBuilder extends OptionsBuilder<DashboardLink> {
 	}
 
 	// Link type. Accepted values are dashboards (to refer to another dashboard) and link (to refer to an external resource)
-	withType(typeArg: DashboardLinkType): this {
+	withType(type: types.DashboardLinkType): this {
 		
-		this.internal.type = typeArg;
+		this.internal.type = type;
 
 		return this;
 	}

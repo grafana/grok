@@ -1,7 +1,10 @@
-export class FieldConfigBuilder extends OptionsBuilder<FieldConfig> {
-	internal: FieldConfig;
+import * as types from "../fieldconfig_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): FieldConfig {
+export class FieldConfigBuilder implements OptionsBuilder<types.FieldConfig> {
+	internal: types.FieldConfig;
+
+	build(): types.FieldConfig {
 		return this.internal;
 	}
 
@@ -103,25 +106,21 @@ export class FieldConfigBuilder extends OptionsBuilder<FieldConfig> {
 	}
 
 	// Convert input values into a display string
-	withMappings(mappings: ValueMap | RangeMap | RegexMap | SpecialValueMap[]): this {
+	withMappings(mappings: types.ValueMap | types.RangeMap | types.RegexMap | types.SpecialValueMap[]): this {
 		
 		this.internal.mappings = mappings;
 
 		return this;
 	}
 
-	// Map numeric values to states
-	withThresholds(thresholds: ThresholdsConfig): this {
-		
-		this.internal.thresholds = thresholds;
+	withThresholds(builder: OptionsBuilder<types.ThresholdsConfig>): this {
+		this.internal.thresholds = builder.build();
 
 		return this;
 	}
 
-	// Panel color configuration
-	withColor(color: FieldColor): this {
-		
-		this.internal.color = color;
+	withColor(builder: OptionsBuilder<types.FieldColor>): this {
+		this.internal.color = builder.build();
 
 		return this;
 	}

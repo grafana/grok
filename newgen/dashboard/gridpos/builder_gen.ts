@@ -1,7 +1,10 @@
-export class GridPosBuilder extends OptionsBuilder<GridPos> {
-	internal: GridPos;
+import * as types from "../gridpos_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): GridPos {
+export class GridPosBuilder implements OptionsBuilder<types.GridPos> {
+	internal: types.GridPos;
+
+	build(): types.GridPos {
 		return this.internal;
 	}
 

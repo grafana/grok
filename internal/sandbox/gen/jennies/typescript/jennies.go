@@ -10,6 +10,7 @@ func Jennies(pkg string) *codejen.JennyList[*ast.File] {
 	targets := codejen.JennyListWithNamer[*ast.File](func(f *ast.File) string {
 		return f.Package
 	})
+	targets.AppendOneToOne(TypescriptOptionsBuilder{})
 	targets.AppendOneToOne(TypescriptRawTypes{})
 	targets.AppendOneToMany(&TypescriptBuilder{})
 	targets.AddPostprocessors(jen.Prefixer(pkg))

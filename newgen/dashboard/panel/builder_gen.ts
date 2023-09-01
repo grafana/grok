@@ -1,17 +1,20 @@
-export class PanelBuilder extends OptionsBuilder<Panel> {
-	internal: Panel;
+import * as types from "../panel_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): Panel {
+export class PanelBuilder implements OptionsBuilder<types.Panel> {
+	internal: types.Panel;
+
+	build(): types.Panel {
 		return this.internal;
 	}
 
 	// The panel plugin type id. This is used to find the plugin to display the panel.
-	withType(typeArg: string): this {
-		if (!(typeArg.length >= 1)) {
-			throw new Error("typeArg must be minLength 1");
+	withType(type: string): this {
+		if (!(type.length >= 1)) {
+			throw new Error("type must be minLength 1");
 		}
 
-		this.internal.type = typeArg;
+		this.internal.type = type;
 
 		return this;
 	}
@@ -41,7 +44,7 @@ export class PanelBuilder extends OptionsBuilder<Panel> {
 	}
 
 	// Depends on the panel plugin. See the plugin documentation for details.
-	withTargets(targets: Target[]): this {
+	withTargets(targets: types.Target[]): this {
 		
 		this.internal.targets = targets;
 
@@ -72,24 +75,20 @@ export class PanelBuilder extends OptionsBuilder<Panel> {
 		return this;
 	}
 
-	// The datasource used in all targets.
-	withDatasource(datasource: DataSourceRef): this {
-		
-		this.internal.datasource = datasource;
+	withDatasource(builder: OptionsBuilder<types.DataSourceRef>): this {
+		this.internal.datasource = builder.build();
 
 		return this;
 	}
 
-	// Grid position.
-	withGridPos(gridPos: GridPos): this {
-		
-		this.internal.gridPos = gridPos;
+	withGridPos(builder: OptionsBuilder<types.GridPos>): this {
+		this.internal.gridPos = builder.build();
 
 		return this;
 	}
 
 	// Panel links.
-	withLinks(links: DashboardLink[]): this {
+	withLinks(links: types.DashboardLink[]): this {
 		
 		this.internal.links = links;
 
@@ -106,7 +105,7 @@ export class PanelBuilder extends OptionsBuilder<Panel> {
 
 	// Direction to repeat in if 'repeat' is set.
 	// `h` for horizontal, `v` for vertical.
-	withRepeatDirection(repeatDirection: PanelRepeatDirection): this {
+	withRepeatDirection(repeatDirection: types.PanelRepeatDirection): this {
 		
 		this.internal.repeatDirection = repeatDirection;
 
@@ -132,7 +131,7 @@ export class PanelBuilder extends OptionsBuilder<Panel> {
 	// List of transformations that are applied to the panel data before rendering.
 	// When there are multiple transformations, Grafana applies them in the order they are listed.
 	// Each transformation creates a result set that then passes on to the next transformation in the processing pipeline.
-	withTransformations(transformations: DataTransformerConfig[]): this {
+	withTransformations(transformations: types.DataTransformerConfig[]): this {
 		
 		this.internal.transformations = transformations;
 
@@ -176,10 +175,8 @@ export class PanelBuilder extends OptionsBuilder<Panel> {
 		return this;
 	}
 
-	// Dynamically load the panel
-	withLibraryPanel(libraryPanel: LibraryPanelRef): this {
-		
-		this.internal.libraryPanel = libraryPanel;
+	withLibraryPanel(builder: OptionsBuilder<types.LibraryPanelRef>): this {
+		this.internal.libraryPanel = builder.build();
 
 		return this;
 	}
@@ -192,10 +189,8 @@ export class PanelBuilder extends OptionsBuilder<Panel> {
 		return this;
 	}
 
-	// Field options allow you to change how the data is displayed in your visualizations.
-	withFieldConfig(fieldConfig: FieldConfigSource): this {
-		
-		this.internal.fieldConfig = fieldConfig;
+	withFieldConfig(builder: OptionsBuilder<types.FieldConfigSource>): this {
+		this.internal.fieldConfig = builder.build();
 
 		return this;
 	}

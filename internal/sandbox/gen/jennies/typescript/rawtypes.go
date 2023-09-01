@@ -29,7 +29,7 @@ func (jenny TypescriptRawTypes) generateFile(file *ast.File) ([]byte, error) {
 	var buffer strings.Builder
 
 	for _, typeDef := range file.Definitions {
-		typeDefGen, err := jenny.formatObject(typeDef)
+		typeDefGen, err := jenny.formatObject(typeDef, "")
 		if err != nil {
 			return nil, err
 		}
@@ -41,14 +41,14 @@ func (jenny TypescriptRawTypes) generateFile(file *ast.File) ([]byte, error) {
 	return []byte(buffer.String()), nil
 }
 
-func (jenny TypescriptRawTypes) formatObject(def ast.Object) ([]byte, error) {
+func (jenny TypescriptRawTypes) formatObject(def ast.Object, typesPkg string) ([]byte, error) {
 	switch def.Type.Kind() {
 	case ast.KindStruct:
-		return jenny.formatStructDef(def)
+		return jenny.formatStructDef(def, typesPkg)
 	case ast.KindEnum:
 		return jenny.formatEnumDef(def)
 	case ast.KindDisjunction:
-		disj, err := formatDisjunction(def.Type.(*ast.DisjunctionType))
+		disj, err := formatDisjunction(def.Type.(*ast.DisjunctionType), typesPkg)
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +79,7 @@ func (jenny TypescriptRawTypes) formatEnumDef(def ast.Object) ([]byte, error) {
 	return []byte(buffer.String()), nil
 }
 
-func (jenny TypescriptRawTypes) formatStructDef(def ast.Object) ([]byte, error) {
+func (jenny TypescriptRawTypes) formatStructDef(def ast.Object, typesPkg string) ([]byte, error) {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
@@ -90,7 +90,7 @@ func (jenny TypescriptRawTypes) formatStructDef(def ast.Object) ([]byte, error) 
 
 	structType := def.Type.(*ast.StructType)
 
-	body, err := formatStructFields(structType.Fields)
+	body, err := formatStructFields(structType.Fields, typesPkg)
 	if err != nil {
 		return nil, nil
 	}
@@ -100,13 +100,13 @@ func (jenny TypescriptRawTypes) formatStructDef(def ast.Object) ([]byte, error) 
 	return []byte(buffer.String()), nil
 }
 
-func formatStructFields(fields []ast.StructField) (string, error) {
+func formatStructFields(fields []ast.StructField, typesPkg string) (string, error) {
 	var buffer strings.Builder
 
 	buffer.WriteString("{\n")
 
 	for i, fieldDef := range fields {
-		fieldDefGen, err := formatField(fieldDef)
+		fieldDefGen, err := formatField(fieldDef, typesPkg)
 		if err != nil {
 			return "", err
 		}
@@ -128,7 +128,7 @@ func formatStructFields(fields []ast.StructField) (string, error) {
 	return buffer.String(), nil
 }
 
-func formatField(def ast.StructField) ([]byte, error) {
+func formatField(def ast.StructField, typesPkg string) ([]byte, error) {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
@@ -140,7 +140,7 @@ func formatField(def ast.StructField) ([]byte, error) {
 		required = "?"
 	}
 
-	formattedType, err := formatType(def.Type)
+	formattedType, err := formatType(def.Type, typesPkg)
 	if err != nil {
 		return nil, err
 	}
@@ -155,20 +155,24 @@ func formatField(def ast.StructField) ([]byte, error) {
 	return []byte(buffer.String()), nil
 }
 
-func formatType(def ast.Type) (string, error) {
+func formatType(def ast.Type, typesPkg string) (string, error) {
 	// todo: handle nullable
 	// maybe if nullable, append | null to the type?
 	switch def.Kind() {
 	case ast.KindDisjunction:
-		return formatDisjunction(def.(*ast.DisjunctionType))
+		return formatDisjunction(def.(*ast.DisjunctionType), typesPkg)
 	case ast.KindRef:
+		if typesPkg != "" {
+			return typesPkg + "." + (def.(*ast.RefType)).ReferredType, nil
+		}
+
 		return (def.(*ast.RefType)).ReferredType, nil
 	case ast.KindArray:
-		return formatArray(def.(*ast.ArrayType))
+		return formatArray(def.(*ast.ArrayType), typesPkg)
 	case ast.KindStruct:
-		return formatStructFields(def.(*ast.StructType).Fields)
+		return formatStructFields(def.(*ast.StructType).Fields, typesPkg)
 	case ast.KindMap:
-		return formatMap(def.(*ast.MapType))
+		return formatMap(def.(*ast.MapType), typesPkg)
 	case ast.KindEnum:
 		return formatAnonymousEnum(def.(*ast.EnumType))
 
@@ -198,9 +202,9 @@ func formatType(def ast.Type) (string, error) {
 	}
 }
 
-func formatArray(def *ast.ArrayType) (string, error) {
+func formatArray(def *ast.ArrayType, typesPkg string) (string, error) {
 	// we don't know what to do here (yet)
-	subTypeString, err := formatType(def.ValueType)
+	subTypeString, err := formatType(def.ValueType, typesPkg)
 	if err != nil {
 		return "", err
 	}
@@ -208,10 +212,10 @@ func formatArray(def *ast.ArrayType) (string, error) {
 	return fmt.Sprintf("%s[]", subTypeString), nil
 }
 
-func formatDisjunction(def *ast.DisjunctionType) (string, error) {
+func formatDisjunction(def *ast.DisjunctionType, typesPkg string) (string, error) {
 	subTypes := make([]string, 0, len(def.Branches))
 	for _, subType := range def.Branches {
-		formatted, err := formatType(subType)
+		formatted, err := formatType(subType, typesPkg)
 		if err != nil {
 			return "", err
 		}
@@ -222,9 +226,12 @@ func formatDisjunction(def *ast.DisjunctionType) (string, error) {
 	return strings.Join(subTypes, " | "), nil
 }
 
-func formatMap(def *ast.MapType) (string, error) {
-	keyTypeString := def.IndexType
-	valueTypeString, err := formatType(def.ValueType)
+func formatMap(def *ast.MapType, typesPkg string) (string, error) {
+	keyTypeString, err := formatType(def.IndexType, typesPkg)
+	if err != nil {
+		return "", err
+	}
+	valueTypeString, err := formatType(def.ValueType, typesPkg)
 	if err != nil {
 		return "", err
 	}

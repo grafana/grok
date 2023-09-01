@@ -1,7 +1,10 @@
-export class TimeIntervalBuilder extends OptionsBuilder<TimeInterval> {
-	internal: TimeInterval;
+import * as types from "../timeinterval_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): TimeInterval {
+export class TimeIntervalBuilder implements OptionsBuilder<types.TimeInterval> {
+	internal: types.TimeInterval;
+
+	build(): types.TimeInterval {
 		return this.internal;
 	}
 

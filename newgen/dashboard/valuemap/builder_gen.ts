@@ -1,22 +1,25 @@
-export class ValueMapBuilder extends OptionsBuilder<ValueMap> {
-	internal: ValueMap;
+import * as types from "../valuemap_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): ValueMap {
+export class ValueMapBuilder implements OptionsBuilder<types.ValueMap> {
+	internal: types.ValueMap;
+
+	build(): types.ValueMap {
 		return this.internal;
 	}
 
-	withType(typeArg: string): this {
-		if (!(typeArg == "value")) {
-			throw new Error("typeArg must be == value");
+	withType(type: string): this {
+		if (!(type == "value")) {
+			throw new Error("type must be == value");
 		}
 
-		this.internal.type = typeArg;
+		this.internal.type = type;
 
 		return this;
 	}
 
 	// Map with <value_to_match>: ValueMappingResult. For example: { "10": { text: "Perfection!", color: "green" } }
-	withOptions(options: Record<&{string []}, ValueMappingResult>): this {
+	withOptions(options: Record<string, types.ValueMappingResult>): this {
 		
 		this.internal.options = options;
 

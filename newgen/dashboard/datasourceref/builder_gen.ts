@@ -1,14 +1,17 @@
-export class DataSourceRefBuilder extends OptionsBuilder<DataSourceRef> {
-	internal: DataSourceRef;
+import * as types from "../datasourceref_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): DataSourceRef {
+export class DataSourceRefBuilder implements OptionsBuilder<types.DataSourceRef> {
+	internal: types.DataSourceRef;
+
+	build(): types.DataSourceRef {
 		return this.internal;
 	}
 
 	// The plugin type-id
-	withType(typeArg: string): this {
+	withType(type: string): this {
 		
-		this.internal.type = typeArg;
+		this.internal.type = type;
 
 		return this;
 	}

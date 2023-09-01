@@ -1,18 +1,20 @@
-export class FieldConfigSourceOverrideBuilder extends OptionsBuilder<FieldConfigSourceOverride> {
-	internal: FieldConfigSourceOverride;
+import * as types from "../fieldconfigsourceoverride_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): FieldConfigSourceOverride {
+export class FieldConfigSourceOverrideBuilder implements OptionsBuilder<types.FieldConfigSourceOverride> {
+	internal: types.FieldConfigSourceOverride;
+
+	build(): types.FieldConfigSourceOverride {
 		return this.internal;
 	}
 
-	withMatcher(matcher: MatcherConfig): this {
-		
-		this.internal.matcher = matcher;
+	withMatcher(builder: OptionsBuilder<types.MatcherConfig>): this {
+		this.internal.matcher = builder.build();
 
 		return this;
 	}
 
-	withProperties(properties: DynamicConfigValue[]): this {
+	withProperties(properties: types.DynamicConfigValue[]): this {
 		
 		this.internal.properties = properties;
 

@@ -1,7 +1,10 @@
-export class AnnotationTargetBuilder extends OptionsBuilder<AnnotationTarget> {
-	internal: AnnotationTarget;
+import * as types from "../annotationtarget_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): AnnotationTarget {
+export class AnnotationTargetBuilder implements OptionsBuilder<types.AnnotationTarget> {
+	internal: types.AnnotationTarget;
+
+	build(): types.AnnotationTarget {
 		return this.internal;
 	}
 
@@ -34,9 +37,9 @@ export class AnnotationTargetBuilder extends OptionsBuilder<AnnotationTarget> {
 
 	// Only required/valid for the grafana datasource...
 	// but code+tests is already depending on it so hard to change
-	withType(typeArg: string): this {
+	withType(type: string): this {
 		
-		this.internal.type = typeArg;
+		this.internal.type = type;
 
 		return this;
 	}

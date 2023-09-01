@@ -1,7 +1,10 @@
-export class ThresholdBuilder extends OptionsBuilder<Threshold> {
-	internal: Threshold;
+import * as types from "../threshold_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): Threshold {
+export class ThresholdBuilder implements OptionsBuilder<types.Threshold> {
+	internal: types.Threshold;
+
+	build(): types.Threshold {
 		return this.internal;
 	}
 

@@ -1,7 +1,10 @@
-export class ValueMappingResultBuilder extends OptionsBuilder<ValueMappingResult> {
-	internal: ValueMappingResult;
+import * as types from "../valuemappingresult_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): ValueMappingResult {
+export class ValueMappingResultBuilder implements OptionsBuilder<types.ValueMappingResult> {
+	internal: types.ValueMappingResult;
+
+	build(): types.ValueMappingResult {
 		return this.internal;
 	}
 

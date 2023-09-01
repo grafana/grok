@@ -1,7 +1,10 @@
-export class MatcherConfigBuilder extends OptionsBuilder<MatcherConfig> {
-	internal: MatcherConfig;
+import * as types from "../matcherconfig_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): MatcherConfig {
+export class MatcherConfigBuilder implements OptionsBuilder<types.MatcherConfig> {
+	internal: types.MatcherConfig;
+
+	build(): types.MatcherConfig {
 		return this.internal;
 	}
 

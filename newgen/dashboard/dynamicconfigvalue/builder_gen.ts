@@ -1,7 +1,10 @@
-export class DynamicConfigValueBuilder extends OptionsBuilder<DynamicConfigValue> {
-	internal: DynamicConfigValue;
+import * as types from "../dynamicconfigvalue_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): DynamicConfigValue {
+export class DynamicConfigValueBuilder implements OptionsBuilder<types.DynamicConfigValue> {
+	internal: types.DynamicConfigValue;
+
+	build(): types.DynamicConfigValue {
 		return this.internal;
 	}
 

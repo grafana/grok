@@ -1,7 +1,10 @@
-export class TimePickerBuilder extends OptionsBuilder<TimePicker> {
-	internal: TimePicker;
+import * as types from "../timepicker_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): TimePicker {
+export class TimePickerBuilder implements OptionsBuilder<types.TimePicker> {
+	internal: types.TimePicker;
+
+	build(): types.TimePicker {
 		return this.internal;
 	}
 

@@ -1,7 +1,10 @@
-export class AnnotationPanelFilterBuilder extends OptionsBuilder<AnnotationPanelFilter> {
-	internal: AnnotationPanelFilter;
+import * as types from "../annotationpanelfilter_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): AnnotationPanelFilter {
+export class AnnotationPanelFilterBuilder implements OptionsBuilder<types.AnnotationPanelFilter> {
+	internal: types.AnnotationPanelFilter;
+
+	build(): types.AnnotationPanelFilter {
 		return this.internal;
 	}
 

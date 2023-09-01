@@ -1,7 +1,10 @@
-export class VariableOptionBuilder extends OptionsBuilder<VariableOption> {
-	internal: VariableOption;
+import * as types from "../variableoption_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): VariableOption {
+export class VariableOptionBuilder implements OptionsBuilder<types.VariableOption> {
+	internal: types.VariableOption;
+
+	build(): types.VariableOption {
 		return this.internal;
 	}
 

@@ -1,12 +1,15 @@
-export class ThresholdsConfigBuilder extends OptionsBuilder<ThresholdsConfig> {
-	internal: ThresholdsConfig;
+import * as types from "../thresholdsconfig_types_gen";
+import { OptionsBuilder } from "../options_builder_gen";
 
-	build(): ThresholdsConfig {
+export class ThresholdsConfigBuilder implements OptionsBuilder<types.ThresholdsConfig> {
+	internal: types.ThresholdsConfig;
+
+	build(): types.ThresholdsConfig {
 		return this.internal;
 	}
 
 	// Thresholds mode.
-	withMode(mode: ThresholdsMode): this {
+	withMode(mode: types.ThresholdsMode): this {
 		
 		this.internal.mode = mode;
 
@@ -14,7 +17,7 @@ export class ThresholdsConfigBuilder extends OptionsBuilder<ThresholdsConfig> {
 	}
 
 	// Must be sorted by 'value', first value is always -Infinity
-	withSteps(steps: Threshold[]): this {
+	withSteps(steps: types.Threshold[]): this {
 		
 		this.internal.steps = steps;
 
