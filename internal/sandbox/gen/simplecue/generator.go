@@ -14,16 +14,13 @@ const hintKindEnum = "enum"
 const annotationKindFieldName = "kind"
 const enumMembersAttr = "memberNames"
 
-var errSkip = fmt.Errorf("skip")
-
 type Config struct {
 	// Package name used to generate code into.
 	Package string
 }
 
 type newGenerator struct {
-	file                    *ast.File
-	currentTopLevelTypeName string
+	file *ast.File
 }
 
 func GenerateAST(val cue.Value, c Config) (*ast.File, error) {
@@ -40,9 +37,7 @@ func GenerateAST(val cue.Value, c Config) (*ast.File, error) {
 	for i.Next() {
 		sel := i.Selector()
 
-		g.currentTopLevelTypeName = selectorLabel(sel)
-
-		n, err := g.declareTopLevelType(g.currentTopLevelTypeName, i.Value())
+		n, err := g.declareTopLevelType(selectorLabel(sel), i.Value())
 		if err != nil {
 			return nil, err
 		}
@@ -93,19 +88,11 @@ func (g *newGenerator) declareEnum(name string, v cue.Value) (*ast.Object, error
 		return nil, err
 	}
 
-	/*
-		defaultValue, err := g.extractDefault(v)
-		if err != nil {
-			return nil, err
-		}
-	*/
-
 	return &ast.Object{
 		Name:     name,
 		Comments: commentsFromCueValue(v),
 		Type: &ast.EnumType{
 			Values: values,
-			//Default: defaultValue,
 		},
 	}, nil
 }
@@ -200,9 +187,6 @@ func (g *newGenerator) structFields(v cue.Value) ([]ast.StructField, error) {
 		fieldLabel := selectorLabel(i.Selector())
 
 		node, err := g.declareNode(i.Value())
-		if err == errSkip {
-			continue
-		}
 		if err != nil {
 			return nil, err
 		}
@@ -277,25 +261,6 @@ func (g *newGenerator) declareNode(v cue.Value) (ast.Type, error) {
 	case cue.ListKind:
 		return g.declareList(v)
 	case cue.StructKind:
-		/*
-			pathParts := v.Path().Selectors()
-			selector := pathParts[len(pathParts)-1]
-
-			// inline definition of a struct
-			if selector.IsDefinition() {
-				def, err := g.declareTopLevelStruct(selectorLabel(selector), v)
-				if err != nil {
-					return nil, err
-				}
-
-				g.file.Definitions = append(g.file.Definitions, *def)
-
-				// FIXME: we shouldn't need this anymore
-				return nil, errSkip
-			}
-
-		*/
-
 		op, opArgs := v.Expr()
 
 		// in cue: {...}, {[string]: type}, or inline struct
@@ -569,18 +534,6 @@ func (g *newGenerator) declareList(v cue.Value) (ast.Type, error) {
 			ScalarKind: ast.KindAny,
 		},
 	}
-
-	/*
-		// Extract the default value if it's there
-		defVal, err := g.extractDefault(v)
-		if err != nil {
-			return nil, err
-		}
-
-		if len(defVal.([]interface{})) != 0 {
-			typeDef.Default = defVal
-		}
-	*/
 
 	// works only for a closed/concrete list
 	if v.IsConcrete() {
