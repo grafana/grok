@@ -131,5 +131,9 @@ func KeepTime(keepTime bool) Option {
 
 func defaults() []Option {
 return []Option{
+AsDropdown(false),
+TargetBlank(false),
+IncludeVars(false),
+KeepTime(false),
 }
 }

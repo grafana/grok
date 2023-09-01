@@ -57,5 +57,7 @@ func To(to string) Option {
 
 func defaults() []Option {
 return []Option{
+From("now-6h"),
+To("now"),
 }
 }

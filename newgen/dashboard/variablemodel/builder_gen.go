@@ -174,5 +174,8 @@ func Refresh(refresh types.VariableRefresh) Option {
 
 func defaults() []Option {
 return []Option{
+Id("00000000-0000-0000-0000-000000000000"),
+SkipUrlSync(false),
+Multi(false),
 }
 }

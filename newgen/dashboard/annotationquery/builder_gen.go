@@ -126,5 +126,7 @@ func Type(typeArg string) Option {
 
 func defaults() []Option {
 return []Option{
+Enable(true),
+Hide(false),
 }
 }

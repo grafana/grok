@@ -271,5 +271,6 @@ func FieldConfig(opts ...fieldconfigsource.Option) Option {
 
 func defaults() []Option {
 return []Option{
+Transparent(false),
 }
 }

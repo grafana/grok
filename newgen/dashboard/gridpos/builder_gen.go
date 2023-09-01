@@ -86,5 +86,9 @@ func Static(static bool) Option {
 
 func defaults() []Option {
 return []Option{
+H(9),
+W(12),
+X(0),
+Y(0),
 }
 }

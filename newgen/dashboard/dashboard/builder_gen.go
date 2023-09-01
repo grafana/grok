@@ -298,5 +298,10 @@ func Links(links []types.DashboardLink) Option {
 }
 
 func defaults() []Option {
-	return []Option{}
+	return []Option{
+		Style("dark"),
+		Timezone("browser"),
+		Tooltip(0),
+		FiscalYearStartMonth(0),
+	}
 }

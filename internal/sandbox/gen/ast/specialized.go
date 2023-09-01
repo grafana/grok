@@ -158,6 +158,7 @@ type StructField struct {
 	Comments    []string
 	Type        Type
 	Required    bool
+	Default     any
 }
 
 var _ Type = (*RefType)(nil)

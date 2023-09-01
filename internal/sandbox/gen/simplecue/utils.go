@@ -143,6 +143,10 @@ func cueConcreteToScalar(v cue.Value) (interface{}, error) {
 			values = append(values, val)
 		}
 
+		if len(values) == 0 {
+			return nil, nil
+		}
+
 		return values, nil
 	default:
 		return nil, errorWithCueRef(v, "can not convert kind to scalar: %s", v.Kind())

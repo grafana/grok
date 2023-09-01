@@ -121,5 +121,6 @@ func Repeat(repeat string) Option {
 
 func defaults() []Option {
 return []Option{
+Collapsed(false),
 }
 }

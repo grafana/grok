@@ -176,6 +176,10 @@ func (jenny *GoBuilder) fieldToOption(def ast.StructField) string {
 		}
 	*/
 
+	if def.Default != nil {
+		jenny.defaults = append(jenny.defaults, jenny.formatDefaultValue(def))
+	}
+
 	buffer.WriteString(fmt.Sprintf(`func %[1]s(%[3]s %[4]s) Option {
 	return func(builder *Builder) error {
 		%[5]s
@@ -210,22 +214,13 @@ func (jenny *GoBuilder) literalFieldToOption(def ast.StructField) string {
 	return buffer.String()
 }
 
-/*
-func (jenny *GoBuilder) formatDefaultValue(field ast.FieldDefinition) string {
-	fieldName := tools.UpperCamelCase(field.Name)
+func (jenny *GoBuilder) formatDefaultValue(field ast.StructField) string {
+	optionName := tools.UpperCamelCase(field.DisplayName)
 
-	if field.Type.Kind != ast.KindStruct {
-		defaultValue := field.Type.Default
-		if field.Type.IsReference() {
-			referredType := jenny.file.LocateDefinition(string(field.Type.Kind))
-			defaultValue = referredType.Default
-		}
-
-		return fmt.Sprintf("%[1]s(%[2]s)", fieldName, jenny.formatScalar(defaultValue))
-	}
-
-	return fmt.Sprintf("%[1]s(%[2]s)", fieldName, jenny.formatAnonymousStructDefaultValue(field.Type))
+	return fmt.Sprintf("%[1]s(%[2]s)", optionName, jenny.formatScalar(field.Default))
 }
+
+/*
 
 // FIXME: this breaks for anonymous structs with anonymous types defined in one or more of their fields
 func (jenny *GoBuilder) formatAnonymousStructDefaultValue(structDef ast.DefinitionImpl) string {

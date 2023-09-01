@@ -210,11 +210,18 @@ func (g *newGenerator) structFields(v cue.Value) ([]ast.StructField, error) {
 			return nil, err
 		}
 
+		// Extract the default value if it's there
+		defVal, err := g.extractDefault(i.Value())
+		if err != nil {
+			return nil, err
+		}
+
 		fields = append(fields, ast.StructField{
 			Name:     fieldLabel,
 			Comments: commentsFromCueValue(i.Value()),
 			Required: !i.IsOptional(),
 			Type:     node,
+			Default:  defVal,
 		})
 	}
 
