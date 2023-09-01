@@ -1,17 +1,12 @@
 package valuemaporrangemaporregexmaporspecialvaluemap
 
-import (
-	"encoding/json"
-
-	"github.com/grafana/grok/newgen/dashboard/types"
-)
+import "github.com/grafana/grok/newgen/dashboard/types"
 
 type Option func(builder *Builder) error
 
 type Builder struct {
 	internal *types.ValueMapOrRangeMapOrRegexMapOrSpecialValueMap
 }
-
 func New(options ...Option) (Builder, error) {
 	resource := &types.ValueMapOrRangeMapOrRegexMapOrSpecialValueMap{}
 	builder := &Builder{internal: resource}
@@ -24,7 +19,6 @@ func New(options ...Option) (Builder, error) {
 
 	return *builder, nil
 }
-
 // MarshalJSON implements the encoding/json.Marshaler interface.
 //
 // This method can be used to render the resource as JSON
@@ -98,5 +92,6 @@ func ValSpecialValueMap(opts ...specialvaluemap.Option) Option {
 }
 
 func defaults() []Option {
-	return []Option{}
+return []Option{
+}
 }

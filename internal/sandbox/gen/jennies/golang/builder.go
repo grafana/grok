@@ -7,6 +7,7 @@ import (
 
 	"github.com/grafana/codejen"
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
+	"github.com/grafana/grok/internal/sandbox/gen/ast/compiler"
 	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
 )
 
@@ -20,10 +21,15 @@ func (jenny *GoBuilder) JennyName() string {
 }
 
 func (jenny *GoBuilder) Generate(file *ast.File) (codejen.Files, error) {
-	jenny.file = file
+	preprocessedFile, err := compiler.RewriteEngine().Process(file)
+	if err != nil {
+		return nil, err
+	}
+
+	jenny.file = preprocessedFile
 
 	var files []codejen.File
-	for _, definition := range file.Definitions {
+	for _, definition := range preprocessedFile.Definitions {
 		if definition.Type.Kind() != ast.KindStruct {
 			continue
 		}
@@ -138,9 +144,15 @@ func (jenny *GoBuilder) fieldToOption(def ast.StructField) string {
 		}
 	}
 
+	// literal options get their own simplified builder
+	if def.Type.Kind() == ast.KindLiteral {
+		return jenny.literalFieldToOption(def)
+	}
+
+	optionName := tools.UpperCamelCase(def.DisplayName)
 	fieldName := tools.UpperCamelCase(def.Name)
 	typeName := strings.TrimPrefix(formatType(def.Type, def.Required, "types"), "*")
-	argumentName := tools.LowerCamelCase(def.Name)
+	argumentName := tools.LowerCamelCase(def.DisplayName)
 	if isReservedGoKeyword(argumentName) {
 		argumentName = argumentName + "Arg"
 	}
@@ -164,15 +176,36 @@ func (jenny *GoBuilder) fieldToOption(def ast.StructField) string {
 		}
 	*/
 
-	buffer.WriteString(fmt.Sprintf(`func %[1]s(%[2]s %[3]s) Option {
+	buffer.WriteString(fmt.Sprintf(`func %[1]s(%[3]s %[4]s) Option {
 	return func(builder *Builder) error {
-		%[4]s
-		builder.internal.%[1]s = %[5]s%[2]s
+		%[5]s
+		builder.internal.%[2]s = %[6]s%[3]s
 
 		return nil
 	}
 }
-`, fieldName, argumentName, typeName, generatedConstraints, asPointer))
+`, optionName, fieldName, argumentName, typeName, generatedConstraints, asPointer))
+
+	return buffer.String()
+}
+
+func (jenny *GoBuilder) literalFieldToOption(def ast.StructField) string {
+	var buffer strings.Builder
+
+	fieldName := tools.UpperCamelCase(def.Name)
+	optionName := tools.UpperCamelCase(def.DisplayName)
+
+	literalDef := def.Type.(*ast.Literal)
+	value := jenny.formatScalar(literalDef.Value)
+
+	buffer.WriteString(fmt.Sprintf(`func %[1]s() Option {
+	return func(builder *Builder) error {
+		builder.internal.%[2]s = %[3]s
+
+		return nil
+	}
+}
+`, optionName, fieldName, value))
 
 	return buffer.String()
 }

@@ -1,17 +1,12 @@
 package stringorbool
 
-import (
-	"encoding/json"
-
-	"github.com/grafana/grok/newgen/dashboard/types"
-)
+import "github.com/grafana/grok/newgen/dashboard/types"
 
 type Option func(builder *Builder) error
 
 type Builder struct {
 	internal *types.StringOrBool
 }
-
 func New(options ...Option) (Builder, error) {
 	resource := &types.StringOrBool{}
 	builder := &Builder{internal: resource}
@@ -24,7 +19,6 @@ func New(options ...Option) (Builder, error) {
 
 	return *builder, nil
 }
-
 // MarshalJSON implements the encoding/json.Marshaler interface.
 //
 // This method can be used to render the resource as JSON
@@ -46,7 +40,7 @@ func (builder *Builder) Internal() *types.StringOrBool {
 }
 func ValString(valString string) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.ValString = &valString
 
 		return nil
@@ -54,7 +48,7 @@ func ValString(valString string) Option {
 }
 func ValBool(valBool bool) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.ValBool = &valBool
 
 		return nil
@@ -62,5 +56,6 @@ func ValBool(valBool bool) Option {
 }
 
 func defaults() []Option {
-	return []Option{}
+return []Option{
+}
 }

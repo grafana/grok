@@ -1,17 +1,12 @@
 package fieldconfig
 
-import (
-	"encoding/json"
-
-	"github.com/grafana/grok/newgen/dashboard/types"
-)
+import "github.com/grafana/grok/newgen/dashboard/types"
 
 type Option func(builder *Builder) error
 
 type Builder struct {
 	internal *types.FieldConfig
 }
-
 func New(options ...Option) (Builder, error) {
 	resource := &types.FieldConfig{}
 	builder := &Builder{internal: resource}
@@ -24,7 +19,6 @@ func New(options ...Option) (Builder, error) {
 
 	return *builder, nil
 }
-
 // MarshalJSON implements the encoding/json.Marshaler interface.
 //
 // This method can be used to render the resource as JSON
@@ -44,72 +38,65 @@ func (builder *Builder) MarshalIndentJSON() ([]byte, error) {
 func (builder *Builder) Internal() *types.FieldConfig {
 	return builder.internal
 }
-
 // The display value for this field.  This supports template variables blank is auto
 func DisplayName(displayName string) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.DisplayName = &displayName
 
 		return nil
 	}
 }
-
 // This can be used by data sources that return and explicit naming structure for values and labels
 // When this property is configured, this value is used rather than the default naming strategy.
 func DisplayNameFromDS(displayNameFromDS string) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.DisplayNameFromDS = &displayNameFromDS
 
 		return nil
 	}
 }
-
 // Human readable field metadata
 func Description(description string) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.Description = &description
 
 		return nil
 	}
 }
-
 // An explicit path to the field in the datasource.  When the frame meta includes a path,
 // This will default to `${frame.meta.path}/${field.name}
-//
+// 
 // When defined, this value can be used as an identifier within the datasource scope, and
 // may be used to update the results
 func Path(path string) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.Path = &path
 
 		return nil
 	}
 }
-
 // True if data source can write a value to the path. Auth/authz are supported separately
 func Writeable(writeable bool) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.Writeable = &writeable
 
 		return nil
 	}
 }
-
 // True if data source field supports ad-hoc filters
 func Filterable(filterable bool) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.Filterable = &filterable
 
 		return nil
 	}
 }
-
 // Unit a field should use. The unit you select is applied to all fields except time.
 // You can use the units ID availables in Grafana or a custom unit.
 // Available units in Grafana: https://github.com/grafana/grafana/blob/main/packages/grafana-data/src/valueFormats/categories.ts
@@ -122,50 +109,46 @@ func Filterable(filterable bool) Option {
 // `currency:<unit>` for custom a currency unit.
 func Unit(unit string) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.Unit = &unit
 
 		return nil
 	}
 }
-
 // Specify the number of decimals Grafana includes in the rendered value.
 // If you leave this field blank, Grafana automatically truncates the number of decimals based on the value.
 // For example 1.1234 will display as 1.12 and 100.456 will display as 100.
 // To display all decimals, set the unit to `String`.
 func Decimals(decimals float64) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.Decimals = &decimals
 
 		return nil
 	}
 }
-
 // The minimum value used in percentage threshold calculations. Leave blank for auto calculation based on all series and fields.
 func Min(min float64) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.Min = &min
 
 		return nil
 	}
 }
-
 // The maximum value used in percentage threshold calculations. Leave blank for auto calculation based on all series and fields.
 func Max(max float64) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.Max = &max
 
 		return nil
 	}
 }
-
 // Convert input values into a display string
 func Mappings(mappings []types.ValueMapOrRangeMapOrRegexMapOrSpecialValueMap) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.Mappings = mappings
 
 		return nil
@@ -197,32 +180,29 @@ func Color(opts ...fieldcolor.Option) Option {
 		return nil
 	}
 }
-
 // The behavior when clicking on a result
 func Links(links []any) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.Links = links
 
 		return nil
 	}
 }
-
 // Alternative to empty string
 func NoValue(noValue string) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.NoValue = &noValue
 
 		return nil
 	}
 }
-
 // custom is specified by the FieldConfig field
 // in panel plugin schemas.
 func Custom(custom any) Option {
 	return func(builder *Builder) error {
-
+		
 		builder.internal.Custom = &custom
 
 		return nil
@@ -230,5 +210,6 @@ func Custom(custom any) Option {
 }
 
 func defaults() []Option {
-	return []Option{}
+return []Option{
+}
 }

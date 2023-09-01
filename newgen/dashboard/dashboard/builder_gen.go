@@ -3,6 +3,10 @@ package dashboard
 import (
 	"encoding/json"
 
+	"github.com/grafana/grok/newgen/dashboard/annotationcontainer"
+	"github.com/grafana/grok/newgen/dashboard/dashboardtemplating"
+	"github.com/grafana/grok/newgen/dashboard/stringorbool"
+	"github.com/grafana/grok/newgen/dashboard/timepicker"
 	"github.com/grafana/grok/newgen/dashboard/types"
 )
 
@@ -139,12 +143,16 @@ func Timezone(timezone string) Option {
 		return nil
 	}
 }
-
-// Whether a dashboard is editable or not.
-func Editable(editable bool) Option {
+func Readonly() Option {
 	return func(builder *Builder) error {
+		builder.internal.Editable = true
 
-		builder.internal.Editable = editable
+		return nil
+	}
+}
+func Editable() Option {
+	return func(builder *Builder) error {
+		builder.internal.Editable = false
 
 		return nil
 	}
@@ -152,10 +160,10 @@ func Editable(editable bool) Option {
 
 // Configuration of dashboard cursor sync behavior.
 // Accepted values are 0 (sync turned off), 1 (shared crosshair), 2 (shared crosshair and tooltip).
-func GraphTooltip(graphTooltip types.DashboardCursorSync) Option {
+func Tooltip(tooltip types.DashboardCursorSync) Option {
 	return func(builder *Builder) error {
 
-		builder.internal.GraphTooltip = graphTooltip
+		builder.internal.GraphTooltip = tooltip
 
 		return nil
 	}
@@ -228,17 +236,6 @@ func Refresh(opts ...stringorbool.Option) Option {
 		}
 
 		builder.internal.Refresh = resource.Internal()
-
-		return nil
-	}
-}
-
-// Version of the JSON schema, incremented each time a Grafana update brings
-// changes to said schema.
-func SchemaVersion(schemaVersion uint16) Option {
-	return func(builder *Builder) error {
-
-		builder.internal.SchemaVersion = schemaVersion
 
 		return nil
 	}

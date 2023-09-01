@@ -13,7 +13,7 @@ func Jennies(pkg string) *codejen.JennyList[*ast.File] {
 	targets.AppendOneToOne(GoRawTypes{})
 	targets.AppendOneToMany(&GoBuilder{})
 	targets.AddPostprocessors(
-		PostProcessFile,
+		//PostProcessFile,
 		jen.Prefixer(pkg),
 	)
 

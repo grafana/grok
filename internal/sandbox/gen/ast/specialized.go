@@ -29,6 +29,10 @@ const (
 	KindInt64  Kind = "int64"
 
 	KindBool Kind = "bool"
+
+	// Meant to be used for builders only: to turn a type to a value
+	// ex: editable bool → true, panelType string → "timeseries"
+	KindLiteral Kind = "lit"
 )
 
 type TypeConstraint struct {
@@ -149,10 +153,11 @@ func (structType StructType) Kind() Kind {
 }
 
 type StructField struct {
-	Name     string
-	Comments []string
-	Type     Type
-	Required bool
+	Name        string
+	DisplayName string
+	Comments    []string
+	Type        Type
+	Required    bool
 }
 
 var _ Type = (*RefType)(nil)
@@ -183,5 +188,5 @@ type Literal struct {
 }
 
 func (literal Literal) Kind() Kind {
-	return literal.ScalarType.Kind()
+	return KindLiteral
 }
