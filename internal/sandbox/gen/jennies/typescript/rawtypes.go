@@ -48,7 +48,7 @@ func (jenny TypescriptRawTypes) formatObject(def ast.Object) ([]byte, error) {
 	case ast.KindEnum:
 		return jenny.formatEnumDef(def)
 	case ast.KindDisjunction:
-		disj, err := jenny.formatDisjunction(def.Type.(*ast.DisjunctionType))
+		disj, err := formatDisjunction(def.Type.(*ast.DisjunctionType))
 		if err != nil {
 			return nil, err
 		}
@@ -90,7 +90,7 @@ func (jenny TypescriptRawTypes) formatStructDef(def ast.Object) ([]byte, error) 
 
 	structType := def.Type.(*ast.StructType)
 
-	body, err := jenny.formatStructFields(structType.Fields)
+	body, err := formatStructFields(structType.Fields)
 	if err != nil {
 		return nil, nil
 	}
@@ -100,13 +100,13 @@ func (jenny TypescriptRawTypes) formatStructDef(def ast.Object) ([]byte, error) 
 	return []byte(buffer.String()), nil
 }
 
-func (jenny TypescriptRawTypes) formatStructFields(fields []ast.StructField) (string, error) {
+func formatStructFields(fields []ast.StructField) (string, error) {
 	var buffer strings.Builder
 
 	buffer.WriteString("{\n")
 
 	for i, fieldDef := range fields {
-		fieldDefGen, err := jenny.formatField(fieldDef)
+		fieldDefGen, err := formatField(fieldDef)
 		if err != nil {
 			return "", err
 		}
@@ -128,7 +128,7 @@ func (jenny TypescriptRawTypes) formatStructFields(fields []ast.StructField) (st
 	return buffer.String(), nil
 }
 
-func (jenny TypescriptRawTypes) formatField(def ast.StructField) ([]byte, error) {
+func formatField(def ast.StructField) ([]byte, error) {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
@@ -140,7 +140,7 @@ func (jenny TypescriptRawTypes) formatField(def ast.StructField) ([]byte, error)
 		required = "?"
 	}
 
-	formattedType, err := jenny.formatType(def.Type)
+	formattedType, err := formatType(def.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -155,22 +155,25 @@ func (jenny TypescriptRawTypes) formatField(def ast.StructField) ([]byte, error)
 	return []byte(buffer.String()), nil
 }
 
-func (jenny TypescriptRawTypes) formatType(def ast.Type) (string, error) {
+func formatType(def ast.Type) (string, error) {
 	// todo: handle nullable
 	// maybe if nullable, append | null to the type?
 	switch def.Kind() {
 	case ast.KindDisjunction:
-		return jenny.formatDisjunction(def.(*ast.DisjunctionType))
+		return formatDisjunction(def.(*ast.DisjunctionType))
 	case ast.KindRef:
 		return (def.(*ast.RefType)).ReferredType, nil
 	case ast.KindArray:
-		return jenny.formatArray(def.(*ast.ArrayType))
+		return formatArray(def.(*ast.ArrayType))
 	case ast.KindStruct:
-		return jenny.formatStructFields(def.(*ast.StructType).Fields)
+		return formatStructFields(def.(*ast.StructType).Fields)
 	case ast.KindMap:
-		return jenny.formatMap(def.(*ast.MapType))
+		return formatMap(def.(*ast.MapType))
 	case ast.KindEnum:
-		return jenny.formatAnonymousEnum(def.(*ast.EnumType))
+		return formatAnonymousEnum(def.(*ast.EnumType))
+
+	case ast.KindLiteral:
+		return formatLiteral(def.(*ast.Literal))
 
 	case ast.KindNull:
 		return "null", nil
@@ -195,9 +198,9 @@ func (jenny TypescriptRawTypes) formatType(def ast.Type) (string, error) {
 	}
 }
 
-func (jenny TypescriptRawTypes) formatArray(def *ast.ArrayType) (string, error) {
+func formatArray(def *ast.ArrayType) (string, error) {
 	// we don't know what to do here (yet)
-	subTypeString, err := jenny.formatType(def.ValueType)
+	subTypeString, err := formatType(def.ValueType)
 	if err != nil {
 		return "", err
 	}
@@ -205,10 +208,10 @@ func (jenny TypescriptRawTypes) formatArray(def *ast.ArrayType) (string, error) 
 	return fmt.Sprintf("%s[]", subTypeString), nil
 }
 
-func (jenny TypescriptRawTypes) formatDisjunction(def *ast.DisjunctionType) (string, error) {
+func formatDisjunction(def *ast.DisjunctionType) (string, error) {
 	subTypes := make([]string, 0, len(def.Branches))
 	for _, subType := range def.Branches {
-		formatted, err := jenny.formatType(subType)
+		formatted, err := formatType(subType)
 		if err != nil {
 			return "", err
 		}
@@ -219,9 +222,9 @@ func (jenny TypescriptRawTypes) formatDisjunction(def *ast.DisjunctionType) (str
 	return strings.Join(subTypes, " | "), nil
 }
 
-func (jenny TypescriptRawTypes) formatMap(def *ast.MapType) (string, error) {
+func formatMap(def *ast.MapType) (string, error) {
 	keyTypeString := def.IndexType
-	valueTypeString, err := jenny.formatType(def.ValueType)
+	valueTypeString, err := formatType(def.ValueType)
 	if err != nil {
 		return "", err
 	}
@@ -229,7 +232,7 @@ func (jenny TypescriptRawTypes) formatMap(def *ast.MapType) (string, error) {
 	return fmt.Sprintf("Record<%s, %s>", keyTypeString, valueTypeString), nil
 }
 
-func (jenny TypescriptRawTypes) formatAnonymousEnum(def *ast.EnumType) (string, error) {
+func formatAnonymousEnum(def *ast.EnumType) (string, error) {
 	values := make([]string, 0, len(def.Values))
 	for _, value := range def.Values {
 		values = append(values, fmt.Sprintf("%#v", value.Value))
@@ -238,6 +241,10 @@ func (jenny TypescriptRawTypes) formatAnonymousEnum(def *ast.EnumType) (string, 
 	enumeration := strings.Join(values, " | ")
 
 	return enumeration, nil
+}
+
+func formatLiteral(def *ast.Literal) (string, error) {
+	return fmt.Sprintf("%#v", def.Value), nil
 }
 
 func prefixLinesWith(input string, prefix string) string {

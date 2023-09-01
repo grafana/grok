@@ -11,6 +11,7 @@ func Jennies(pkg string) *codejen.JennyList[*ast.File] {
 		return f.Package
 	})
 	targets.AppendOneToOne(TypescriptRawTypes{})
+	targets.AppendOneToMany(&TypescriptBuilder{})
 	targets.AddPostprocessors(jen.Prefixer(pkg))
 
 	return targets
