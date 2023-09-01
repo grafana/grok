@@ -47,6 +47,15 @@ func (jenny TypescriptRawTypes) formatObject(def ast.Object) ([]byte, error) {
 		return jenny.formatStructDef(def)
 	case ast.KindEnum:
 		return jenny.formatEnumDef(def)
+	case ast.KindDisjunction:
+		disj, err := jenny.formatDisjunction(def.Type.(*ast.DisjunctionType))
+		if err != nil {
+			return nil, err
+		}
+
+		return []byte(fmt.Sprintf("type %s = %s;\n", def.Name, disj)), nil
+	case ast.KindAny:
+		return []byte(fmt.Sprintf("type %s = any;\n", def.Name)), nil
 	default:
 		return nil, fmt.Errorf("unhandled type def kind: %s", def.Type.Kind())
 	}

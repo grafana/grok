@@ -503,16 +503,7 @@ const (
 	Tooltip DashboardCursorSync = 2
 )
 
-// Schema for panel targets is specified by datasource
-// plugins. We use a placeholder definition, which the Go
-// schema loader either left open/as-is with the Base
-// variant of the Dashboard and Panel families, or filled
-// with types derived from plugins in the Instance variant.
-// When working directly from CUE, importers can extend this
-// type directly to achieve the same effect.
-type Target struct {
-}
-
+type Target any
 // Dashboard panels are the basic visualization building blocks.
 type Panel struct {
 	// The panel plugin type id. This is used to find the plugin to display the panel.

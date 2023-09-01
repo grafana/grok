@@ -170,10 +170,6 @@ func (jenny *GoBuilder) fieldToOption(def ast.StructField) string {
 		if def.Type.Nullable || (def.Type.Kind != ast.KindArray && def.Type.Kind != ast.KindStruct && !def.Required) {
 			asPointer = "&"
 		}
-
-		if def.HasDefaultValue() {
-			jenny.defaults = append(jenny.defaults, jenny.formatDefaultValue(def))
-		}
 	*/
 
 	if def.Default != nil {

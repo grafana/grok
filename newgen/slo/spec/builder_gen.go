@@ -82,15 +82,28 @@ func Description(description string) Option {
 		return nil
 	}
 }
-
-func Query(opts ...query.Option) Option {
+// describes the indicator that will be measured against the
+// objective. Four query types are supported:
+// 1. Ratio Queries provide a successMetric and totalMetric whose ratio is the SLI.
+// 2. Threshold Queries provide a thresholdMetric and a threshold. The
+//    SLI is the boolean result of evaluating the threshould.
+// 3. Histogram Queries are similar to threshold queries, but the use a
+//    Prometheus histogram metric, percentile value, and a threshold to
+//    generate the boolean output.
+// 4. Freeform Queries supply a single freeFormQuery string that is
+//    evaluated to produce the SLI output. The value should range beween 0
+//    and 1.0. Freeform queries should include a time variable named
+//    either `$__rate_interval`,`$__interval` or `$__range`. This will be used by the
+//    tool to evaluate the burn rate of an SLO over various time
+//    windows. Queries that don't include this interval will have
+//    sensitive and imprecise alerting.
+// Additionally, "groupByLabels" are used in the first three query types
+// to define how to group series for evaluation. They are discarded for
+// freeform queries.
+func Query(query types.Query) Option {
 	return func(builder *Builder) error {
-		resource, err := query.New(opts...)
-		if err != nil {
-			return err
-		}
-
-		builder.internal.Query = resource.Internal()
+		
+		builder.internal.Query = query
 
 		return nil
 	}

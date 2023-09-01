@@ -42,7 +42,7 @@ func GenerateAST(val cue.Value, c Config) (*ast.File, error) {
 
 		g.currentTopLevelTypeName = selectorLabel(sel)
 
-		n, err := g.declareTopLevelType(g.currentTopLevelTypeName, i.Value(), sel.IsDefinition())
+		n, err := g.declareTopLevelType(g.currentTopLevelTypeName, i.Value())
 		if err != nil {
 			return nil, err
 		}
@@ -53,7 +53,7 @@ func GenerateAST(val cue.Value, c Config) (*ast.File, error) {
 	return g.file, nil
 }
 
-func (g *newGenerator) declareTopLevelType(name string, v cue.Value, isCueDefinition bool) (*ast.Object, error) {
+func (g *newGenerator) declareTopLevelType(name string, v cue.Value) (*ast.Object, error) {
 	typeHint, err := getTypeHint(v)
 	if err != nil {
 		return nil, err
@@ -173,8 +173,7 @@ func (g *newGenerator) declareTopLevelStruct(name string, v cue.Value) (*ast.Obj
 		return nil, errorWithCueRef(v, "top-level type definitions may only be generated from structs")
 	}
 
-	// explore struct fields
-	fields, err := g.structFields(v)
+	nodeType, err := g.declareNode(v)
 	if err != nil {
 		return nil, err
 	}
@@ -182,9 +181,7 @@ func (g *newGenerator) declareTopLevelStruct(name string, v cue.Value) (*ast.Obj
 	typeDef := &ast.Object{
 		Name:     name,
 		Comments: commentsFromCueValue(v),
-		Type: &ast.StructType{
-			Fields: fields,
-		},
+		Type:     nodeType,
 	}
 
 	return typeDef, nil
@@ -278,21 +275,24 @@ func (g *newGenerator) declareNode(v cue.Value) (ast.Type, error) {
 	case cue.ListKind:
 		return g.declareList(v)
 	case cue.StructKind:
-		pathParts := v.Path().Selectors()
-		selector := pathParts[len(pathParts)-1]
+		/*
+			pathParts := v.Path().Selectors()
+			selector := pathParts[len(pathParts)-1]
 
-		// inline definition of a struct
-		if selector.IsDefinition() {
-			def, err := g.declareTopLevelStruct(selectorLabel(selector), v)
-			if err != nil {
-				return nil, err
+			// inline definition of a struct
+			if selector.IsDefinition() {
+				def, err := g.declareTopLevelStruct(selectorLabel(selector), v)
+				if err != nil {
+					return nil, err
+				}
+
+				g.file.Definitions = append(g.file.Definitions, *def)
+
+				// FIXME: we shouldn't need this anymore
+				return nil, errSkip
 			}
 
-			g.file.Definitions = append(g.file.Definitions, *def)
-
-			// FIXME: we shouldn't need this anymore
-			return nil, errSkip
-		}
+		*/
 
 		op, opArgs := v.Expr()
 

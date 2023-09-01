@@ -9,9 +9,7 @@ Value float64 `json:"value"`
 Window string `json:"window"`
 }
 
-type Query struct {
-}
-
+type Query ThresholdQueryOrRatioQueryOrHistogramQueryOrFreeformQuery
 type ThresholdQuery struct {
 	GroupByLabels []string `json:"groupByLabels,omitempty"`
 	ThresholdMetric MetricDef `json:"thresholdMetric"`
@@ -142,18 +140,6 @@ Labels []Label `json:"labels,omitempty"`
 Alerting *Alerting `json:"alerting,omitempty"`
 }
 
-type OperatorState struct {
-	// lastEvaluation is the ResourceVersion last evaluated
-LastEvaluation string `json:"lastEvaluation"`
-	// state describes the state of the lastEvaluation.
-// It is limited to three possible states for machine evaluation.
-State StateEnum `json:"state"`
-	// descriptiveState is an optional more descriptive state field which has no requirements on format
-DescriptiveState *string `json:"descriptiveState,omitempty"`
-	// details contains any extra information that is operator-specific
-Details any `json:"details,omitempty"`
-}
-
 // Status is a common kubernetes subresource that is used to provide
 // information about the current state, that isn't a direct part of the
 // resource. Here we use it to provide a pointer to the generated
@@ -165,6 +151,17 @@ type Status struct {
 ReconciledForGeneration string `json:"reconciledForGeneration"`
 	LastError string `json:"lastError"`
 } `json:"drillDownDashboard"`
+	OperatorState struct {
+	// lastEvaluation is the ResourceVersion last evaluated
+LastEvaluation string `json:"lastEvaluation"`
+	// state describes the state of the lastEvaluation.
+// It is limited to three possible states for machine evaluation.
+State StateEnum `json:"state"`
+	// descriptiveState is an optional more descriptive state field which has no requirements on format
+DescriptiveState *string `json:"descriptiveState,omitempty"`
+	// details contains any extra information that is operator-specific
+Details any `json:"details,omitempty"`
+} `json:"OperatorState"`
 	// operatorStates is a map of operator ID to operator state evaluations.
 // Any operator which consumes this kind SHOULD add its state evaluation information to this field.
 OperatorStates any `json:"operatorStates,omitempty"`
@@ -192,4 +189,11 @@ const (
 	StateInProgress StateEnum = "in_progress"
 	StateFailed StateEnum = "failed"
 )
+
+type ThresholdQueryOrRatioQueryOrHistogramQueryOrFreeformQuery struct {
+	ValThresholdQuery *ThresholdQuery `json:"ValThresholdQuery,omitempty"`
+	ValRatioQuery *RatioQuery `json:"ValRatioQuery,omitempty"`
+	ValHistogramQuery *HistogramQuery `json:"ValHistogramQuery,omitempty"`
+	ValFreeformQuery *FreeformQuery `json:"ValFreeformQuery,omitempty"`
+}
 

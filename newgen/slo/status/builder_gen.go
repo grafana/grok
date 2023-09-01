@@ -51,6 +51,24 @@ ReconciledForGeneration string `json:"reconciledForGeneration"`
 		return nil
 	}
 }
+func OperatorState(operatorState struct {
+	// lastEvaluation is the ResourceVersion last evaluated
+LastEvaluation string `json:"lastEvaluation"`
+	// state describes the state of the lastEvaluation.
+// It is limited to three possible states for machine evaluation.
+State types.StateEnum `json:"state"`
+	// descriptiveState is an optional more descriptive state field which has no requirements on format
+DescriptiveState *string `json:"descriptiveState,omitempty"`
+	// details contains any extra information that is operator-specific
+Details any `json:"details,omitempty"`
+}) Option {
+	return func(builder *Builder) error {
+		
+		builder.internal.OperatorState = operatorState
+
+		return nil
+	}
+}
 // operatorStates is a map of operator ID to operator state evaluations.
 // Any operator which consumes this kind SHOULD add its state evaluation information to this field.
 func OperatorStates(operatorStates any) Option {

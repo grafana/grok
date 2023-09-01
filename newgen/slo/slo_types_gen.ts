@@ -7,9 +7,7 @@ export interface Objective {
 	window: string;
 }
 
-export interface Query {
-
-}
+type Query = ThresholdQuery | RatioQuery | HistogramQuery | FreeformQuery;
 
 export interface ThresholdQuery {
 	groupByLabels?: string[];
@@ -36,7 +34,7 @@ export interface FreeformQuery {
 
 export interface Threshold {
 	value: number;
-	operator: OperatorEnum;
+	operator: "<" | "<=" | "==" | ">=" | ">";
 }
 
 export interface MetricDef {
@@ -141,18 +139,6 @@ export interface Spec {
 	alerting?: Alerting;
 }
 
-export interface OperatorState {
-	// lastEvaluation is the ResourceVersion last evaluated
-	lastEvaluation: string;
-	// state describes the state of the lastEvaluation.
-	// It is limited to three possible states for machine evaluation.
-	state: StateEnum;
-	// descriptiveState is an optional more descriptive state field which has no requirements on format
-	descriptiveState?: string;
-	// details contains any extra information that is operator-specific
-	details?: any;
-}
-
 // Status is a common kubernetes subresource that is used to provide
 // information about the current state, that isn't a direct part of the
 // resource. Here we use it to provide a pointer to the generated
@@ -163,6 +149,17 @@ export interface Status {
 		// The generation of the SLO when this dashboard was last updated.
 		reconciledForGeneration: string;
 		lastError: string;
+	};
+	operatorState: {
+		// lastEvaluation is the ResourceVersion last evaluated
+		lastEvaluation: string;
+		// state describes the state of the lastEvaluation.
+		// It is limited to three possible states for machine evaluation.
+		state: "success" | "in_progress" | "failed";
+		// descriptiveState is an optional more descriptive state field which has no requirements on format
+		descriptiveState?: string;
+		// details contains any extra information that is operator-specific
+		details?: any;
 	};
 	// operatorStates is a map of operator ID to operator state evaluations.
 	// Any operator which consumes this kind SHOULD add its state evaluation information to this field.

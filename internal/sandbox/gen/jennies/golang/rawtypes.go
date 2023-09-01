@@ -56,7 +56,10 @@ func (jenny GoRawTypes) formatTypeDef(def ast.Object) ([]byte, error) {
 		return jenny.formatEnumDef(def)
 	case ast.KindRef:
 		return []byte(fmt.Sprintf("type %s %s", tools.UpperCamelCase(def.Name), def.Type.(*ast.RefType).ReferredType)), nil
+	case ast.KindAny:
+		return []byte(fmt.Sprintf("type %s any", tools.UpperCamelCase(def.Name))), nil
 	default:
+		spew.Dump(def)
 		return nil, fmt.Errorf("unhandled type def kind: %s", def.Type.Kind())
 	}
 }
