@@ -174,7 +174,8 @@ func (refType RefType) Kind() Kind {
 var _ Type = (*ScalarType)(nil)
 
 type ScalarType struct {
-	ScalarKind Kind // bool, bytes, string, int, float, ...
+	ScalarKind  Kind // bool, bytes, string, int, float, ...
+	Constraints []TypeConstraint
 }
 
 func (scalarType ScalarType) Kind() Kind {

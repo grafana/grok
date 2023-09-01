@@ -157,14 +157,19 @@ func (jenny *GoBuilder) fieldToOption(def ast.StructField) string {
 		argumentName = argumentName + "Arg"
 	}
 
-	generatedConstraints := ""
 	asPointer := ""
 	// FIXME: this condition is probably wrong
 	if def.Type.Kind() != ast.KindArray && def.Type.Kind() != ast.KindStruct && !def.Required {
 		asPointer = "&"
 	}
+
+	generatedConstraints := ""
+	if scalarType, ok := def.Type.(*ast.ScalarType); ok {
+		generatedConstraints = strings.Join(jenny.constraints(argumentName, scalarType.Constraints), "\n")
+	}
+
 	/*
-		generatedConstraints := strings.Join(jenny.constraints(argumentName, def.Type.Constraints), "\n")
+
 		asPointer := ""
 		// FIXME: this condition is probably wrong
 		if def.Type.Nullable || (def.Type.Kind != ast.KindArray && def.Type.Kind != ast.KindStruct && !def.Required) {

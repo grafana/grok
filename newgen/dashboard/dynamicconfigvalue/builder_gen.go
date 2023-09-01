@@ -1,12 +1,17 @@
 package dynamicconfigvalue
 
-import "github.com/grafana/grok/newgen/dashboard/types"
+import (
+	"encoding/json"
+
+	"github.com/grafana/grok/newgen/dashboard/types"
+)
 
 type Option func(builder *Builder) error
 
 type Builder struct {
 	internal *types.DynamicConfigValue
 }
+
 func New(options ...Option) (Builder, error) {
 	resource := &types.DynamicConfigValue{}
 	builder := &Builder{internal: resource}
@@ -19,6 +24,7 @@ func New(options ...Option) (Builder, error) {
 
 	return *builder, nil
 }
+
 // MarshalJSON implements the encoding/json.Marshaler interface.
 //
 // This method can be used to render the resource as JSON
@@ -40,7 +46,7 @@ func (builder *Builder) Internal() *types.DynamicConfigValue {
 }
 func Id(id string) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Id = id
 
 		return nil
@@ -48,7 +54,7 @@ func Id(id string) Option {
 }
 func Value(value any) Option {
 	return func(builder *Builder) error {
-		
+
 		builder.internal.Value = &value
 
 		return nil
@@ -56,7 +62,7 @@ func Value(value any) Option {
 }
 
 func defaults() []Option {
-return []Option{
-Id(""),
-}
+	return []Option{
+		Id(""),
+	}
 }

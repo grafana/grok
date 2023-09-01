@@ -265,7 +265,9 @@ func (g *newGenerator) declareNode(v cue.Value) (ast.Type, error) {
 	case cue.NullKind:
 		return &ast.ScalarType{ScalarKind: ast.KindNull}, nil
 	case cue.BoolKind:
-		return g.declareBool(v)
+		return &ast.ScalarType{
+			ScalarKind: ast.KindBool,
+		}, nil
 	case cue.BytesKind:
 		return &ast.ScalarType{ScalarKind: ast.KindBytes}, nil
 	case cue.StringKind:
@@ -348,48 +350,18 @@ func (g *newGenerator) declareAnonymousEnum(v cue.Value) (ast.Type, error) {
 	}, nil
 }
 
-func (g *newGenerator) declareBool(v cue.Value) (ast.Type, error) {
-	typeDef := &ast.ScalarType{
-		ScalarKind: ast.KindBool,
-	}
-	/*
-		// Extract the default value if it's there
-		defaultVal, ok := v.Default()
-		if ok {
-			defaultValBool, err := defaultVal.Bool()
-			if err != nil {
-				return nil, errorWithCueRef(v, "could not convert concrete value to bool")
-			}
-
-			typeDef.Default = defaultValBool
-		}
-	*/
-
-	return typeDef, nil
-}
-
-func (g *newGenerator) declareString(v cue.Value) (ast.Type, error) {
+func (g *newGenerator) declareString(v cue.Value) (*ast.ScalarType, error) {
 	typeDef := &ast.ScalarType{
 		ScalarKind: ast.KindString,
 	}
 
-	/*
-		// Extract the default value if it's there
-		defVal, err := g.extractDefault(v)
-		if err != nil {
-			return nil, err
-		}
+	// Extract constraints
+	constraints, err := g.declareStringConstraints(v)
+	if err != nil {
+		return nil, err
+	}
 
-		typeDef.Default = defVal
-
-		// Extract constraints
-		constraints, err := g.declareStringConstraints(v)
-		if err != nil {
-			return nil, err
-		}
-
-		typeDef.Constraints = constraints
-	*/
+	typeDef.Constraints = constraints
 
 	return typeDef, nil
 }
@@ -469,7 +441,7 @@ func (g *newGenerator) declareStringConstraints(v cue.Value) ([]ast.TypeConstrai
 	return constraints, nil
 }
 
-func (g *newGenerator) declareNumber(v cue.Value) (ast.Type, error) {
+func (g *newGenerator) declareNumber(v cue.Value) (*ast.ScalarType, error) {
 	numberTypeWithConstraintsAsString, err := format.Node(v.Syntax())
 	if err != nil {
 		return nil, err
@@ -503,32 +475,23 @@ func (g *newGenerator) declareNumber(v cue.Value) (ast.Type, error) {
 	typeDef := &ast.ScalarType{
 		ScalarKind: numberType,
 	}
-	/*
-		// Extract the default value if it's there
-		defVal, err := g.extractDefault(v)
-		if err != nil {
-			return nil, err
-		}
 
-		typeDef.Default = defVal
+	// If the default (all lists have a default, usually self, ugh) differs from the
+	// input list, peel it off. Otherwise our AnyIndex lookup may end up getting
+	// sent on the wrong path.
+	defv, _ := v.Default()
+	if !defv.Equals(v) {
+		_, dvals := v.Expr()
+		v = dvals[0]
+	}
 
-		// If the default (all lists have a default, usually self, ugh) differs from the
-		// input list, peel it off. Otherwise our AnyIndex lookup may end up getting
-		// sent on the wrong path.
-		defv, _ := v.Default()
-		if !defv.Equals(v) {
-			_, dvals := v.Expr()
-			v = dvals[0]
-		}
+	// extract constraints
+	constraints, err := g.declareNumberConstraints(v)
+	if err != nil {
+		return nil, err
+	}
 
-		// extract constraints
-		constraints, err := g.declareNumberConstraints(v)
-		if err != nil {
-			return nil, err
-		}
-
-		typeDef.Constraints = constraints
-	*/
+	typeDef.Constraints = constraints
 
 	return typeDef, nil
 }
