@@ -283,6 +283,7 @@ func (g *newGenerator) declareNode(v cue.Value) (ast.Type, error) {
 
 			g.file.Definitions = append(g.file.Definitions, *def)
 
+			// FIXME: we shouldn't need this anymore
 			return nil, errSkip
 		}
 

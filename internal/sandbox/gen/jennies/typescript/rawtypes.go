@@ -29,7 +29,7 @@ func (jenny TypescriptRawTypes) generateFile(file *ast.File) ([]byte, error) {
 	var buffer strings.Builder
 
 	for _, typeDef := range file.Definitions {
-		typeDefGen, err := jenny.formatTypeDef(typeDef)
+		typeDefGen, err := jenny.formatObject(typeDef)
 		if err != nil {
 			return nil, err
 		}
@@ -41,7 +41,7 @@ func (jenny TypescriptRawTypes) generateFile(file *ast.File) ([]byte, error) {
 	return []byte(buffer.String()), nil
 }
 
-func (jenny TypescriptRawTypes) formatTypeDef(def ast.Object) ([]byte, error) {
+func (jenny TypescriptRawTypes) formatObject(def ast.Object) ([]byte, error) {
 	switch def.Type.Kind() {
 	case ast.KindStruct:
 		return jenny.formatStructDef(def)

@@ -20,30 +20,30 @@ import (
 func main() {
 	themaRuntime := thema.NewRuntime(cuecontext.New())
 
-	entrypoints := []string{"./schemas/cue/core/dashboard_original"}
-	pkg := "dashboard"
+	entrypoints := []string{"./schemas/cue/custom/slo"}
+	pkg := "slo"
 
 	overlayFS, err := dirToPrefixedFS(entrypoints[0], "")
 	if err != nil {
 		panic(err)
 	}
 
-	cueInstance, err := kindsys.BuildInstance(themaRuntime.Context(), ".", "kind", overlayFS)
+	cueInstance, err := kindsys.BuildInstance(themaRuntime.Context(), ".", pkg, overlayFS)
 	if err != nil {
 		panic(fmt.Errorf("could not load kindsys instance: %w", err))
 	}
 
-	props, err := kindsys.ToKindProps[kindsys.CoreProperties](cueInstance)
+	props, err := kindsys.ToKindProps[kindsys.CustomProperties](cueInstance)
 	if err != nil {
 		panic(fmt.Errorf("could not convert cue value to kindsys props: %w", err))
 	}
 
-	kindDefinition := kindsys.Def[kindsys.CoreProperties]{
+	kindDefinition := kindsys.Def[kindsys.CustomProperties]{
 		V:          cueInstance,
 		Properties: props,
 	}
 
-	boundKind, err := kindsys.BindCore(themaRuntime, kindDefinition)
+	boundKind, err := kindsys.BindCustom(themaRuntime, kindDefinition)
 	if err != nil {
 		panic(fmt.Errorf("could not bind kind definition to kind: %w", err))
 	}
