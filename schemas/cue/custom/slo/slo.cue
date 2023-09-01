@@ -58,7 +58,7 @@ lineage: {
 
 				#Threshold: {
 					value:    float64
-					operator: "<" | "<=" | "==" | ">=" | ">"
+					operator: "<" | "<=" | "==" | ">=" | ">" @grabana(kind="enum",memberNames="LessThan|LessThanOrEqual|Equal|GreaterThanOrEqual|GreaterThan")
 				}
 
 				#MetricDef: {

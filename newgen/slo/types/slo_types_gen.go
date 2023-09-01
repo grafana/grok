@@ -176,11 +176,11 @@ AdditionalFields any `json:"additionalFields,omitempty"`
 
 type OperatorEnum string
 const (
-	Operator< OperatorEnum = "<"
-	Operator<= OperatorEnum = "<="
-	Operator== OperatorEnum = "=="
-	Operator>= OperatorEnum = ">="
-	Operator> OperatorEnum = ">"
+	OperatorLessThan OperatorEnum = "<"
+	OperatorLessThanOrEqual OperatorEnum = "<="
+	OperatorEqual OperatorEnum = "=="
+	OperatorGreaterThanOrEqual OperatorEnum = ">="
+	OperatorGreaterThan OperatorEnum = ">"
 )
 
 type StateEnum string

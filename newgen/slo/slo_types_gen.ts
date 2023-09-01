@@ -34,7 +34,7 @@ export interface FreeformQuery {
 
 export interface Threshold {
 	value: number;
-	operator: "<" | "<=" | "==" | ">=" | ">";
+	operator: OperatorEnum;
 }
 
 export interface MetricDef {
@@ -155,7 +155,7 @@ export interface Status {
 		lastEvaluation: string;
 		// state describes the state of the lastEvaluation.
 		// It is limited to three possible states for machine evaluation.
-		state: "success" | "in_progress" | "failed";
+		state: StateEnum;
 		// descriptiveState is an optional more descriptive state field which has no requirements on format
 		descriptiveState?: string;
 		// details contains any extra information that is operator-specific
