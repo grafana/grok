@@ -9,7 +9,7 @@ import (
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
 )
 
-const annotationName = "grabana"
+const annotationName = "grok"
 const hintKindEnum = "enum"
 const annotationKindFieldName = "kind"
 const enumMembersAttr = "memberNames"

@@ -20,7 +20,7 @@ import (
 func main() {
 	themaRuntime := thema.NewRuntime(cuecontext.New())
 
-	entrypoints := []string{"./schemas/cue/custom/slo"}
+	entrypoints := []string{"./schemas/kindsys/custom/slo"}
 	pkg := "slo"
 
 	overlayFS, err := dirToPrefixedFS(entrypoints[0], "")

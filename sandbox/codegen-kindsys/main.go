@@ -20,7 +20,7 @@ import (
 func main() {
 	themaRuntime := thema.NewRuntime(cuecontext.New())
 
-	entrypoints := []string{"./schemas/cue/core/dashboard_original"}
+	entrypoints := []string{"./schemas/kindsys/core/dashboard"}
 	pkg := "dashboard"
 
 	overlayFS, err := dirToPrefixedFS(entrypoints[0], "")

@@ -89,7 +89,7 @@ Dashboard: {
 	links?: [...#DashboardLink]
 }
 
-#DashboardStyle: "light" | "dark" @grabana(kind="enum")
+#DashboardStyle: "light" | "dark" @grok(kind="enum")
 
 #DashboardTemplating: {
 	// List of configured template variables with their saved values along with some other metadata
@@ -224,11 +224,11 @@ Dashboard: {
 // `0`: Never refresh the variable
 // `1`: Queries the data source every time the dashboard loads.
 // `2`: Queries the data source when the dashboard time range changes.
-#VariableRefresh: 0 | 1 | 2 @grabana(kind="enum",memberNames="never|onDashboardLoad|onTimeRangeChanged")
+#VariableRefresh: 0 | 1 | 2 @grok(kind="enum",memberNames="never|onDashboardLoad|onTimeRangeChanged")
 
 // Determine if the variable shows on dashboard
 // Accepted values are 0 (show label and value), 1 (show value only), 2 (show nothing).
-#VariableHide: 0 | 1 | 2 @grabana(kind="enum",memberNames="dontHide|hideLabel|hideVariable")
+#VariableHide: 0 | 1 | 2 @grok(kind="enum",memberNames="dontHide|hideLabel|hideVariable")
 
 // Sort variable options
 // Accepted values are:
@@ -239,11 +239,11 @@ Dashboard: {
 // `4`: Numerical DESC
 // `5`: Alphabetical Case Insensitive ASC
 // `6`: Alphabetical Case Insensitive DESC
-#VariableSort: 0 | 1 | 2 | 3 | 4 | 5 | 6 @grabana(kind="enum",memberNames="disabled|alphabeticalAsc|alphabeticalDesc|numericalAsc|numericalDesc|alphabeticalCaseInsensitiveAsc|alphabeticalCaseInsensitiveDesc")
+#VariableSort: 0 | 1 | 2 | 3 | 4 | 5 | 6 @grok(kind="enum",memberNames="disabled|alphabeticalAsc|alphabeticalDesc|numericalAsc|numericalDesc|alphabeticalCaseInsensitiveAsc|alphabeticalCaseInsensitiveDesc")
 
 // Loading status
 // Accepted values are `NotStarted` (the request is not started), `Loading` (waiting for response), `Streaming` (pulling continuous data), `Done` (response received successfully) or `Error` (failed request).
-#LoadingState: "NotStarted" | "Loading" | "Streaming" | "Done" | "Error" @grabana(kind="enum")
+#LoadingState: "NotStarted" | "Loading" | "Streaming" | "Done" | "Error" @grok(kind="enum")
 
 // Ref to a DataSource instance
 #DataSourceRef: {
@@ -279,7 +279,7 @@ Dashboard: {
 }
 
 // Dashboard Link type. Accepted values are dashboards (to refer to another dashboard) and link (to refer to an external resource)
-#DashboardLinkType: "link" | "dashboards" @grabana(kind="enum")
+#DashboardLinkType: "link" | "dashboards" @grok(kind="enum")
 
 // Dashboard variable type
 // `query`: Query-generated list of values such as metric names, server names, sensor IDs, data centers, and so on.
@@ -290,7 +290,7 @@ Dashboard: {
 // `textbox`: Display a free text input field with an optional default value.
 // `custom`: Define the variable options manually using a comma-separated list.
 // `system`: Variables defined by Grafana. See: https://grafana.com/docs/grafana/latest/dashboards/variables/add-template-variables/#global-variables
-#VariableType: "query" | "adhoc" | "constant" | "datasource" | "interval" | "textbox" | "custom" | "system" @grabana(kind="enum")
+#VariableType: "query" | "adhoc" | "constant" | "datasource" | "interval" | "textbox" | "custom" | "system" @grok(kind="enum")
 
 // Color mode for a field. You can specify a single color, or select a continuous (gradient) color schemes, based on a value.
 // Continuous color interpolates a color using the percentage of a value relative to min and max.
@@ -310,10 +310,10 @@ Dashboard: {
 // `continuous-purples`: Continuous Purple palette mode
 // `shades`: Shades of a single color. Specify a single color, useful in an override rule.
 // `fixed`: Fixed color mode. Specify a single color, useful in an override rule.
-#FieldColorModeId: "thresholds" | "palette-classic" | "palette-classic-by-name" | "continuous-GrYlRd" | "continuous-RdYlGr" | "continuous-BlYlRd" | "continuous-YlRd" | "continuous-BlPu" | "continuous-YlBl" | "continuous-blues" | "continuous-reds" | "continuous-greens" | "continuous-purples" | "fixed" | "shades" @grabana(kind="enum",memberNames="Thresholds|PaletteClassic|PaletteClassicByName|ContinuousGrYlRd|ContinuousRdYlGr|ContinuousBlYlRd|ContinuousYlRd|ContinuousBlPu|ContinuousYlBl|ContinuousBlues|ContinuousReds|ContinuousGreens|ContinuousPurples|Fixed|Shades")
+#FieldColorModeId: "thresholds" | "palette-classic" | "palette-classic-by-name" | "continuous-GrYlRd" | "continuous-RdYlGr" | "continuous-BlYlRd" | "continuous-YlRd" | "continuous-BlPu" | "continuous-YlBl" | "continuous-blues" | "continuous-reds" | "continuous-greens" | "continuous-purples" | "fixed" | "shades" @grok(kind="enum",memberNames="Thresholds|PaletteClassic|PaletteClassicByName|ContinuousGrYlRd|ContinuousRdYlGr|ContinuousBlYlRd|ContinuousYlRd|ContinuousBlPu|ContinuousYlBl|ContinuousBlues|ContinuousReds|ContinuousGreens|ContinuousPurples|Fixed|Shades")
 
 // Defines how to assign a series color from "by value" color schemes. For example for an aggregated data points like a timeseries, the color can be assigned by the min, max or last value.
-#FieldColorSeriesByMode: "min" | "max" | "last" @grabana(kind="enum")
+#FieldColorSeriesByMode: "min" | "max" | "last" @grok(kind="enum")
 
 // Map a field to a color.
 #FieldColor: {
@@ -350,7 +350,7 @@ Dashboard: {
 }
 
 // Thresholds can either be `absolute` (specific number) or `percentage` (relative to min or max, it will be values between 0 and 1).
-#ThresholdsMode: "absolute" | "percentage" @grabana(kind="enum",memberNames="Absolute|Percentage")
+#ThresholdsMode: "absolute" | "percentage" @grok(kind="enum",memberNames="Absolute|Percentage")
 
 // Thresholds configuration for the panel
 #ThresholdsConfig: {
@@ -366,7 +366,7 @@ Dashboard: {
 // `range`: Maps numerical ranges to a display text and color. For example, if a value is within a certain range, you can configure a range value mapping to display Low or High rather than the number.
 // `regex`: Maps regular expressions to replacement text and a color. For example, if a value is www.example.com, you can configure a regex value mapping so that Grafana displays www and truncates the domain.
 // `special`: Maps special values like Null, NaN (not a number), and boolean values like true and false to a display text and color. See SpecialValueMatch to see the list of special values. For example, you can configure a special value mapping so that null values appear as N/A.
-#MappingType: "value" | "range" | "regex" | "special" @grabana(kind="enum",memberNames="ValueToText|RangeToText|RegexToText|SpecialValue")
+#MappingType: "value" | "range" | "regex" | "special" @grok(kind="enum",memberNames="ValueToText|RangeToText|RegexToText|SpecialValue")
 
 // Maps text values to a color or different display text and color.
 // For example, you can configure a value mapping so that all instances of the value 10 appear as Perfection! rather than the number.
@@ -428,7 +428,7 @@ Dashboard: {
 }
 
 // Special value types supported by the `SpecialValueMap`
-#SpecialValueMatch: "true" | "false" | "null" | "nan" | "null+nan" | "empty" @grabana(kind="enum",memberNames="True|False|Null|NaN|NullAndNan|Empty")
+#SpecialValueMatch: "true" | "false" | "null" | "nan" | "null+nan" | "empty" @grok(kind="enum",memberNames="True|False|Null|NaN|NullAndNan|Empty")
 
 // Result used as replacement with text and color when the value matches
 #ValueMappingResult: {
@@ -460,7 +460,7 @@ Dashboard: {
 // 0 for no shared crosshair or tooltip (default).
 // 1 for shared crosshair.
 // 2 for shared crosshair AND shared tooltip.
-#DashboardCursorSync: *0 | 1 | 2 @grabana(kind="enum",memberNames="Off|Crosshair|Tooltip")
+#DashboardCursorSync: *0 | 1 | 2 @grok(kind="enum",memberNames="Off|Crosshair|Tooltip")
 
 // Schema for panel targets is specified by datasource
 // plugins. We use a placeholder definition, which the Go
@@ -562,7 +562,7 @@ Dashboard: {
 	fieldConfig: #FieldConfigSource
 }
 
-#PanelRepeatDirection: "h" | "v" @grabana(kind="enum",memberNames="horizontal|vertical")
+#PanelRepeatDirection: "h" | "v" @grok(kind="enum",memberNames="horizontal|vertical")
 
 // The data model used in Grafana, namely the data frame, is a columnar-oriented table structure that unifies both time series and table query results.
 // Each column within this structure is called a field. A field can represent a single time series or table column.
