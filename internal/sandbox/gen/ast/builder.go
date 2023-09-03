@@ -41,29 +41,26 @@ type Assignment struct {
 }
 
 type BuilderGenerator struct {
-	file *File
 }
 
 func (generator *BuilderGenerator) FromAST(files []*File) []Builder {
 	builders := make([]Builder, 0, len(files))
 
 	for _, file := range files {
-		generator.file = file
-
 		for _, object := range file.Definitions {
 			// we only want builders for structs
 			if object.Type.Kind() != KindStruct {
 				continue
 			}
 
-			builders = append(builders, generator.processStructObject(object))
+			builders = append(builders, generator.structObjectToBuilder(file, object))
 		}
 	}
 
 	return builders
 }
 
-func (generator *BuilderGenerator) processStructObject(object Object) Builder {
+func (generator *BuilderGenerator) structObjectToBuilder(file *File, object Object) Builder {
 	builder := Builder{
 		For:     object,
 		Options: nil,
@@ -71,16 +68,16 @@ func (generator *BuilderGenerator) processStructObject(object Object) Builder {
 	structType := object.Type.(StructType)
 
 	for _, field := range structType.Fields {
-		builder.Options = append(builder.Options, generator.structFieldToOption(field))
+		builder.Options = append(builder.Options, generator.structFieldToOption(file, field))
 	}
 
 	return builder
 }
 
-func (generator *BuilderGenerator) structFieldToOption(field StructField) Option {
+func (generator *BuilderGenerator) structFieldToOption(file *File, field StructField) Option {
 	valueHasBuilder := false
 	if field.Type.Kind() == KindRef {
-		referredDef := generator.file.LocateDefinition(field.Type.(RefType).ReferredType)
+		referredDef := file.LocateDefinition(field.Type.(RefType).ReferredType)
 		valueHasBuilder = referredDef.Type.Kind() == KindStruct
 	}
 

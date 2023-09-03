@@ -28,6 +28,11 @@ func Engine() *Rewriter {
 			BooleanUnfold{OptionTrue: "readonly", OptionFalse: "editable"},
 		),
 
+		// Time(from, to) instead of time(struct {From string `json:"from"`, To   string `json:"to"`}{From: "lala", To: "lala})
+		StructFieldsAsArguments(
+			ExactOption("Dashboard", "time"),
+		),
+
 		/********************************************
 		 * Rows
 		 ********************************************/

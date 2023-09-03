@@ -32,3 +32,10 @@ func PromoteToConstructor(selector OptionSelector) OptionRewriteRule {
 		Action:   PromoteToConstructorAction(),
 	}
 }
+
+func StructFieldsAsArguments(selector OptionSelector) OptionRewriteRule {
+	return OptionRewriteRule{
+		Selector: selector,
+		Action:   StructFieldsAsArgumentsAction(),
+	}
+}

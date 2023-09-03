@@ -161,8 +161,19 @@ func New(%[2]soptions ...Option) (Builder, error) {
 	return buffer.String()
 }
 
+func (jenny *GoBuilder) formatFieldPath(fieldPath string) string {
+	parts := strings.Split(fieldPath, ".")
+	formatted := make([]string, 0, len(parts))
+
+	for _, part := range parts {
+		formatted = append(formatted, tools.UpperCamelCase(part))
+	}
+
+	return strings.Join(formatted, ".")
+}
+
 func (jenny *GoBuilder) generateInitAssignment(assignment ast.Assignment) string {
-	fieldPath := tools.UpperCamelCase(assignment.Path)
+	fieldPath := jenny.formatFieldPath(assignment.Path)
 	valueType := assignment.ValueType
 
 	if assignment.ValueHasBuilder {
@@ -246,7 +257,7 @@ func (jenny *GoBuilder) generateArgument(arg ast.Argument) string {
 }
 
 func (jenny *GoBuilder) generateAssignment(assignment ast.Assignment) string {
-	fieldPath := tools.UpperCamelCase(assignment.Path)
+	fieldPath := jenny.formatFieldPath(assignment.Path)
 	valueType := assignment.ValueType
 
 	if assignment.ValueHasBuilder {
