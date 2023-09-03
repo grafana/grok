@@ -82,7 +82,7 @@ func UnfoldBoolean(fieldSelector FieldSelector, unfoldOpts BooleanUnfold) FieldR
 					Name:        field.Name,
 					DisplayName: unfoldOpts.OptionTrue,
 					Comments:    field.Comments,
-					Type: &ast.Literal{
+					Type: ast.Literal{
 						ScalarType: ast.ScalarType{ScalarKind: ast.KindBool},
 						Value:      true,
 					},
@@ -91,7 +91,7 @@ func UnfoldBoolean(fieldSelector FieldSelector, unfoldOpts BooleanUnfold) FieldR
 					Name:        field.Name,
 					DisplayName: unfoldOpts.OptionFalse,
 					Comments:    field.Comments,
-					Type: &ast.Literal{
+					Type: ast.Literal{
 						ScalarType: ast.ScalarType{ScalarKind: ast.KindBool},
 						Value:      false,
 					},

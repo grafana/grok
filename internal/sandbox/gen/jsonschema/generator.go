@@ -117,9 +117,9 @@ func (g *newGenerator) walkDefinition(schema *schemaparser.Schema) (ast.Type, er
 	} else {
 		switch schema.Types[0] {
 		case typeNull:
-			def = &ast.ScalarType{ScalarKind: ast.KindNull}
+			def = ast.ScalarType{ScalarKind: ast.KindNull}
 		case typeBoolean:
-			def = &ast.ScalarType{ScalarKind: ast.KindBool}
+			def = ast.ScalarType{ScalarKind: ast.KindBool}
 		case typeString:
 			def, err = g.walkString(schema)
 		case typeObject:
@@ -137,9 +137,9 @@ func (g *newGenerator) walkDefinition(schema *schemaparser.Schema) (ast.Type, er
 	return def, err
 }
 
-func (g *newGenerator) walkDisjunction(schema *schemaparser.Schema) (*ast.DisjunctionType, error) {
+func (g *newGenerator) walkDisjunction(schema *schemaparser.Schema) (ast.DisjunctionType, error) {
 	// TODO: finish implementation
-	return &ast.DisjunctionType{}, nil
+	return ast.DisjunctionType{}, nil
 }
 
 func (g *newGenerator) walkDisjunctionBranches(branches []*schemaparser.Schema) ([]ast.Type, error) {
@@ -156,58 +156,58 @@ func (g *newGenerator) walkDisjunctionBranches(branches []*schemaparser.Schema) 
 	return definitions, nil
 }
 
-func (g *newGenerator) walkOneOf(schema *schemaparser.Schema) (*ast.DisjunctionType, error) {
+func (g *newGenerator) walkOneOf(schema *schemaparser.Schema) (ast.DisjunctionType, error) {
 	if len(schema.OneOf) == 0 {
-		return nil, fmt.Errorf("oneOf with no branches")
+		return ast.DisjunctionType{}, fmt.Errorf("oneOf with no branches")
 	}
 
 	branches, err := g.walkDisjunctionBranches(schema.OneOf)
 	if err != nil {
-		return nil, err
+		return ast.DisjunctionType{}, err
 	}
 
-	return &ast.DisjunctionType{
+	return ast.DisjunctionType{
 		Branches: branches,
 	}, nil
 }
 
 // TODO: what's the difference between oneOf and anyOf?
-func (g *newGenerator) walkAnyOf(schema *schemaparser.Schema) (*ast.DisjunctionType, error) {
+func (g *newGenerator) walkAnyOf(schema *schemaparser.Schema) (ast.DisjunctionType, error) {
 	if len(schema.AnyOf) == 0 {
-		return nil, fmt.Errorf("anyOf with no branches")
+		return ast.DisjunctionType{}, fmt.Errorf("anyOf with no branches")
 	}
 
 	branches, err := g.walkDisjunctionBranches(schema.AnyOf)
 	if err != nil {
-		return nil, err
+		return ast.DisjunctionType{}, err
 	}
 
-	return &ast.DisjunctionType{
+	return ast.DisjunctionType{
 		Branches: branches,
 	}, nil
 }
 
-func (g *newGenerator) walkAllOf(schema *schemaparser.Schema) (*ast.DisjunctionType, error) {
+func (g *newGenerator) walkAllOf(schema *schemaparser.Schema) (ast.DisjunctionType, error) {
 	// TODO: finish implementation and use correct type
-	return &ast.DisjunctionType{}, nil
+	return ast.DisjunctionType{}, nil
 }
 
-func (g *newGenerator) walkRef(schema *schemaparser.Schema) (*ast.RefType, error) {
+func (g *newGenerator) walkRef(schema *schemaparser.Schema) (ast.RefType, error) {
 	parts := strings.Split(schema.Ref.Ptr, "/")
 	referredKindName := parts[len(parts)-1] // Very naive
 
 	if err := g.declareDefinition(referredKindName, schema.Ref); err != nil {
-		return nil, err
+		return ast.RefType{}, err
 	}
 
-	return &ast.RefType{
+	return ast.RefType{
 		ReferredType: referredKindName,
 		//Comments: schemaComments(schema),
 	}, nil
 }
 
-func (g *newGenerator) walkString(schema *schemaparser.Schema) (*ast.ScalarType, error) {
-	def := &ast.ScalarType{ScalarKind: ast.KindString}
+func (g *newGenerator) walkString(schema *schemaparser.Schema) (ast.ScalarType, error) {
+	def := ast.ScalarType{ScalarKind: ast.KindString}
 
 	/*
 		if len(schema.Enum) != 0 {
@@ -221,17 +221,17 @@ func (g *newGenerator) walkString(schema *schemaparser.Schema) (*ast.ScalarType,
 	return def, nil
 }
 
-func (g *newGenerator) walkNumber(schema *schemaparser.Schema) (*ast.ScalarType, error) {
+func (g *newGenerator) walkNumber(schema *schemaparser.Schema) (ast.ScalarType, error) {
 	// TODO: finish implementation
-	return &ast.ScalarType{ScalarKind: ast.KindInt64}, nil
+	return ast.ScalarType{ScalarKind: ast.KindInt64}, nil
 }
 
-func (g *newGenerator) walkList(schema *schemaparser.Schema) (*ast.ArrayType, error) {
+func (g *newGenerator) walkList(schema *schemaparser.Schema) (ast.ArrayType, error) {
 	var itemsDef ast.Type
 	var err error
 
 	if schema.Items == nil {
-		itemsDef = &ast.ScalarType{
+		itemsDef = ast.ScalarType{
 			ScalarKind: ast.KindAny,
 		}
 	} else {
@@ -239,22 +239,22 @@ func (g *newGenerator) walkList(schema *schemaparser.Schema) (*ast.ArrayType, er
 		itemsDef, err = g.walkDefinition(schema.Items.(*schemaparser.Schema))
 		// items contains an empty schema: `{}`
 		if errors.Is(err, errUndescriptiveSchema) {
-			itemsDef = &ast.ScalarType{
+			itemsDef = ast.ScalarType{
 				ScalarKind: ast.KindAny,
 			}
 		} else if err != nil {
-			return nil, err
+			return ast.ArrayType{}, err
 		}
 	}
 
-	return &ast.ArrayType{
+	return ast.ArrayType{
 		ValueType: itemsDef,
 	}, nil
 }
 
-func (g *newGenerator) walkEnum(schema *schemaparser.Schema) (*ast.EnumType, error) {
+func (g *newGenerator) walkEnum(schema *schemaparser.Schema) (ast.EnumType, error) {
 	if len(schema.Enum) == 0 {
-		return nil, fmt.Errorf("enum with no values")
+		return ast.EnumType{}, fmt.Errorf("enum with no values")
 	}
 
 	values := make([]ast.EnumValue, 0, len(schema.Enum))
@@ -269,19 +269,19 @@ func (g *newGenerator) walkEnum(schema *schemaparser.Schema) (*ast.EnumType, err
 		})
 	}
 
-	return &ast.EnumType{
+	return ast.EnumType{
 		Values: values,
 		// TODO: default value?
 	}, nil
 }
 
-func (g *newGenerator) walkObject(schema *schemaparser.Schema) (*ast.StructType, error) {
+func (g *newGenerator) walkObject(schema *schemaparser.Schema) (ast.StructType, error) {
 	// TODO: finish implementation
 	fields := make([]ast.StructField, 0, len(schema.Properties))
 	for name, property := range schema.Properties {
 		fieldDef, err := g.walkDefinition(property)
 		if err != nil {
-			return nil, err
+			return ast.StructType{}, err
 		}
 
 		fields = append(fields, ast.StructField{
@@ -292,7 +292,7 @@ func (g *newGenerator) walkObject(schema *schemaparser.Schema) (*ast.StructType,
 		})
 	}
 
-	return &ast.StructType{
+	return ast.StructType{
 		Fields: fields,
 	}, nil
 }

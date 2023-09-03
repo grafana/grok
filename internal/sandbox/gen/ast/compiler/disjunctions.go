@@ -41,27 +41,27 @@ func (pass *DisjunctionToType) processObject(object ast.Object) ast.Object {
 
 func (pass *DisjunctionToType) processType(def ast.Type) ast.Type {
 	if def.Kind() == ast.KindArray {
-		return pass.processArray(def.(*ast.ArrayType))
+		return pass.processArray(def.(ast.ArrayType))
 	}
 
 	if def.Kind() == ast.KindStruct {
-		return pass.processStruct(def.(*ast.StructType))
+		return pass.processStruct(def.(ast.StructType))
 	}
 
 	if def.Kind() == ast.KindDisjunction {
-		return pass.processDisjunction(def.(*ast.DisjunctionType))
+		return pass.processDisjunction(def.(ast.DisjunctionType))
 	}
 
 	return def
 }
 
-func (pass *DisjunctionToType) processArray(def *ast.ArrayType) *ast.ArrayType {
-	return &ast.ArrayType{
+func (pass *DisjunctionToType) processArray(def ast.ArrayType) ast.ArrayType {
+	return ast.ArrayType{
 		ValueType: pass.processType(def.ValueType),
 	}
 }
 
-func (pass *DisjunctionToType) processStruct(def *ast.StructType) *ast.StructType {
+func (pass *DisjunctionToType) processStruct(def ast.StructType) ast.StructType {
 	newDef := def
 
 	processedFields := make([]ast.StructField, 0, len(def.Fields))
@@ -81,7 +81,7 @@ func (pass *DisjunctionToType) processStruct(def *ast.StructType) *ast.StructTyp
 	return newDef
 }
 
-func (pass *DisjunctionToType) processDisjunction(def *ast.DisjunctionType) ast.Type {
+func (pass *DisjunctionToType) processDisjunction(def ast.DisjunctionType) ast.Type {
 	// Ex: type | null
 	if len(def.Branches) == 2 && def.Branches.HasNullType() {
 		finalType := def.Branches.NonNullTypes()[0]
@@ -96,7 +96,7 @@ func (pass *DisjunctionToType) processDisjunction(def *ast.DisjunctionType) ast.
 	newTypeName := pass.disjunctionTypeName(def)
 
 	if _, ok := pass.newObjects[newTypeName]; !ok {
-		structType := &ast.StructType{
+		structType := ast.StructType{
 			Fields: make([]ast.StructField, 0, len(def.Branches)),
 		}
 
@@ -118,13 +118,13 @@ func (pass *DisjunctionToType) processDisjunction(def *ast.DisjunctionType) ast.
 		}
 	}
 
-	return &ast.RefType{
+	return ast.RefType{
 		ReferredType: newTypeName,
 		//Nullable: def.Branches.HasNullType(),
 	}
 }
 
-func (pass *DisjunctionToType) disjunctionTypeName(def *ast.DisjunctionType) string {
+func (pass *DisjunctionToType) disjunctionTypeName(def ast.DisjunctionType) string {
 	parts := make([]string, 0, len(def.Branches))
 
 	for _, subType := range def.Branches {
@@ -136,7 +136,7 @@ func (pass *DisjunctionToType) disjunctionTypeName(def *ast.DisjunctionType) str
 
 func (pass *DisjunctionToType) typeName(typeDef ast.Type) string {
 	if typeDef.Kind() == ast.KindRef {
-		return typeDef.(*ast.RefType).ReferredType
+		return typeDef.(ast.RefType).ReferredType
 	}
 
 	return string(typeDef.Kind())

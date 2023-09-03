@@ -48,7 +48,7 @@ func (jenny *GoBuilder) Generate(file *ast.File) (codejen.Files, error) {
 func (jenny *GoBuilder) generateDefinition(def ast.Object) ([]byte, error) {
 	var buffer strings.Builder
 	jenny.defaults = nil
-	structType := def.Type.(*ast.StructType)
+	structType := def.Type.(ast.StructType)
 
 	buffer.WriteString(fmt.Sprintf("package %s\n\n", strings.ToLower(def.Name)))
 
@@ -138,7 +138,7 @@ func (jenny *GoBuilder) fieldToOption(def ast.StructField) string {
 
 	// structs get their own builder
 	if def.Type.Kind() == ast.KindRef {
-		referredDef := jenny.file.LocateDefinition(def.Type.(*ast.RefType).ReferredType)
+		referredDef := jenny.file.LocateDefinition(def.Type.(ast.RefType).ReferredType)
 		if referredDef.Type.Kind() == ast.KindStruct {
 			return jenny.referenceFieldToOption(def)
 		}
@@ -164,12 +164,11 @@ func (jenny *GoBuilder) fieldToOption(def ast.StructField) string {
 	}
 
 	generatedConstraints := ""
-	if scalarType, ok := def.Type.(*ast.ScalarType); ok {
+	if scalarType, ok := def.Type.(ast.ScalarType); ok {
 		generatedConstraints = strings.Join(jenny.constraints(argumentName, scalarType.Constraints), "\n")
 	}
 
 	/*
-
 		asPointer := ""
 		// FIXME: this condition is probably wrong
 		if def.Type.Nullable || (def.Type.Kind != ast.KindArray && def.Type.Kind != ast.KindStruct && !def.Required) {
@@ -200,7 +199,7 @@ func (jenny *GoBuilder) literalFieldToOption(def ast.StructField) string {
 	fieldName := tools.UpperCamelCase(def.Name)
 	optionName := tools.UpperCamelCase(def.DisplayName)
 
-	literalDef := def.Type.(*ast.Literal)
+	literalDef := def.Type.(ast.Literal)
 	value := jenny.formatScalar(literalDef.Value)
 
 	buffer.WriteString(fmt.Sprintf(`func %[1]s() Option {
@@ -263,7 +262,7 @@ func (jenny *GoBuilder) referenceFieldToOption(def ast.StructField) string {
 	var buffer strings.Builder
 
 	fieldName := tools.UpperCamelCase(def.Name)
-	referredPackage := strings.ToLower(def.Type.(*ast.RefType).ReferredType)
+	referredPackage := strings.ToLower(def.Type.(ast.RefType).ReferredType)
 
 	buffer.WriteString(fmt.Sprintf(`
 func %[1]s(opts ...%[2]s.Option) Option {

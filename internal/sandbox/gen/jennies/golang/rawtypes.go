@@ -72,7 +72,7 @@ func (jenny GoRawTypes) formatEnumDef(def ast.Object) ([]byte, error) {
 	}
 
 	enumName := tools.UpperCamelCase(def.Name)
-	enumType := def.Type.(*ast.EnumType)
+	enumType := def.Type.(ast.EnumType)
 
 	buffer.WriteString(fmt.Sprintf("type %s %s\n", enumName, enumType.Values[0].Type.Kind()))
 
@@ -93,13 +93,13 @@ func (jenny GoRawTypes) formatStructDef(def ast.Object) ([]byte, error) {
 	}
 
 	buffer.WriteString(fmt.Sprintf("type %s ", tools.UpperCamelCase(def.Name)))
-	buffer.WriteString(formatStructBody(def.Type.(*ast.StructType), ""))
+	buffer.WriteString(formatStructBody(def.Type.(ast.StructType), ""))
 	buffer.WriteString("\n")
 
 	return []byte(buffer.String()), nil
 }
 
-func formatStructBody(def *ast.StructType, typesPkg string) string {
+func formatStructBody(def ast.StructType, typesPkg string) string {
 	var buffer strings.Builder
 
 	buffer.WriteString("struct {\n")
@@ -148,19 +148,19 @@ func formatType(def ast.Type, fieldIsRequired bool, typesPkg string) string {
 	}
 
 	if def.Kind() == ast.KindDisjunction {
-		return formatDisjunction(def.(*ast.DisjunctionType), typesPkg)
+		return formatDisjunction(def.(ast.DisjunctionType), typesPkg)
 	}
 
 	if def.Kind() == ast.KindArray {
-		return formatArray(def.(*ast.ArrayType), typesPkg)
+		return formatArray(def.(ast.ArrayType), typesPkg)
 	}
 
 	if def.Kind() == ast.KindMap {
-		return formatMap(def.(*ast.MapType), typesPkg)
+		return formatMap(def.(ast.MapType), typesPkg)
 	}
 
 	if def.Kind() == ast.KindRef {
-		typeName := def.(*ast.RefType).ReferredType
+		typeName := def.(ast.RefType).ReferredType
 
 		if typesPkg != "" {
 			typeName = typesPkg + "." + typeName
@@ -179,11 +179,11 @@ func formatType(def ast.Type, fieldIsRequired bool, typesPkg string) string {
 
 	// anonymous struct
 	if def.Kind() == ast.KindStruct {
-		return formatStructBody(def.(*ast.StructType), typesPkg)
+		return formatStructBody(def.(ast.StructType), typesPkg)
 	}
 
 	// TODO: there should be an ast.KindScalar with a matching type
-	typeName := string(def.(*ast.ScalarType).ScalarKind)
+	typeName := string(def.(ast.ScalarType).ScalarKind)
 
 	if !fieldIsRequired {
 		typeName = "*" + typeName
@@ -197,20 +197,20 @@ func formatType(def ast.Type, fieldIsRequired bool, typesPkg string) string {
 	return typeName
 }
 
-func formatArray(def *ast.ArrayType, typesPkg string) string {
+func formatArray(def ast.ArrayType, typesPkg string) string {
 	subTypeString := formatType(def.ValueType, true, typesPkg)
 
 	return fmt.Sprintf("[]%s", subTypeString)
 }
 
-func formatMap(def *ast.MapType, typesPkg string) string {
+func formatMap(def ast.MapType, typesPkg string) string {
 	keyTypeString := def.IndexType.Kind()
 	valueTypeString := formatType(def.ValueType, true, typesPkg)
 
 	return fmt.Sprintf("map[%s]%s", keyTypeString, valueTypeString)
 }
 
-func formatDisjunction(def *ast.DisjunctionType, typesPkg string) string {
+func formatDisjunction(def ast.DisjunctionType, typesPkg string) string {
 	subTypes := make([]string, 0, len(def.Branches))
 	for _, subType := range def.Branches {
 		subTypes = append(subTypes, formatType(subType, true, typesPkg))

@@ -38,15 +38,15 @@ func (pass *AnonymousEnumToExplicitType) processObject(object ast.Object) ast.Ob
 
 func (pass *AnonymousEnumToExplicitType) processType(parentName string, def ast.Type) ast.Type {
 	if def.Kind() == ast.KindArray {
-		return pass.processArray(parentName, def.(*ast.ArrayType))
+		return pass.processArray(parentName, def.(ast.ArrayType))
 	}
 
 	if def.Kind() == ast.KindStruct {
-		return pass.processStruct(def.(*ast.StructType))
+		return pass.processStruct(def.(ast.StructType))
 	}
 
 	if def.Kind() == ast.KindEnum {
-		return pass.processAnonymousEnum(parentName, def.(*ast.EnumType))
+		return pass.processAnonymousEnum(parentName, def.(ast.EnumType))
 	}
 
 	// TODO: do the same for disjunctions?
@@ -54,13 +54,13 @@ func (pass *AnonymousEnumToExplicitType) processType(parentName string, def ast.
 	return def
 }
 
-func (pass *AnonymousEnumToExplicitType) processArray(parentName string, def *ast.ArrayType) *ast.ArrayType {
-	return &ast.ArrayType{
+func (pass *AnonymousEnumToExplicitType) processArray(parentName string, def ast.ArrayType) ast.ArrayType {
+	return ast.ArrayType{
 		ValueType: pass.processType(parentName, def.ValueType),
 	}
 }
 
-func (pass *AnonymousEnumToExplicitType) processStruct(def *ast.StructType) *ast.StructType {
+func (pass *AnonymousEnumToExplicitType) processStruct(def ast.StructType) ast.StructType {
 	newDef := def
 
 	processedFields := make([]ast.StructField, 0, len(def.Fields))
@@ -80,7 +80,7 @@ func (pass *AnonymousEnumToExplicitType) processStruct(def *ast.StructType) *ast
 	return newDef
 }
 
-func (pass *AnonymousEnumToExplicitType) processAnonymousEnum(parentName string, def *ast.EnumType) *ast.RefType {
+func (pass *AnonymousEnumToExplicitType) processAnonymousEnum(parentName string, def ast.EnumType) ast.RefType {
 	enumTypeName := tools.UpperCamelCase(parentName) + "Enum"
 
 	values := make([]ast.EnumValue, 0, len(def.Values))
@@ -94,12 +94,12 @@ func (pass *AnonymousEnumToExplicitType) processAnonymousEnum(parentName string,
 
 	pass.newObjects = append(pass.newObjects, ast.Object{
 		Name: enumTypeName,
-		Type: &ast.EnumType{
+		Type: ast.EnumType{
 			Values: values,
 		},
 	})
 
-	return &ast.RefType{
+	return ast.RefType{
 		ReferredType: enumTypeName,
 	}
 }

@@ -38,13 +38,13 @@ func (pass *Rewrite) processObject(object ast.Object) ast.Object {
 
 func (pass *Rewrite) processType(parentObject ast.Object, def ast.Type) ast.Type {
 	if def.Kind() == ast.KindStruct {
-		return pass.processStruct(parentObject, def.(*ast.StructType))
+		return pass.processStruct(parentObject, def.(ast.StructType))
 	}
 
 	return def
 }
 
-func (pass *Rewrite) processStruct(parentObject ast.Object, def *ast.StructType) *ast.StructType {
+func (pass *Rewrite) processStruct(parentObject ast.Object, def ast.StructType) ast.StructType {
 	newDef := def
 
 	processedFields := make([]ast.StructField, 0, len(def.Fields))

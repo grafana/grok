@@ -48,7 +48,7 @@ func (jenny TypescriptRawTypes) formatObject(def ast.Object, typesPkg string) ([
 	case ast.KindEnum:
 		return jenny.formatEnumDef(def)
 	case ast.KindDisjunction:
-		disj, err := formatDisjunction(def.Type.(*ast.DisjunctionType), typesPkg)
+		disj, err := formatDisjunction(def.Type.(ast.DisjunctionType), typesPkg)
 		if err != nil {
 			return nil, err
 		}
@@ -68,7 +68,7 @@ func (jenny TypescriptRawTypes) formatEnumDef(def ast.Object) ([]byte, error) {
 		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
 	}
 
-	enumType := def.Type.(*ast.EnumType)
+	enumType := def.Type.(ast.EnumType)
 
 	buffer.WriteString(fmt.Sprintf("export enum %s {\n", def.Name))
 	for _, val := range enumType.Values {
@@ -88,7 +88,7 @@ func (jenny TypescriptRawTypes) formatStructDef(def ast.Object, typesPkg string)
 
 	buffer.WriteString(fmt.Sprintf("export interface %s ", tools.UpperCamelCase(def.Name)))
 
-	structType := def.Type.(*ast.StructType)
+	structType := def.Type.(ast.StructType)
 
 	body, err := formatStructFields(structType.Fields, typesPkg)
 	if err != nil {
@@ -160,24 +160,24 @@ func formatType(def ast.Type, typesPkg string) (string, error) {
 	// maybe if nullable, append | null to the type?
 	switch def.Kind() {
 	case ast.KindDisjunction:
-		return formatDisjunction(def.(*ast.DisjunctionType), typesPkg)
+		return formatDisjunction(def.(ast.DisjunctionType), typesPkg)
 	case ast.KindRef:
 		if typesPkg != "" {
-			return typesPkg + "." + (def.(*ast.RefType)).ReferredType, nil
+			return typesPkg + "." + (def.(ast.RefType)).ReferredType, nil
 		}
 
-		return (def.(*ast.RefType)).ReferredType, nil
+		return (def.(ast.RefType)).ReferredType, nil
 	case ast.KindArray:
-		return formatArray(def.(*ast.ArrayType), typesPkg)
+		return formatArray(def.(ast.ArrayType), typesPkg)
 	case ast.KindStruct:
-		return formatStructFields(def.(*ast.StructType).Fields, typesPkg)
+		return formatStructFields(def.(ast.StructType).Fields, typesPkg)
 	case ast.KindMap:
-		return formatMap(def.(*ast.MapType), typesPkg)
+		return formatMap(def.(ast.MapType), typesPkg)
 	case ast.KindEnum:
-		return formatAnonymousEnum(def.(*ast.EnumType))
+		return formatAnonymousEnum(def.(ast.EnumType))
 
 	case ast.KindLiteral:
-		return formatLiteral(def.(*ast.Literal))
+		return formatLiteral(def.(ast.Literal))
 
 	case ast.KindNull:
 		return "null", nil
@@ -202,7 +202,7 @@ func formatType(def ast.Type, typesPkg string) (string, error) {
 	}
 }
 
-func formatArray(def *ast.ArrayType, typesPkg string) (string, error) {
+func formatArray(def ast.ArrayType, typesPkg string) (string, error) {
 	// we don't know what to do here (yet)
 	subTypeString, err := formatType(def.ValueType, typesPkg)
 	if err != nil {
@@ -212,7 +212,7 @@ func formatArray(def *ast.ArrayType, typesPkg string) (string, error) {
 	return fmt.Sprintf("%s[]", subTypeString), nil
 }
 
-func formatDisjunction(def *ast.DisjunctionType, typesPkg string) (string, error) {
+func formatDisjunction(def ast.DisjunctionType, typesPkg string) (string, error) {
 	subTypes := make([]string, 0, len(def.Branches))
 	for _, subType := range def.Branches {
 		formatted, err := formatType(subType, typesPkg)
@@ -226,7 +226,7 @@ func formatDisjunction(def *ast.DisjunctionType, typesPkg string) (string, error
 	return strings.Join(subTypes, " | "), nil
 }
 
-func formatMap(def *ast.MapType, typesPkg string) (string, error) {
+func formatMap(def ast.MapType, typesPkg string) (string, error) {
 	keyTypeString, err := formatType(def.IndexType, typesPkg)
 	if err != nil {
 		return "", err
@@ -239,7 +239,7 @@ func formatMap(def *ast.MapType, typesPkg string) (string, error) {
 	return fmt.Sprintf("Record<%s, %s>", keyTypeString, valueTypeString), nil
 }
 
-func formatAnonymousEnum(def *ast.EnumType) (string, error) {
+func formatAnonymousEnum(def ast.EnumType) (string, error) {
 	values := make([]string, 0, len(def.Values))
 	for _, value := range def.Values {
 		values = append(values, fmt.Sprintf("%#v", value.Value))
@@ -250,7 +250,7 @@ func formatAnonymousEnum(def *ast.EnumType) (string, error) {
 	return enumeration, nil
 }
 
-func formatLiteral(def *ast.Literal) (string, error) {
+func formatLiteral(def ast.Literal) (string, error) {
 	return fmt.Sprintf("%#v", def.Value), nil
 }
 

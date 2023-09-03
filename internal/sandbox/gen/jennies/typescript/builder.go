@@ -48,7 +48,7 @@ func (jenny *TypescriptBuilder) Generate(file *ast.File) (codejen.Files, error) 
 func (jenny *TypescriptBuilder) generateDefinition(def ast.Object) ([]byte, error) {
 	var buffer strings.Builder
 	jenny.defaults = nil
-	structType := def.Type.(*ast.StructType)
+	structType := def.Type.(ast.StructType)
 	objectName := tools.UpperCamelCase(def.Name)
 
 	// imports
@@ -93,7 +93,7 @@ func (jenny *TypescriptBuilder) fieldToOption(def ast.StructField) (string, erro
 
 	// references to objects get their own builder
 	if def.Type.Kind() == ast.KindRef {
-		referredDef := jenny.file.LocateDefinition(def.Type.(*ast.RefType).ReferredType)
+		referredDef := jenny.file.LocateDefinition(def.Type.(ast.RefType).ReferredType)
 		if referredDef.Type.Kind() == ast.KindStruct {
 			return jenny.referenceFieldToOption(def), nil
 		}
@@ -110,9 +110,9 @@ func (jenny *TypescriptBuilder) fieldToOption(def ast.StructField) (string, erro
 	if err != nil {
 		return "", err
 	}
-	
+
 	generatedConstraints := ""
-	if scalarType, ok := def.Type.(*ast.ScalarType); ok {
+	if scalarType, ok := def.Type.(ast.ScalarType); ok {
 		generatedConstraints = strings.Join(jenny.constraints(argumentName, scalarType.Constraints), "\n")
 	}
 
@@ -133,7 +133,7 @@ func (jenny *TypescriptBuilder) literalFieldToOption(def ast.StructField) string
 
 	optionName := tools.UpperCamelCase(def.DisplayName)
 
-	literalDef := def.Type.(*ast.Literal)
+	literalDef := def.Type.(ast.Literal)
 	value := jenny.formatScalar(literalDef.Value)
 
 	buffer.WriteString(fmt.Sprintf(`	with%[1]s(): this {
@@ -165,7 +165,7 @@ func (jenny *TypescriptBuilder) formatScalar(val any) string {
 func (jenny *TypescriptBuilder) referenceFieldToOption(def ast.StructField) string {
 	var buffer strings.Builder
 
-	referredType := tools.UpperCamelCase(def.Type.(*ast.RefType).ReferredType)
+	referredType := tools.UpperCamelCase(def.Type.(ast.RefType).ReferredType)
 	optionName := tools.UpperCamelCase(def.DisplayName)
 
 	buffer.WriteString(fmt.Sprintf(`	with%[1]s(builder: OptionsBuilder<types.%[2]s>): this {
