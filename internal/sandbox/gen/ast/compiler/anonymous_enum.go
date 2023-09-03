@@ -11,7 +11,22 @@ type AnonymousEnumToExplicitType struct {
 	newObjects []ast.Object
 }
 
-func (pass *AnonymousEnumToExplicitType) Process(file *ast.File) (*ast.File, error) {
+func (pass *AnonymousEnumToExplicitType) Process(files []*ast.File) ([]*ast.File, error) {
+	newFiles := make([]*ast.File, 0, len(files))
+
+	for _, file := range files {
+		newFile, err := pass.processFile(file)
+		if err != nil {
+			return nil, err
+		}
+
+		newFiles = append(newFiles, newFile)
+	}
+
+	return newFiles, nil
+}
+
+func (pass *AnonymousEnumToExplicitType) processFile(file *ast.File) (*ast.File, error) {
 	pass.newObjects = nil
 
 	processedObjects := make([]ast.Object, 0, len(file.Definitions))

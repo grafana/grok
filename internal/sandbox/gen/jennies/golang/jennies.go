@@ -2,19 +2,21 @@ package golang
 
 import (
 	"github.com/grafana/codejen"
-	"github.com/grafana/grok/internal/jen"
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
+	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
 )
 
-func Jennies(pkg string) *codejen.JennyList[*ast.File] {
-	targets := codejen.JennyListWithNamer[*ast.File](func(f *ast.File) string {
-		return f.Package
+func Jennies() *codejen.JennyList[[]*ast.File] {
+	targets := codejen.JennyListWithNamer[[]*ast.File](func(files []*ast.File) string {
+		return "golang"
 	})
-	targets.AppendOneToOne(GoRawTypes{})
-	targets.AppendOneToMany(&GoBuilder{})
+	targets.AppendManyToMany(
+		tools.Foreach[*ast.File](GoRawTypes{}),
+		tools.Foreach[*ast.File](&GoBuilder{}),
+	)
 	targets.AddPostprocessors(
 		PostProcessFile,
-		jen.Prefixer(pkg),
+		//jen.Prefixer(pkg),
 	)
 
 	return targets

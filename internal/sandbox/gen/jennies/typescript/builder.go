@@ -20,15 +20,15 @@ func (jenny *TypescriptBuilder) JennyName() string {
 }
 
 func (jenny *TypescriptBuilder) Generate(file *ast.File) (codejen.Files, error) {
-	preprocessedFile, err := compiler.RewriteEngine().Process(file)
+	preprocessedFile, err := compiler.RewriteEngine().Process([]*ast.File{file})
 	if err != nil {
 		return nil, err
 	}
 
-	jenny.file = preprocessedFile
+	jenny.file = preprocessedFile[0]
 
 	var files []codejen.File
-	for _, definition := range preprocessedFile.Definitions {
+	for _, definition := range jenny.file.Definitions {
 		// No need for a builder if the object isn't a struct
 		if definition.Type.Kind() != ast.KindStruct {
 			continue

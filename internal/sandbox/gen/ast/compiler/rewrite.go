@@ -17,7 +17,22 @@ func NewRewrite(fieldRules []rewrite.FieldRewriteRule) *Rewrite {
 	}
 }
 
-func (pass *Rewrite) Process(file *ast.File) (*ast.File, error) {
+func (pass *Rewrite) Process(files []*ast.File) ([]*ast.File, error) {
+	newFiles := make([]*ast.File, 0, len(files))
+
+	for _, file := range files {
+		newFile, err := pass.processFile(file)
+		if err != nil {
+			return nil, err
+		}
+
+		newFiles = append(newFiles, newFile)
+	}
+
+	return newFiles, nil
+}
+
+func (pass *Rewrite) processFile(file *ast.File) (*ast.File, error) {
 	processedObjects := make([]ast.Object, 0, len(file.Definitions))
 	for _, object := range file.Definitions {
 		processedObjects = append(processedObjects, pass.processObject(object))

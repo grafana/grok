@@ -3,58 +3,63 @@ package main
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 
 	"cuelang.org/go/cue/cuecontext"
 	"cuelang.org/go/cue/load"
 	"github.com/grafana/codejen"
+	"github.com/grafana/grok/internal/sandbox/gen/ast"
 	"github.com/grafana/grok/internal/sandbox/gen/jennies"
 	"github.com/grafana/grok/internal/sandbox/gen/simplecue"
 )
 
 func main() {
-	entrypoints := []string{"./schemas/cue/core/dashboard/dashboard.cue"}
-	pkg := "dashboard"
-
-	//entrypoints := []string{"./schemas/cue/core/sandbox/sandbox.cue"}
-	//pkg := "sandbox"
-
-	//entrypoints := []string{"./schemas/cue/core/playlist/playlist.cue"}
-	//pkg := "playlist"
-
-	// Load Cue files into Cue build.Instances slice
-	// the second arg is a configuration object, we'll see this later
-	bis := load.Instances(entrypoints, nil)
-
-	values, err := cuecontext.New().BuildInstances(bis)
-	if err != nil {
-		panic(err)
+	entrypoints := []string{
+		"./schemas/cue/core/dashboard/",
+		"./schemas/cue/core/playlist/",
 	}
 
-	schemaAst, err := simplecue.GenerateAST(values[0], simplecue.Config{
-		Package: pkg, // TODO: extract from input schema/folder?
-	})
-	if err != nil {
-		panic(err)
+	allSchemas := make([]*ast.File, 0, len(entrypoints))
+	for _, entrypoint := range entrypoints {
+		pkg := filepath.Base(entrypoint)
+
+		// Load Cue files into Cue build.Instances slice
+		// the second arg is a configuration object, we'll see this later
+		bis := load.Instances([]string{entrypoint}, nil)
+
+		values, err := cuecontext.New().BuildInstances(bis)
+		if err != nil {
+			panic(err)
+		}
+
+		schemaAst, err := simplecue.GenerateAST(values[0], simplecue.Config{
+			Package: pkg, // TODO: extract from input schema/?
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		allSchemas = append(allSchemas, schemaAst)
 	}
 
 	// Here begins the code generation setup
-	targetsByLanguage := jennies.All(pkg)
+	targetsByLanguage := jennies.All()
 	rootCodeJenFS := codejen.NewFS()
 
 	for language, target := range targetsByLanguage {
 		fmt.Printf("Running '%s' jennies...\n", language)
 
 		var err error
-		processedAst := schemaAst
+		processedAsts := allSchemas
 
 		for _, compilerPass := range target.CompilerPasses {
-			processedAst, err = compilerPass.Process(processedAst)
+			processedAsts, err = compilerPass.Process(processedAsts)
 			if err != nil {
 				panic(err)
 			}
 		}
 
-		fs, err := target.Jennies.GenerateFS(processedAst)
+		fs, err := target.Jennies.GenerateFS(processedAsts)
 		if err != nil {
 			panic(err)
 		}
@@ -65,7 +70,7 @@ func main() {
 		}
 	}
 
-	err = rootCodeJenFS.Write(context.Background(), "newgen")
+	err := rootCodeJenFS.Write(context.Background(), "generated")
 	if err != nil {
 		panic(err)
 	}

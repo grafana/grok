@@ -17,13 +17,15 @@ func (jenny GoRawTypes) JennyName() string {
 	return "GoRawTypes"
 }
 
-func (jenny GoRawTypes) Generate(file *ast.File) (*codejen.File, error) {
+func (jenny GoRawTypes) Generate(file *ast.File) (codejen.Files, error) {
 	output, err := jenny.generateFile(file)
 	if err != nil {
 		return nil, err
 	}
 
-	return codejen.NewFile("types/"+file.Package+"_types_gen.go", output, jenny), nil
+	return codejen.Files{
+		*codejen.NewFile("types/"+file.Package+"_types_gen.go", output, jenny),
+	}, nil
 }
 
 func (jenny GoRawTypes) generateFile(file *ast.File) ([]byte, error) {

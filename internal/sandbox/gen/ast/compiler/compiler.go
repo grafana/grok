@@ -5,5 +5,5 @@ import (
 )
 
 type Pass interface {
-	Process(file *ast.File) (*ast.File, error)
+	Process(files []*ast.File) ([]*ast.File, error)
 }

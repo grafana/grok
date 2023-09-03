@@ -13,7 +13,22 @@ type DisjunctionToType struct {
 	newObjects map[string]ast.Object
 }
 
-func (pass *DisjunctionToType) Process(file *ast.File) (*ast.File, error) {
+func (pass *DisjunctionToType) Process(files []*ast.File) ([]*ast.File, error) {
+	newFiles := make([]*ast.File, 0, len(files))
+
+	for _, file := range files {
+		newFile, err := pass.processFile(file)
+		if err != nil {
+			return nil, err
+		}
+
+		newFiles = append(newFiles, newFile)
+	}
+
+	return newFiles, nil
+}
+
+func (pass *DisjunctionToType) processFile(file *ast.File) (*ast.File, error) {
 	pass.newObjects = make(map[string]ast.Object)
 
 	processedObjects := make([]ast.Object, 0, len(file.Definitions))

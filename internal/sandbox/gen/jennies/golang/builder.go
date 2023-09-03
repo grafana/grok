@@ -21,15 +21,15 @@ func (jenny *GoBuilder) JennyName() string {
 }
 
 func (jenny *GoBuilder) Generate(file *ast.File) (codejen.Files, error) {
-	preprocessedFile, err := compiler.RewriteEngine().Process(file)
+	preprocessedFile, err := compiler.RewriteEngine().Process([]*ast.File{file})
 	if err != nil {
 		return nil, err
 	}
 
-	jenny.file = preprocessedFile
+	jenny.file = preprocessedFile[0]
 
 	var files []codejen.File
-	for _, definition := range preprocessedFile.Definitions {
+	for _, definition := range jenny.file.Definitions {
 		if definition.Type.Kind() != ast.KindStruct {
 			continue
 		}
@@ -53,7 +53,7 @@ func (jenny *GoBuilder) generateDefinition(def ast.Object) ([]byte, error) {
 	buffer.WriteString(fmt.Sprintf("package %s\n\n", strings.ToLower(def.Name)))
 
 	// import generated types
-	buffer.WriteString(fmt.Sprintf("import \"github.com/grafana/grok/newgen/%s/types\"\n\n", jenny.file.Package))
+	buffer.WriteString("import \"github.com/grafana/grok/generated/types\"\n\n")
 
 	// Option type declaration
 	buffer.WriteString("type Option func(builder *Builder) error\n\n")
