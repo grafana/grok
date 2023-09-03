@@ -6,7 +6,6 @@ import (
 
 	"github.com/grafana/codejen"
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
-	"github.com/grafana/grok/internal/sandbox/gen/ast/compiler"
 	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
 )
 
@@ -20,12 +19,14 @@ func (jenny *TypescriptBuilder) JennyName() string {
 }
 
 func (jenny *TypescriptBuilder) Generate(file *ast.File) (codejen.Files, error) {
-	preprocessedFile, err := compiler.RewriteEngine().Process([]*ast.File{file})
-	if err != nil {
-		return nil, err
-	}
+	/*
+		preprocessedFile, err := compiler.RewriteEngine().Process([]*ast.File{file})
+		if err != nil {
+			return nil, err
+		}
+	*/
 
-	jenny.file = preprocessedFile[0]
+	jenny.file = file
 
 	var files []codejen.File
 	for _, definition := range jenny.file.Definitions {

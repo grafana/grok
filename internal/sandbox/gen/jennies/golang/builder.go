@@ -7,7 +7,6 @@ import (
 
 	"github.com/grafana/codejen"
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
-	"github.com/grafana/grok/internal/sandbox/gen/ast/compiler"
 	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
 )
 
@@ -20,37 +19,22 @@ func (jenny *GoBuilder) JennyName() string {
 	return "GoBuilder"
 }
 
-func (jenny *GoBuilder) Generate(file *ast.File) (codejen.Files, error) {
-	preprocessedFile, err := compiler.RewriteEngine().Process([]*ast.File{file})
+func (jenny *GoBuilder) Generate(builder ast.Builder) (codejen.Files, error) {
+	output, err := jenny.generateBuilder(builder)
 	if err != nil {
 		return nil, err
 	}
 
-	jenny.file = preprocessedFile[0]
-
-	var files []codejen.File
-	for _, definition := range jenny.file.Definitions {
-		if definition.Type.Kind() != ast.KindStruct {
-			continue
-		}
-
-		output, err := jenny.generateDefinition(definition)
-		if err != nil {
-			return nil, err
-		}
-
-		files = append(files, *codejen.NewFile(strings.ToLower(definition.Name)+"/builder_gen.go", output, jenny))
-	}
-
-	return files, nil
+	return codejen.Files{
+		*codejen.NewFile(strings.ToLower(builder.For.Name)+"/builder_gen.go", output, jenny),
+	}, nil
 }
 
-func (jenny *GoBuilder) generateDefinition(def ast.Object) ([]byte, error) {
+func (jenny *GoBuilder) generateBuilder(builder ast.Builder) ([]byte, error) {
 	var buffer strings.Builder
 	jenny.defaults = nil
-	structType := def.Type.(ast.StructType)
 
-	buffer.WriteString(fmt.Sprintf("package %s\n\n", strings.ToLower(def.Name)))
+	buffer.WriteString(fmt.Sprintf("package %s\n\n", strings.ToLower(builder.For.Name)))
 
 	// import generated types
 	buffer.WriteString("import \"github.com/grafana/grok/generated/types\"\n\n")
@@ -62,17 +46,18 @@ func (jenny *GoBuilder) generateDefinition(def ast.Object) ([]byte, error) {
 	buffer.WriteString(fmt.Sprintf(`type Builder struct {
 	internal *types.%s
 }
-`, tools.UpperCamelCase(def.Name)))
+
+`, tools.UpperCamelCase(builder.For.Name)))
 
 	// Add a constructor for the builder
-	constructorCode, err := jenny.veneer("constructor", def)
+	constructorCode, err := jenny.veneer("constructor", builder.For)
 	if err != nil {
 		return nil, err
 	}
 	buffer.WriteString(constructorCode)
 
 	// Add JSON (un)marshaling shortcuts
-	jsonMarshal, err := jenny.veneer("json_marshal", def)
+	jsonMarshal, err := jenny.veneer("json_marshal", builder.For)
 	if err != nil {
 		return nil, err
 	}
@@ -85,19 +70,21 @@ func (jenny *GoBuilder) generateDefinition(def ast.Object) ([]byte, error) {
 func (builder *Builder) Internal() *types.%s {
 	return builder.internal
 }
-`, tools.UpperCamelCase(def.Name)))
+`, tools.UpperCamelCase(builder.For.Name)))
 
-	// Define options from fields
-	for _, fieldDef := range structType.Fields {
-		buffer.WriteString(jenny.fieldToOption(fieldDef))
+	// Define options
+	for _, option := range builder.Options {
+		buffer.WriteString(jenny.generateOption(option) + "\n")
 	}
 
 	// add calls to set default values
 	buffer.WriteString("\n")
 	buffer.WriteString("func defaults() []Option {\n")
 	buffer.WriteString("return []Option{\n")
-	for _, defaultCall := range jenny.defaults {
-		buffer.WriteString(defaultCall + ",\n")
+	for _, opt := range builder.Options {
+		if opt.Default != nil {
+			buffer.WriteString(jenny.generateDefaultCall(opt) + ",\n")
+		}
 	}
 	buffer.WriteString("}\n")
 	buffer.WriteString("}\n")
@@ -129,119 +116,115 @@ func (jenny *GoBuilder) veneer(veneerType string, def ast.Object) (string, error
 	return buf.String(), nil
 }
 
-func (jenny *GoBuilder) fieldToOption(def ast.StructField) string {
+func (jenny *GoBuilder) generateOption(def ast.Option) string {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
 		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
 	}
 
-	// structs get their own builder
-	if def.Type.Kind() == ast.KindRef {
-		referredDef := jenny.file.LocateDefinition(def.Type.(ast.RefType).ReferredType)
-		if referredDef.Type.Kind() == ast.KindStruct {
-			return jenny.referenceFieldToOption(def)
+	// Option name
+	optionName := tools.UpperCamelCase(def.Title)
+
+	// Arguments list
+	arguments := ""
+	if len(def.Args) != 0 {
+		argsList := make([]string, 0, len(def.Args))
+		for _, arg := range def.Args {
+			argsList = append(argsList, jenny.generateArgument(arg))
 		}
+
+		arguments = strings.Join(argsList, ", ")
 	}
 
-	// literal options get their own simplified builder
-	if def.Type.Kind() == ast.KindLiteral {
-		return jenny.literalFieldToOption(def)
+	// Assignments
+	assignmentsList := make([]string, 0, len(def.Assignments))
+	for _, assignment := range def.Assignments {
+		assignmentsList = append(assignmentsList, jenny.generateAssignment(assignment))
+	}
+	assignments := strings.Join(assignmentsList, "\n")
+
+	buffer.WriteString(fmt.Sprintf(`func %[1]s(%[2]s) Option {
+	return func(builder *Builder) error {
+		%[3]s
+
+		return nil
+	}
+}
+`, optionName, arguments, assignments))
+
+	return buffer.String()
+}
+
+func (jenny *GoBuilder) generateArgument(arg ast.Argument) string {
+	typeName := formatType(arg.Type, true, "types")
+
+	if arg.TypeHasBuilder {
+		referredTypeName := arg.Type.(ast.RefType).ReferredType
+		referredTypePkg := strings.ToLower(referredTypeName)
+
+		return fmt.Sprintf(`opts ...%[1]s.Option`, referredTypePkg)
 	}
 
-	optionName := tools.UpperCamelCase(def.DisplayName)
-	fieldName := tools.UpperCamelCase(def.Name)
-	typeName := strings.TrimPrefix(formatType(def.Type, def.Required, "types"), "*")
-	argumentName := tools.LowerCamelCase(def.DisplayName)
-	if isReservedGoKeyword(argumentName) {
-		argumentName = argumentName + "Arg"
+	name := jenny.escapeVarName(tools.LowerCamelCase(arg.Name))
+
+	return fmt.Sprintf("%s %s", name, typeName)
+}
+
+func (jenny *GoBuilder) generateAssignment(assignment ast.Assignment) string {
+	fieldPath := tools.UpperCamelCase(assignment.Path)
+	valueType := assignment.ValueType
+
+	if assignment.ValueHasBuilder {
+		referredType := valueType.(ast.RefType)
+		referredTypePkg := strings.ToLower(referredType.ReferredType)
+
+		return fmt.Sprintf(`resource, err := %[2]s.New(opts...)
+		if err != nil {
+			return err
+		}
+
+		builder.internal.%[1]s = resource.Internal()
+`, fieldPath, referredTypePkg)
 	}
+
+	if assignment.ArgumentName == "" {
+		return fmt.Sprintf("builder.internal.%[1]s = %[2]s", fieldPath, jenny.formatScalar(assignment.Value))
+	}
+
+	argName := jenny.escapeVarName(tools.LowerCamelCase(assignment.ArgumentName))
 
 	asPointer := ""
 	// FIXME: this condition is probably wrong
-	if def.Type.Kind() != ast.KindArray && def.Type.Kind() != ast.KindStruct && !def.Required {
+	if valueType.Kind() != ast.KindArray && valueType.Kind() != ast.KindStruct && assignment.IntoOptionalField {
 		asPointer = "&"
 	}
 
-	generatedConstraints := ""
-	if scalarType, ok := def.Type.(ast.ScalarType); ok {
-		generatedConstraints = strings.Join(jenny.constraints(argumentName, scalarType.Constraints), "\n")
+	generatedConstraints := strings.Join(jenny.constraints(argName, assignment.Constraints), "\n")
+	if generatedConstraints != "" {
+		generatedConstraints = generatedConstraints + "\n\n"
 	}
 
-	/*
-		asPointer := ""
-		// FIXME: this condition is probably wrong
-		if def.Type.Nullable || (def.Type.Kind != ast.KindArray && def.Type.Kind != ast.KindStruct && !def.Required) {
-			asPointer = "&"
-		}
-	*/
+	return generatedConstraints + fmt.Sprintf("builder.internal.%[1]s = %[3]s%[2]s", fieldPath, argName, asPointer)
 
-	if def.Default != nil {
-		jenny.defaults = append(jenny.defaults, jenny.formatDefaultValue(def))
+}
+
+func (jenny *GoBuilder) escapeVarName(varName string) string {
+	if isReservedGoKeyword(varName) {
+		return varName + "Arg"
 	}
 
-	buffer.WriteString(fmt.Sprintf(`func %[1]s(%[3]s %[4]s) Option {
-	return func(builder *Builder) error {
-		%[5]s
-		builder.internal.%[2]s = %[6]s%[3]s
+	return varName
+}
 
-		return nil
+func (jenny *GoBuilder) generateDefaultCall(option ast.Option) string {
+	args := make([]string, 0, len(option.Default.ArgsValues))
+	for _, arg := range option.Default.ArgsValues {
+		args = append(args, jenny.formatScalar(arg))
 	}
+
+	return fmt.Sprintf("%s(%s)", tools.UpperCamelCase(option.Title), strings.Join(args, ", "))
 }
-`, optionName, fieldName, argumentName, typeName, generatedConstraints, asPointer))
-
-	return buffer.String()
-}
-
-func (jenny *GoBuilder) literalFieldToOption(def ast.StructField) string {
-	var buffer strings.Builder
-
-	fieldName := tools.UpperCamelCase(def.Name)
-	optionName := tools.UpperCamelCase(def.DisplayName)
-
-	literalDef := def.Type.(ast.Literal)
-	value := jenny.formatScalar(literalDef.Value)
-
-	buffer.WriteString(fmt.Sprintf(`func %[1]s() Option {
-	return func(builder *Builder) error {
-		builder.internal.%[2]s = %[3]s
-
-		return nil
-	}
-}
-`, optionName, fieldName, value))
-
-	return buffer.String()
-}
-
-func (jenny *GoBuilder) formatDefaultValue(field ast.StructField) string {
-	optionName := tools.UpperCamelCase(field.DisplayName)
-
-	return fmt.Sprintf("%[1]s(%[2]s)", optionName, jenny.formatScalar(field.Default))
-}
-
-/*
-
-// FIXME: this breaks for anonymous structs with anonymous types defined in one or more of their fields
-func (jenny *GoBuilder) formatAnonymousStructDefaultValue(structDef ast.DefinitionImpl) string {
-	var buffer bytes.Buffer
-
-	buffer.WriteString(formatStructBody(structDef, "types"))
-	buffer.WriteString("{\n")
-	for _, field := range structDef.Fields {
-		if !field.HasDefaultValue() {
-			continue
-		}
-
-		fieldName := strings.Title(field.Name)
-
-		buffer.WriteString(fmt.Sprintf("%s: %s,\n", fieldName, jenny.formatScalar(field.Type.Default)))
-	}
-	buffer.WriteString("\n}")
-
-	return buffer.String()
-}
-*/
 
 func (jenny *GoBuilder) formatScalar(val any) string {
 	if list, ok := val.([]any); ok {
@@ -256,30 +239,6 @@ func (jenny *GoBuilder) formatScalar(val any) string {
 	}
 
 	return fmt.Sprintf("%#v", val)
-}
-
-func (jenny *GoBuilder) referenceFieldToOption(def ast.StructField) string {
-	var buffer strings.Builder
-
-	fieldName := tools.UpperCamelCase(def.Name)
-	referredPackage := strings.ToLower(def.Type.(ast.RefType).ReferredType)
-
-	buffer.WriteString(fmt.Sprintf(`
-func %[1]s(opts ...%[2]s.Option) Option {
-	return func(builder *Builder) error {
-		resource, err := %[2]s.New(opts...)
-		if err != nil {
-			return err
-		}
-
-		builder.internal.%[1]s = resource.Internal()
-
-		return nil
-	}
-}
-`, fieldName, referredPackage))
-
-	return buffer.String()
 }
 
 func (jenny *GoBuilder) constraints(argumentName string, constraints []ast.TypeConstraint) []string {
