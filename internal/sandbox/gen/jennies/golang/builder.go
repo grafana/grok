@@ -50,10 +50,7 @@ func (jenny *GoBuilder) generateBuilder(builder ast.Builder) ([]byte, error) {
 `, tools.UpperCamelCase(builder.For.Name)))
 
 	// Add a constructor for the builder
-	constructorCode, err := jenny.veneer("constructor", builder.For)
-	if err != nil {
-		return nil, err
-	}
+	constructorCode := jenny.generateConstructor(builder)
 	buffer.WriteString(constructorCode)
 
 	// Add JSON (un)marshaling shortcuts
@@ -114,6 +111,83 @@ func (jenny *GoBuilder) veneer(veneerType string, def ast.Object) (string, error
 	}
 
 	return buf.String(), nil
+}
+
+func (jenny *GoBuilder) generateConstructor(builder ast.Builder) string {
+	var buffer strings.Builder
+
+	typeName := tools.UpperCamelCase(builder.For.Name)
+	args := ""
+	fieldsInit := ""
+	var argsList []string
+	var fieldsInitList []string
+	for _, opt := range builder.Options {
+		if !opt.IsConstructorArg {
+			continue
+		}
+
+		// FIXME: this is assuming that there's only one argument for that option
+		argsList = append(argsList, jenny.generateArgument(opt.Args[0]))
+		fieldsInitList = append(
+			fieldsInitList,
+			jenny.generateInitAssignment(opt.Assignments[0]),
+		)
+	}
+
+	if len(argsList) != 0 {
+		args = strings.Join(argsList, ", ") + ", "
+	}
+	if len(fieldsInitList) != 0 {
+		fieldsInit = strings.Join(fieldsInitList, ",\n") + ",\n"
+	}
+
+	buffer.WriteString(fmt.Sprintf(`
+func New(%[2]soptions ...Option) (Builder, error) {
+	resource := &types.%[1]s{
+		%[3]s
+	}
+	builder := &Builder{internal: resource}
+
+	for _, opt := range append(defaults(), options...) {
+		if err := opt(builder); err != nil {
+			return *builder, err
+		}
+	}
+
+	return *builder, nil
+}
+`, typeName, args, fieldsInit))
+
+	return buffer.String()
+}
+
+func (jenny *GoBuilder) generateInitAssignment(assignment ast.Assignment) string {
+	fieldPath := tools.UpperCamelCase(assignment.Path)
+	valueType := assignment.ValueType
+
+	if assignment.ValueHasBuilder {
+		return "constructor init assignment with type that has a builder is not supported yet"
+	}
+
+	if assignment.ArgumentName == "" {
+		return fmt.Sprintf("%[1]s: %[2]s", fieldPath, jenny.formatScalar(assignment.Value))
+	}
+
+	argName := jenny.escapeVarName(tools.LowerCamelCase(assignment.ArgumentName))
+
+	asPointer := ""
+	// FIXME: this condition is probably wrong
+	if valueType.Kind() != ast.KindArray && valueType.Kind() != ast.KindStruct && assignment.IntoOptionalField {
+		asPointer = "&"
+	}
+
+	generatedConstraints := strings.Join(jenny.constraints(argName, assignment.Constraints), "\n")
+	if generatedConstraints != "" {
+		generatedConstraints = generatedConstraints + "\n\n"
+	}
+
+	return generatedConstraints + fmt.Sprintf("%[1]s: %[3]s%[2]s", fieldPath, argName, asPointer)
+
 }
 
 func (jenny *GoBuilder) generateOption(def ast.Option) string {

@@ -6,11 +6,12 @@ type Builder struct {
 }
 
 type Option struct {
-	Title       string
-	Comments    []string
-	Args        []Argument
-	Assignments []Assignment
-	Default     *OptionDefault
+	Title            string
+	Comments         []string
+	Args             []Argument
+	Assignments      []Assignment
+	Default          *OptionDefault
+	IsConstructorArg bool
 }
 
 type OptionDefault struct {

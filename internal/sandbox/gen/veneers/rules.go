@@ -5,23 +5,30 @@ type OptionRewriteRule struct {
 	Action   OptionRewriteAction
 }
 
-func RenameOption(selector OptionSelector, newName string) OptionRewriteRule {
+func Rename(selector OptionSelector, newName string) OptionRewriteRule {
 	return OptionRewriteRule{
 		Selector: selector,
-		Action:   Rename(newName),
+		Action:   RenameAction(newName),
 	}
 }
 
-func OmitOption(selector OptionSelector) OptionRewriteRule {
+func Omit(selector OptionSelector) OptionRewriteRule {
 	return OptionRewriteRule{
 		Selector: selector,
-		Action:   Omit(),
+		Action:   OmitAction(),
 	}
 }
 
-func UnfoldBooleanOption(selector OptionSelector, unfoldOpts BooleanUnfold) OptionRewriteRule {
+func UnfoldBoolean(selector OptionSelector, unfoldOpts BooleanUnfold) OptionRewriteRule {
 	return OptionRewriteRule{
 		Selector: selector,
-		Action:   UnfoldBoolean(unfoldOpts),
+		Action:   UnfoldBooleanAction(unfoldOpts),
+	}
+}
+
+func PromoteToConstructor(selector OptionSelector) OptionRewriteRule {
+	return OptionRewriteRule{
+		Selector: selector,
+		Action:   PromoteToConstructorAction(),
 	}
 }

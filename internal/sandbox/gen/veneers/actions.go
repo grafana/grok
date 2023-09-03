@@ -6,7 +6,7 @@ import (
 
 type OptionRewriteAction func(option ast.Option) []ast.Option
 
-func Rename(newName string) OptionRewriteAction {
+func RenameAction(newName string) OptionRewriteAction {
 	return func(option ast.Option) []ast.Option {
 		newOption := option
 		newOption.Title = newName
@@ -15,9 +15,18 @@ func Rename(newName string) OptionRewriteAction {
 	}
 }
 
-func Omit() OptionRewriteAction {
+func OmitAction() OptionRewriteAction {
 	return func(_ ast.Option) []ast.Option {
 		return nil
+	}
+}
+
+func PromoteToConstructorAction() OptionRewriteAction {
+	return func(option ast.Option) []ast.Option {
+		newOpt := option
+		newOpt.IsConstructorArg = true
+
+		return []ast.Option{newOpt}
 	}
 }
 
@@ -26,7 +35,7 @@ type BooleanUnfold struct {
 	OptionFalse string
 }
 
-func UnfoldBoolean(unfoldOpts BooleanUnfold) OptionRewriteAction {
+func UnfoldBooleanAction(unfoldOpts BooleanUnfold) OptionRewriteAction {
 	return func(option ast.Option) []ast.Option {
 		return []ast.Option{
 			{
