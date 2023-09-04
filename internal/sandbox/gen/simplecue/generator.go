@@ -48,6 +48,7 @@ func GenerateAST(val cue.Value, c Config) (*ast.File, error) {
 	return g.file, nil
 }
 
+// Do we really need to distinguish top-level types with others?
 func (g *newGenerator) declareTopLevelType(name string, v cue.Value) (ast.Object, error) {
 	typeHint, err := getTypeHint(v)
 	if err != nil {
@@ -68,11 +69,48 @@ func (g *newGenerator) declareTopLevelType(name string, v cue.Value) (ast.Object
 	}
 
 	switch v.IncompleteKind() {
+	case cue.StringKind:
+		return g.declareTopLevelString(name, v)
 	case cue.StructKind:
 		return g.declareTopLevelStruct(name, v)
 	default:
 		return ast.Object{}, errorWithCueRef(v, "unexpected top-level kind '%s'", v.IncompleteKind().String())
 	}
+}
+
+func (g *newGenerator) declareTopLevelString(name string, v cue.Value) (ast.Object, error) {
+	ik := v.IncompleteKind()
+	if ik&cue.StringKind != ik {
+		return ast.Object{}, errorWithCueRef(v, "top-level strings may only be generated from concrete strings")
+	}
+
+	strType, err := g.declareString(v)
+	if err != nil {
+		return ast.Object{}, err
+	}
+
+	// v represents a constant string
+	if v.IsConcrete() {
+		stringVal, err := cueConcreteToScalar(v)
+		if err != nil {
+			return ast.Object{}, err
+		}
+
+		return ast.Object{
+			Name:     name,
+			Comments: commentsFromCueValue(v),
+			Type: ast.Constant{
+				ScalarType: strType,
+				Value:      stringVal,
+			},
+		}, nil
+	}
+
+	return ast.Object{
+		Name:     name,
+		Comments: commentsFromCueValue(v),
+		Type:     strType,
+	}, nil
 }
 
 func (g *newGenerator) declareEnum(name string, v cue.Value) (ast.Object, error) {

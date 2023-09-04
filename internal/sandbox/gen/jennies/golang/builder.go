@@ -178,7 +178,7 @@ func (jenny *GoBuilder) generateInitAssignment(assignment ast.Assignment) string
 	}
 
 	if assignment.ArgumentName == "" {
-		return fmt.Sprintf("%[1]s: %[2]s", fieldPath, jenny.formatScalar(assignment.Value))
+		return fmt.Sprintf("%[1]s: %[2]s", fieldPath, formatScalar(assignment.Value))
 	}
 
 	argName := jenny.escapeVarName(tools.LowerCamelCase(assignment.ArgumentName))
@@ -270,7 +270,7 @@ func (jenny *GoBuilder) generateAssignment(assignment ast.Assignment) string {
 	}
 
 	if assignment.ArgumentName == "" {
-		return fmt.Sprintf("builder.internal.%[1]s = %[2]s", fieldPath, jenny.formatScalar(assignment.Value))
+		return fmt.Sprintf("builder.internal.%[1]s = %[2]s", fieldPath, formatScalar(assignment.Value))
 	}
 
 	argName := jenny.escapeVarName(tools.LowerCamelCase(assignment.ArgumentName))
@@ -301,25 +301,10 @@ func (jenny *GoBuilder) escapeVarName(varName string) string {
 func (jenny *GoBuilder) generateDefaultCall(option ast.Option) string {
 	args := make([]string, 0, len(option.Default.ArgsValues))
 	for _, arg := range option.Default.ArgsValues {
-		args = append(args, jenny.formatScalar(arg))
+		args = append(args, formatScalar(arg))
 	}
 
 	return fmt.Sprintf("%s(%s)", tools.UpperCamelCase(option.Title), strings.Join(args, ", "))
-}
-
-func (jenny *GoBuilder) formatScalar(val any) string {
-	if list, ok := val.([]any); ok {
-		items := make([]string, 0, len(list))
-
-		for _, item := range list {
-			items = append(items, jenny.formatScalar(item))
-		}
-
-		// TODO: we can't assume a list of strings
-		return fmt.Sprintf("[]string{%s}", strings.Join(items, ", "))
-	}
-
-	return fmt.Sprintf("%#v", val)
 }
 
 func (jenny *GoBuilder) constraints(argumentName string, constraints []ast.TypeConstraint) []string {

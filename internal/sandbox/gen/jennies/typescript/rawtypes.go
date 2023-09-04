@@ -49,10 +49,16 @@ func (jenny TypescriptRawTypes) formatObject(def ast.Object, typesPkg string) ([
 		return jenny.formatStructDef(def, typesPkg)
 	case ast.KindEnum:
 		return jenny.formatEnumDef(def)
-	case ast.KindDisjunction:
-		disj := formatDisjunction(def.Type.(ast.DisjunctionType), typesPkg)
+	case ast.KindRef:
+		refType := def.Type.(ast.RefType)
 
-		return []byte(fmt.Sprintf("type %s = %s;\n", def.Name, disj)), nil
+		return []byte(fmt.Sprintf("type %s = %s;", def.Name, refType.ReferredType)), nil
+	case ast.KindDisjunction, ast.KindMap, ast.KindString:
+		return []byte(fmt.Sprintf("type %s = %s;\n", def.Name, formatType(def.Type, ""))), nil
+	case ast.KindConstant:
+		constType := def.Type.(ast.Constant)
+
+		return []byte(fmt.Sprintf("const %s = %s;\n", def.Name, formatScalar(constType.Value))), nil
 	case ast.KindAny:
 		return []byte(fmt.Sprintf("type %s = any;\n", def.Name)), nil
 	default:
@@ -238,4 +244,19 @@ func prefixLinesWith(input string, prefix string) string {
 	}
 
 	return strings.Join(prefixed, "\n")
+}
+
+func formatScalar(val any) string {
+	if list, ok := val.([]any); ok {
+		items := make([]string, 0, len(list))
+
+		for _, item := range list {
+			items = append(items, formatScalar(item))
+		}
+
+		// TODO: we can't assume a list of strings
+		return fmt.Sprintf("[%s]", strings.Join(items, ", "))
+	}
+
+	return fmt.Sprintf("%#v", val)
 }

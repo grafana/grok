@@ -112,7 +112,7 @@ func (jenny *TypescriptBuilder) generateInitAssignment(assignment ast.Assignment
 	}
 
 	if assignment.ArgumentName == "" {
-		return fmt.Sprintf("this.internal.%[1]s = %[2]s;", fieldPath, jenny.formatScalar(assignment.Value))
+		return fmt.Sprintf("this.internal.%[1]s = %[2]s;", fieldPath, formatScalar(assignment.Value))
 	}
 
 	argName := tools.LowerCamelCase(assignment.ArgumentName)
@@ -189,7 +189,7 @@ func (jenny *TypescriptBuilder) generateAssignment(assignment ast.Assignment) st
 	}
 
 	if assignment.ArgumentName == "" {
-		return fmt.Sprintf("this.internal.%[1]s = %[2]s;", fieldPath, jenny.formatScalar(assignment.Value))
+		return fmt.Sprintf("this.internal.%[1]s = %[2]s;", fieldPath, formatScalar(assignment.Value))
 	}
 
 	argName := tools.LowerCamelCase(assignment.ArgumentName)
@@ -201,21 +201,6 @@ func (jenny *TypescriptBuilder) generateAssignment(assignment ast.Assignment) st
 
 	return generatedConstraints + fmt.Sprintf("this.internal.%[1]s = %[2]s;", fieldPath, argName)
 
-}
-
-func (jenny *TypescriptBuilder) formatScalar(val any) string {
-	if list, ok := val.([]any); ok {
-		items := make([]string, 0, len(list))
-
-		for _, item := range list {
-			items = append(items, jenny.formatScalar(item))
-		}
-
-		// TODO: we can't assume a list of strings
-		return fmt.Sprintf("[%s]", strings.Join(items, ", "))
-	}
-
-	return fmt.Sprintf("%#v", val)
 }
 
 func (jenny *TypescriptBuilder) constraints(argumentName string, constraints []ast.TypeConstraint) []string {

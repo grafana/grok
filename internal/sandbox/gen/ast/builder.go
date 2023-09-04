@@ -78,7 +78,9 @@ func (generator *BuilderGenerator) structFieldToOption(file *File, field StructF
 	valueHasBuilder := false
 	if field.Type.Kind() == KindRef {
 		referredDef := file.LocateDefinition(field.Type.(RefType).ReferredType)
-		valueHasBuilder = referredDef.Type.Kind() == KindStruct
+		if referredDef.Type != nil {
+			valueHasBuilder = referredDef.Type.Kind() == KindStruct
+		}
 	}
 
 	var constraints []TypeConstraint

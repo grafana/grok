@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/grafana/codejen"
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
 	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
@@ -47,21 +46,22 @@ func (jenny GoRawTypes) generateFile(file *ast.File) ([]byte, error) {
 }
 
 func (jenny GoRawTypes) formatTypeDef(def ast.Object) ([]byte, error) {
-	if def.Type == nil {
-		spew.Dump(def)
-		panic("lala")
-	}
 	switch def.Type.Kind() {
 	case ast.KindStruct:
 		return jenny.formatStructDef(def)
 	case ast.KindEnum:
 		return jenny.formatEnumDef(def)
+	case ast.KindMap, ast.KindString, ast.KindBool:
+		return []byte(fmt.Sprintf("type %s %s", tools.UpperCamelCase(def.Name), formatType(def.Type, true, ""))), nil
+	case ast.KindConstant:
+		constType := def.Type.(ast.Constant)
+
+		return []byte(fmt.Sprintf("const %s = %s", tools.UpperCamelCase(def.Name), formatScalar(constType.Value))), nil
 	case ast.KindRef:
-		return []byte(fmt.Sprintf("type %s %s", tools.UpperCamelCase(def.Name), def.Type.(*ast.RefType).ReferredType)), nil
+		return []byte(fmt.Sprintf("type %s %s", tools.UpperCamelCase(def.Name), def.Type.(ast.RefType).ReferredType)), nil
 	case ast.KindAny:
 		return []byte(fmt.Sprintf("type %s any", tools.UpperCamelCase(def.Name))), nil
 	default:
-		spew.Dump(def)
 		return nil, fmt.Errorf("unhandled type def kind: %s", def.Type.Kind())
 	}
 }
@@ -96,6 +96,20 @@ func (jenny GoRawTypes) formatStructDef(def ast.Object) ([]byte, error) {
 
 	buffer.WriteString(fmt.Sprintf("type %s ", tools.UpperCamelCase(def.Name)))
 	buffer.WriteString(formatStructBody(def.Type.(ast.StructType), ""))
+	buffer.WriteString("\n")
+
+	return []byte(buffer.String()), nil
+}
+
+func (jenny GoRawTypes) formatMapDef(def ast.Object) ([]byte, error) {
+	var buffer strings.Builder
+
+	for _, commentLine := range def.Comments {
+		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
+	}
+
+	buffer.WriteString(fmt.Sprintf("type %s ", tools.UpperCamelCase(def.Name)))
+	buffer.WriteString(formatMap(def.Type.(ast.MapType), ""))
 	buffer.WriteString("\n")
 
 	return []byte(buffer.String()), nil
@@ -219,4 +233,19 @@ func formatDisjunction(def ast.DisjunctionType, typesPkg string) string {
 	}
 
 	return fmt.Sprintf("disjunction<%s>", strings.Join(subTypes, " | "))
+}
+
+func formatScalar(val any) string {
+	if list, ok := val.([]any); ok {
+		items := make([]string, 0, len(list))
+
+		for _, item := range list {
+			items = append(items, formatScalar(item))
+		}
+
+		// TODO: we can't assume a list of strings
+		return fmt.Sprintf("[]string{%s}", strings.Join(items, ", "))
+	}
+
+	return fmt.Sprintf("%#v", val)
 }

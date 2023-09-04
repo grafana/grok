@@ -33,6 +33,8 @@ const (
 	// Meant to be used for builders only: to turn a type to a value
 	// ex: editable bool → true, panelType string → "timeseries"
 	KindLiteral Kind = "lit"
+
+	KindConstant Kind = "const"
 )
 
 type TypeConstraint struct {
@@ -191,4 +193,15 @@ type Literal struct {
 
 func (literal Literal) Kind() Kind {
 	return KindLiteral
+}
+
+var _ Type = (*Constant)(nil)
+
+type Constant struct {
+	ScalarType ScalarType
+	Value      any
+}
+
+func (constant Constant) Kind() Kind {
+	return KindConstant
 }
