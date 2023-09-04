@@ -18,39 +18,21 @@ func (jenny *TypescriptBuilder) JennyName() string {
 	return "TypescriptBuilder"
 }
 
-func (jenny *TypescriptBuilder) Generate(file *ast.File) (codejen.Files, error) {
-	/*
-		preprocessedFile, err := compiler.RewriteEngine().Process([]*ast.File{file})
-		if err != nil {
-			return nil, err
-		}
-	*/
-
-	jenny.file = file
-
-	var files []codejen.File
-	for _, definition := range jenny.file.Definitions {
-		// No need for a builder if the object isn't a struct
-		if definition.Type.Kind() != ast.KindStruct {
-			continue
-		}
-
-		output, err := jenny.generateDefinition(definition)
-		if err != nil {
-			return nil, err
-		}
-
-		files = append(files, *codejen.NewFile(strings.ToLower(definition.Name)+"/builder_gen.ts", output, jenny))
+func (jenny *TypescriptBuilder) Generate(builder ast.Builder) (codejen.Files, error) {
+	output, err := jenny.generateBuilder(builder)
+	if err != nil {
+		return nil, err
 	}
 
-	return files, nil
+	return codejen.Files{
+		*codejen.NewFile(strings.ToLower(builder.For.Name)+"/builder_gen.ts", output, jenny),
+	}, nil
 }
 
-func (jenny *TypescriptBuilder) generateDefinition(def ast.Object) ([]byte, error) {
+func (jenny *TypescriptBuilder) generateBuilder(builder ast.Builder) ([]byte, error) {
 	var buffer strings.Builder
-	jenny.defaults = nil
-	structType := def.Type.(ast.StructType)
-	objectName := tools.UpperCamelCase(def.Name)
+
+	objectName := tools.UpperCamelCase(builder.For.Name)
 
 	// imports
 	buffer.WriteString(fmt.Sprintf("import * as types from \"../%s_types_gen\";\n", strings.ToLower(objectName)))
@@ -62,6 +44,10 @@ func (jenny *TypescriptBuilder) generateDefinition(def ast.Object) ([]byte, erro
 	// internal property, representing the object being built
 	buffer.WriteString(fmt.Sprintf("\tinternal: types.%[1]s;\n", objectName))
 
+	// Add a constructor for the builder
+	constructorCode := jenny.generateConstructor(builder)
+	buffer.WriteString(constructorCode)
+
 	// Allow builders to expose the resource they're building
 	buffer.WriteString(fmt.Sprintf(`
 	build(): types.%s {
@@ -70,9 +56,9 @@ func (jenny *TypescriptBuilder) generateDefinition(def ast.Object) ([]byte, erro
 
 `, objectName))
 
-	// Define options from fields
-	for _, fieldDef := range structType.Fields {
-		opt, err := jenny.fieldToOption(fieldDef)
+	// Define options
+	for _, option := range builder.Options {
+		opt, err := jenny.generateOption(option)
 		if err != nil {
 			return nil, err
 		}
@@ -85,67 +71,136 @@ func (jenny *TypescriptBuilder) generateDefinition(def ast.Object) ([]byte, erro
 	return []byte(buffer.String()), nil
 }
 
-func (jenny *TypescriptBuilder) fieldToOption(def ast.StructField) (string, error) {
+func (jenny *TypescriptBuilder) generateConstructor(builder ast.Builder) string {
+	var buffer strings.Builder
+
+	typeName := tools.UpperCamelCase(builder.For.Name)
+	args := ""
+	fieldsInit := ""
+	var argsList []string
+	var fieldsInitList []string
+	for _, opt := range builder.Options {
+		if !opt.IsConstructorArg {
+			continue
+		}
+
+		// FIXME: this is assuming that there's only one argument for that option
+		argsList = append(argsList, jenny.generateArgument(opt.Args[0]))
+		fieldsInitList = append(
+			fieldsInitList,
+			jenny.generateInitAssignment(opt.Assignments[0]),
+		)
+	}
+
+	args = strings.Join(argsList, ", ")
+	fieldsInit = strings.Join(fieldsInitList, "\n")
+
+	buffer.WriteString(fmt.Sprintf(`
+	constructor(%[2]s) {
+		%[3]s
+	}
+`, typeName, args, fieldsInit))
+
+	return buffer.String()
+}
+
+func (jenny *TypescriptBuilder) generateInitAssignment(assignment ast.Assignment) string {
+	fieldPath := assignment.Path
+
+	if assignment.ValueHasBuilder {
+		return "constructor init assignment with type that has a builder is not supported yet"
+	}
+
+	if assignment.ArgumentName == "" {
+		return fmt.Sprintf("this.internal.%[1]s = %[2]s;", fieldPath, jenny.formatScalar(assignment.Value))
+	}
+
+	argName := tools.LowerCamelCase(assignment.ArgumentName)
+
+	generatedConstraints := strings.Join(jenny.constraints(argName, assignment.Constraints), "\n")
+	if generatedConstraints != "" {
+		generatedConstraints = generatedConstraints + "\n\n"
+	}
+
+	return generatedConstraints + fmt.Sprintf("this.internal.%[1]s = %[2]s;", fieldPath, argName)
+}
+
+func (jenny *TypescriptBuilder) generateOption(def ast.Option) (string, error) {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
 		buffer.WriteString(fmt.Sprintf("\t// %s\n", commentLine))
 	}
 
-	// references to objects get their own builder
-	if def.Type.Kind() == ast.KindRef {
-		referredDef := jenny.file.LocateDefinition(def.Type.(ast.RefType).ReferredType)
-		if referredDef.Type.Kind() == ast.KindStruct {
-			return jenny.referenceFieldToOption(def), nil
+	// Option name
+	optionName := tools.UpperCamelCase(def.Title)
+
+	// Arguments list
+	arguments := ""
+	if len(def.Args) != 0 {
+		argsList := make([]string, 0, len(def.Args))
+		for _, arg := range def.Args {
+			argsList = append(argsList, jenny.generateArgument(arg))
 		}
+
+		arguments = strings.Join(argsList, ", ")
 	}
 
-	// literal options get their own simplified builder
-	if def.Type.Kind() == ast.KindLiteral {
-		return jenny.literalFieldToOption(def), nil
+	// Assignments
+	assignmentsList := make([]string, 0, len(def.Assignments))
+	for _, assignment := range def.Assignments {
+		assignmentsList = append(assignmentsList, jenny.generateAssignment(assignment))
 	}
+	assignments := strings.Join(assignmentsList, "\n")
 
-	optionName := tools.UpperCamelCase(def.DisplayName)
-	argumentName := tools.LowerCamelCase(def.DisplayName)
-	typeName, err := formatType(def.Type, "types")
-	if err != nil {
-		return "", err
-	}
-
-	generatedConstraints := ""
-	if scalarType, ok := def.Type.(ast.ScalarType); ok {
-		generatedConstraints = strings.Join(jenny.constraints(argumentName, scalarType.Constraints), "\n")
-	}
-
-	buffer.WriteString(fmt.Sprintf(`	with%[1]s(%[3]s: %[4]s): this {
-		%[5]s
-		this.internal.%[2]s = %[3]s;
+	// Option body
+	buffer.WriteString(fmt.Sprintf(`	with%[1]s(%[2]s): this {
+		%[3]s
 
 		return this;
 	}
 
-`, optionName, def.Name, argumentName, typeName, generatedConstraints))
+`, optionName, arguments, assignments))
 
 	return buffer.String(), nil
 }
 
-func (jenny *TypescriptBuilder) literalFieldToOption(def ast.StructField) string {
-	var buffer strings.Builder
+func (jenny *TypescriptBuilder) generateArgument(arg ast.Argument) string {
+	typeName := formatType(arg.Type, "types")
 
-	optionName := tools.UpperCamelCase(def.DisplayName)
+	if arg.TypeHasBuilder {
+		referredTypeName := arg.Type.(ast.RefType).ReferredType
+		referredTypePkg := tools.UpperCamelCase(referredTypeName)
 
-	literalDef := def.Type.(ast.Literal)
-	value := jenny.formatScalar(literalDef.Value)
-
-	buffer.WriteString(fmt.Sprintf(`	with%[1]s(): this {
-		this.internal.%[2]s = %[3]s;
-
-		return this;
+		return fmt.Sprintf(`%[1]s: OptionsBuilder<types.%[2]s>`, arg.Name, referredTypePkg)
 	}
 
-`, optionName, def.Name, value))
+	name := tools.LowerCamelCase(arg.Name)
 
-	return buffer.String()
+	return fmt.Sprintf("%s: %s", name, typeName)
+}
+
+func (jenny *TypescriptBuilder) generateAssignment(assignment ast.Assignment) string {
+	fieldPath := assignment.Path
+
+	if assignment.ValueHasBuilder {
+		return fmt.Sprintf(`this.internal.%[1]s = %[2]s.build();
+`, fieldPath, assignment.ArgumentName)
+	}
+
+	if assignment.ArgumentName == "" {
+		return fmt.Sprintf("this.internal.%[1]s = %[2]s;", fieldPath, jenny.formatScalar(assignment.Value))
+	}
+
+	argName := tools.LowerCamelCase(assignment.ArgumentName)
+
+	generatedConstraints := strings.Join(jenny.constraints(argName, assignment.Constraints), "\n")
+	if generatedConstraints != "" {
+		generatedConstraints = generatedConstraints + "\n\n"
+	}
+
+	return generatedConstraints + fmt.Sprintf("this.internal.%[1]s = %[2]s;", fieldPath, argName)
+
 }
 
 func (jenny *TypescriptBuilder) formatScalar(val any) string {
@@ -161,23 +216,6 @@ func (jenny *TypescriptBuilder) formatScalar(val any) string {
 	}
 
 	return fmt.Sprintf("%#v", val)
-}
-
-func (jenny *TypescriptBuilder) referenceFieldToOption(def ast.StructField) string {
-	var buffer strings.Builder
-
-	referredType := tools.UpperCamelCase(def.Type.(ast.RefType).ReferredType)
-	optionName := tools.UpperCamelCase(def.DisplayName)
-
-	buffer.WriteString(fmt.Sprintf(`	with%[1]s(builder: OptionsBuilder<types.%[2]s>): this {
-		this.internal.%[3]s = builder.build();
-
-		return this;
-	}
-
-`, optionName, referredType, def.Name))
-
-	return buffer.String()
 }
 
 func (jenny *TypescriptBuilder) constraints(argumentName string, constraints []ast.TypeConstraint) []string {

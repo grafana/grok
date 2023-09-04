@@ -11,8 +11,6 @@ import (
 )
 
 type GoBuilder struct {
-	defaults []string
-	file     *ast.File
 }
 
 func (jenny *GoBuilder) JennyName() string {
@@ -32,7 +30,6 @@ func (jenny *GoBuilder) Generate(builder ast.Builder) (codejen.Files, error) {
 
 func (jenny *GoBuilder) generateBuilder(builder ast.Builder) ([]byte, error) {
 	var buffer strings.Builder
-	jenny.defaults = nil
 
 	buffer.WriteString(fmt.Sprintf("package %s\n\n", strings.ToLower(builder.For.Name)))
 
@@ -198,7 +195,6 @@ func (jenny *GoBuilder) generateInitAssignment(assignment ast.Assignment) string
 	}
 
 	return generatedConstraints + fmt.Sprintf("%[1]s: %[3]s%[2]s", fieldPath, argName, asPointer)
-
 }
 
 func (jenny *GoBuilder) generateOption(def ast.Option) string {

@@ -50,10 +50,7 @@ func (jenny TypescriptRawTypes) formatObject(def ast.Object, typesPkg string) ([
 	case ast.KindEnum:
 		return jenny.formatEnumDef(def)
 	case ast.KindDisjunction:
-		disj, err := formatDisjunction(def.Type.(ast.DisjunctionType), typesPkg)
-		if err != nil {
-			return nil, err
-		}
+		disj := formatDisjunction(def.Type.(ast.DisjunctionType), typesPkg)
 
 		return []byte(fmt.Sprintf("type %s = %s;\n", def.Name, disj)), nil
 	case ast.KindAny:
@@ -92,26 +89,20 @@ func (jenny TypescriptRawTypes) formatStructDef(def ast.Object, typesPkg string)
 
 	structType := def.Type.(ast.StructType)
 
-	body, err := formatStructFields(structType.Fields, typesPkg)
-	if err != nil {
-		return nil, nil
-	}
+	body := formatStructFields(structType.Fields, typesPkg)
 
 	buffer.WriteString(body + "\n")
 
 	return []byte(buffer.String()), nil
 }
 
-func formatStructFields(fields []ast.StructField, typesPkg string) (string, error) {
+func formatStructFields(fields []ast.StructField, typesPkg string) string {
 	var buffer strings.Builder
 
 	buffer.WriteString("{\n")
 
 	for i, fieldDef := range fields {
-		fieldDefGen, err := formatField(fieldDef, typesPkg)
-		if err != nil {
-			return "", err
-		}
+		fieldDefGen := formatField(fieldDef, typesPkg)
 
 		buffer.WriteString(
 			strings.TrimSuffix(
@@ -127,10 +118,10 @@ func formatStructFields(fields []ast.StructField, typesPkg string) (string, erro
 
 	buffer.WriteString("\n}")
 
-	return buffer.String(), nil
+	return buffer.String()
 }
 
-func formatField(def ast.StructField, typesPkg string) ([]byte, error) {
+func formatField(def ast.StructField, typesPkg string) []byte {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
@@ -142,10 +133,7 @@ func formatField(def ast.StructField, typesPkg string) ([]byte, error) {
 		required = "?"
 	}
 
-	formattedType, err := formatType(def.Type, typesPkg)
-	if err != nil {
-		return nil, err
-	}
+	formattedType := formatType(def.Type, typesPkg)
 
 	buffer.WriteString(fmt.Sprintf(
 		"%s%s: %s;\n",
@@ -154,10 +142,10 @@ func formatField(def ast.StructField, typesPkg string) ([]byte, error) {
 		formattedType,
 	))
 
-	return []byte(buffer.String()), nil
+	return []byte(buffer.String())
 }
 
-func formatType(def ast.Type, typesPkg string) (string, error) {
+func formatType(def ast.Type, typesPkg string) string {
 	// todo: handle nullable
 	// maybe if nullable, append | null to the type?
 	switch def.Kind() {
@@ -165,10 +153,10 @@ func formatType(def ast.Type, typesPkg string) (string, error) {
 		return formatDisjunction(def.(ast.DisjunctionType), typesPkg)
 	case ast.KindRef:
 		if typesPkg != "" {
-			return typesPkg + "." + (def.(ast.RefType)).ReferredType, nil
+			return typesPkg + "." + (def.(ast.RefType)).ReferredType
 		}
 
-		return (def.(ast.RefType)).ReferredType, nil
+		return (def.(ast.RefType)).ReferredType
 	case ast.KindArray:
 		return formatArray(def.(ast.ArrayType), typesPkg)
 	case ast.KindStruct:
@@ -182,66 +170,51 @@ func formatType(def ast.Type, typesPkg string) (string, error) {
 		return formatLiteral(def.(ast.Literal))
 
 	case ast.KindNull:
-		return "null", nil
+		return "null"
 	case ast.KindAny:
-		return "any", nil
+		return "any"
 
 	case ast.KindBytes, ast.KindString:
-		return "string", nil
+		return "string"
 
 	case ast.KindFloat32, ast.KindFloat64:
-		return "number", nil
+		return "number"
 	case ast.KindUint8, ast.KindUint16, ast.KindUint32, ast.KindUint64:
-		return "number", nil
+		return "number"
 	case ast.KindInt8, ast.KintInt16, ast.KindInt32, ast.KindInt64:
-		return "number", nil
+		return "number"
 
 	case ast.KindBool:
-		return "boolean", nil
+		return "boolean"
 
 	default:
-		return "", fmt.Errorf("unhandled type: %s", def.Kind())
+		return string(def.Kind())
 	}
 }
 
-func formatArray(def ast.ArrayType, typesPkg string) (string, error) {
-	// we don't know what to do here (yet)
-	subTypeString, err := formatType(def.ValueType, typesPkg)
-	if err != nil {
-		return "", err
-	}
+func formatArray(def ast.ArrayType, typesPkg string) string {
+	subTypeString := formatType(def.ValueType, typesPkg)
 
-	return fmt.Sprintf("%s[]", subTypeString), nil
+	return fmt.Sprintf("%s[]", subTypeString)
 }
 
-func formatDisjunction(def ast.DisjunctionType, typesPkg string) (string, error) {
+func formatDisjunction(def ast.DisjunctionType, typesPkg string) string {
 	subTypes := make([]string, 0, len(def.Branches))
 	for _, subType := range def.Branches {
-		formatted, err := formatType(subType, typesPkg)
-		if err != nil {
-			return "", err
-		}
-
-		subTypes = append(subTypes, formatted)
+		subTypes = append(subTypes, formatType(subType, typesPkg))
 	}
 
-	return strings.Join(subTypes, " | "), nil
+	return strings.Join(subTypes, " | ")
 }
 
-func formatMap(def ast.MapType, typesPkg string) (string, error) {
-	keyTypeString, err := formatType(def.IndexType, typesPkg)
-	if err != nil {
-		return "", err
-	}
-	valueTypeString, err := formatType(def.ValueType, typesPkg)
-	if err != nil {
-		return "", err
-	}
+func formatMap(def ast.MapType, typesPkg string) string {
+	keyTypeString := formatType(def.IndexType, typesPkg)
+	valueTypeString := formatType(def.ValueType, typesPkg)
 
-	return fmt.Sprintf("Record<%s, %s>", keyTypeString, valueTypeString), nil
+	return fmt.Sprintf("Record<%s, %s>", keyTypeString, valueTypeString)
 }
 
-func formatAnonymousEnum(def ast.EnumType) (string, error) {
+func formatAnonymousEnum(def ast.EnumType) string {
 	values := make([]string, 0, len(def.Values))
 	for _, value := range def.Values {
 		values = append(values, fmt.Sprintf("%#v", value.Value))
@@ -249,11 +222,11 @@ func formatAnonymousEnum(def ast.EnumType) (string, error) {
 
 	enumeration := strings.Join(values, " | ")
 
-	return enumeration, nil
+	return enumeration
 }
 
-func formatLiteral(def ast.Literal) (string, error) {
-	return fmt.Sprintf("%#v", def.Value), nil
+func formatLiteral(def ast.Literal) string {
+	return fmt.Sprintf("%#v", def.Value)
 }
 
 func prefixLinesWith(input string, prefix string) string {
