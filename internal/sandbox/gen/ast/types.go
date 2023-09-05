@@ -155,12 +155,11 @@ func (structType StructType) Kind() Kind {
 }
 
 type StructField struct {
-	Name        string
-	DisplayName string
-	Comments    []string
-	Type        Type
-	Required    bool
-	Default     any
+	Name     string
+	Comments []string
+	Type     Type
+	Required bool
+	Default  any
 }
 
 var _ Type = (*RefType)(nil)

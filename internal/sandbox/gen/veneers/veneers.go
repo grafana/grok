@@ -25,7 +25,7 @@ func Engine() *Rewriter {
 		// Editable() + Readonly() instead of Editable(val bool)
 		UnfoldBoolean(
 			ExactOption("Dashboard", "editable"),
-			BooleanUnfold{OptionTrue: "readonly", OptionFalse: "editable"},
+			BooleanUnfold{OptionTrue: "editable", OptionFalse: "readonly"},
 		),
 
 		// Time(from, to) instead of time(struct {From string `json:"from"`, To   string `json:"to"`}{From: "lala", To: "lala})

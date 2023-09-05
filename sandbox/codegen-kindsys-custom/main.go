@@ -11,6 +11,7 @@ import (
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/cuecontext"
 	"github.com/grafana/codejen"
+	"github.com/grafana/grok/internal/sandbox/gen/ast"
 	"github.com/grafana/grok/internal/sandbox/gen/jennies"
 	"github.com/grafana/grok/internal/sandbox/gen/simplecue"
 	"github.com/grafana/kindsys"
@@ -59,14 +60,14 @@ func main() {
 	}
 
 	// Here begins the code generation setup
-	targetsByLanguage := jennies.All(pkg)
+	targetsByLanguage := jennies.All()
 	rootCodeJenFS := codejen.NewFS()
 
 	for language, target := range targetsByLanguage {
 		fmt.Printf("Running '%s' jennies...\n", language)
 
 		var err error
-		processedAst := schemaAst
+		processedAst := []*ast.File{schemaAst}
 
 		for _, compilerPass := range target.CompilerPasses {
 			processedAst, err = compilerPass.Process(processedAst)
@@ -86,7 +87,7 @@ func main() {
 		}
 	}
 
-	err = rootCodeJenFS.Write(context.Background(), "newgen")
+	err = rootCodeJenFS.Write(context.Background(), "generated")
 	if err != nil {
 		panic(err)
 	}

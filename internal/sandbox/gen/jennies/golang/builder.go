@@ -287,7 +287,6 @@ func (jenny *GoBuilder) generateAssignment(assignment ast.Assignment) string {
 	}
 
 	return generatedConstraints + fmt.Sprintf("builder.internal.%[1]s = %[3]s%[2]s", fieldPath, argName, asPointer)
-
 }
 
 func (jenny *GoBuilder) escapeVarName(varName string) string {

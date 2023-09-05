@@ -82,12 +82,11 @@ func (pass *DisjunctionToType) processStruct(def ast.StructType) ast.StructType 
 	processedFields := make([]ast.StructField, 0, len(def.Fields))
 	for _, field := range def.Fields {
 		processedFields = append(processedFields, ast.StructField{
-			Name:        field.Name,
-			Comments:    field.Comments,
-			Type:        pass.processType(field.Type),
-			Required:    field.Required,
-			Default:     field.Default,
-			DisplayName: field.DisplayName,
+			Name:     field.Name,
+			Comments: field.Comments,
+			Type:     pass.processType(field.Type),
+			Required: field.Required,
+			Default:  field.Default,
 		})
 	}
 

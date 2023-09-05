@@ -4,39 +4,57 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/grafana/codejen"
+	"github.com/grafana/grok/internal/sandbox/gen/ast"
 	"github.com/grafana/grok/internal/sandbox/gen/jennies"
 	"github.com/grafana/grok/internal/sandbox/gen/jsonschema"
 )
 
 func main() {
-	//entrypoint := "./schemas/jsonschema/core/playlist/playlist.json"
-	//pkg := "playlist"
-
-	entrypoint := "./schemas/jsonschema/core/dockerd/dockerd.json"
-	pkg := "dockerd"
-
-	reader, err := os.Open(entrypoint)
-	if err != nil {
-		panic(err)
+	entrypoints := []string{
+		"./schemas/jsonschema/core/playlist/playlist.json",
+		"./schemas/jsonschema/core/dockerd/dockerd.json",
 	}
 
-	schemaAst, err := jsonschema.GenerateAST(reader, jsonschema.Config{
-		Package: pkg, // TODO: extract from input schema/folder?
-	})
-	if err != nil {
-		panic(err)
+	allSchemas := make([]*ast.File, 0, len(entrypoints))
+	for _, entrypoint := range entrypoints {
+		pkg := filepath.Base(filepath.Dir(entrypoint))
+
+		reader, err := os.Open(entrypoint)
+		if err != nil {
+			panic(err)
+		}
+
+		schemaAst, err := jsonschema.GenerateAST(reader, jsonschema.Config{
+			Package: pkg, // TODO: extract from input schema/folder?
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		allSchemas = append(allSchemas, schemaAst)
 	}
 
 	// Here begins the code generation setup
-	jenniesByLanguage := jennies.All(pkg)
+	targetsByLanguage := jennies.All()
 	rootCodeJenFS := codejen.NewFS()
 
-	for language, targets := range jenniesByLanguage {
+	for language, target := range targetsByLanguage {
 		fmt.Printf("Running '%s' jennies...\n", language)
 
-		fs, err := targets.GenerateFS(schemaAst)
+		var err error
+		processedAsts := allSchemas
+
+		for _, compilerPass := range target.CompilerPasses {
+			processedAsts, err = compilerPass.Process(processedAsts)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		fs, err := target.Jennies.GenerateFS(processedAsts)
 		if err != nil {
 			panic(err)
 		}
@@ -47,7 +65,7 @@ func main() {
 		}
 	}
 
-	err = rootCodeJenFS.Write(context.Background(), "newgen")
+	err := rootCodeJenFS.Write(context.Background(), "generated")
 	if err != nil {
 		panic(err)
 	}
