@@ -11,7 +11,6 @@ import (
 
 	"cuelang.org/go/cue/cuecontext"
 	"cuelang.org/go/cue/load"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/grafana/codejen"
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
 	"github.com/grafana/grok/internal/sandbox/gen/jennies"
@@ -64,8 +63,6 @@ func main() {
 	// Here begins the code generation setup
 	targetsByLanguage := jennies.All()
 	rootCodeJenFS := codejen.NewFS()
-
-	spew.Dump(allSchemas)
 
 	for language, target := range targetsByLanguage {
 		fmt.Printf("Running '%s' jennies...\n", language)
