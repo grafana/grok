@@ -176,6 +176,7 @@ var _ Type = (*ScalarType)(nil)
 
 type ScalarType struct {
 	ScalarKind  Kind // bool, bytes, string, int, float, ...
+	Value       any  // if value isn't nil, we're representing a constant scalar
 	Constraints []TypeConstraint
 }
 

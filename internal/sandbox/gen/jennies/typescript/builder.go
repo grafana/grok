@@ -99,12 +99,19 @@ func (jenny *TypescriptBuilder) generateConstructor(builders ast.Builders, build
 		)
 	}
 
+	for _, init := range builder.Initializations {
+		fieldsInitList = append(
+			fieldsInitList,
+			jenny.generateInitAssignment(builders, init),
+		)
+	}
+
 	args = strings.Join(argsList, ", ")
 	fieldsInit = strings.Join(fieldsInitList, "\n")
 
 	buffer.WriteString(fmt.Sprintf(`
 	constructor(%[2]s) {
-		%[3]s
+%[3]s
 	}
 `, typeName, args, fieldsInit))
 
@@ -132,7 +139,7 @@ func (jenny *TypescriptBuilder) generateInitAssignment(builders ast.Builders, as
 	}
 
 	if assignment.ArgumentName == "" {
-		return fmt.Sprintf("this.internal.%[1]s = %[2]s;", fieldPath, formatScalar(assignment.Value))
+		return fmt.Sprintf("\t\tthis.internal.%[1]s = %[2]s;", fieldPath, formatScalar(assignment.Value))
 	}
 
 	argName := tools.LowerCamelCase(assignment.ArgumentName)
@@ -142,7 +149,7 @@ func (jenny *TypescriptBuilder) generateInitAssignment(builders ast.Builders, as
 		generatedConstraints = generatedConstraints + "\n\n"
 	}
 
-	return generatedConstraints + fmt.Sprintf("this.internal.%[1]s = %[2]s;", fieldPath, argName)
+	return generatedConstraints + fmt.Sprintf("\t\tthis.internal.%[1]s = %[2]s;", fieldPath, argName)
 }
 
 func (jenny *TypescriptBuilder) generateOption(builders ast.Builders, def ast.Option) (string, error) {

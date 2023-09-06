@@ -53,11 +53,9 @@ func (engine *Rewriter) processBuilder(builder ast.Builder) ast.Builder {
 		processedOptions = append(processedOptions, engine.processOption(builder, opt)...)
 	}
 
-	return ast.Builder{
-		Package: builder.Package,
-		For:     builder.For,
-		Options: processedOptions,
-	}
+	processedBuilder.Options = processedOptions
+
+	return processedBuilder
 }
 
 func (engine *Rewriter) processOption(parentBuilder ast.Builder, opt ast.Option) []ast.Option {

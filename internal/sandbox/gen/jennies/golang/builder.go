@@ -138,6 +138,13 @@ func (jenny *GoBuilder) generateConstructor(builders ast.Builders, builder ast.B
 		)
 	}
 
+	for _, init := range builder.Initializations {
+		fieldsInitList = append(
+			fieldsInitList,
+			jenny.generateInitAssignment(builders, init),
+		)
+	}
+
 	if len(argsList) != 0 {
 		args = strings.Join(argsList, ", ") + ", "
 	}

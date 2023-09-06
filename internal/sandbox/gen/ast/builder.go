@@ -1,9 +1,10 @@
 package ast
 
 type Builder struct {
-	Package string
-	For     Object
-	Options []Option
+	Package         string
+	For             Object
+	Options         []Option
+	Initializations []Assignment
 }
 
 type Builders []Builder
@@ -80,13 +81,35 @@ func (generator *BuilderGenerator) structObjectToBuilder(file *File, object Obje
 	structType := object.Type.(StructType)
 
 	for _, field := range structType.Fields {
-		builder.Options = append(builder.Options, generator.structFieldToOption(file, field))
+		if generator.fieldHasStaticValue(field) {
+			builder.Initializations = append(builder.Initializations, generator.structFieldToStaticInitialization(field))
+			continue
+		}
+
+		builder.Options = append(builder.Options, generator.structFieldToOption(field))
 	}
 
 	return builder
 }
 
-func (generator *BuilderGenerator) structFieldToOption(file *File, field StructField) Option {
+func (generator *BuilderGenerator) fieldHasStaticValue(field StructField) bool {
+	scalarType, ok := field.Type.(ScalarType)
+
+	return ok && scalarType.Value != nil
+}
+
+func (generator *BuilderGenerator) structFieldToStaticInitialization(field StructField) Assignment {
+	scalarType, _ := field.Type.(ScalarType)
+
+	return Assignment{
+		Path:              field.Name,
+		Value:             scalarType.Value,
+		ValueType:         field.Type,
+		IntoOptionalField: !field.Required,
+	}
+}
+
+func (generator *BuilderGenerator) structFieldToOption(field StructField) Option {
 	var constraints []TypeConstraint
 	if scalarType, ok := field.Type.(ScalarType); ok {
 		constraints = scalarType.Constraints

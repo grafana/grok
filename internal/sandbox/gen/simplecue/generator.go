@@ -358,6 +358,16 @@ func (g *newGenerator) declareString(v cue.Value) (ast.ScalarType, error) {
 		ScalarKind: ast.KindString,
 	}
 
+	// v.IsConcrete() being true means we're looking at a constant/known value
+	if v.IsConcrete() {
+		val, err := cueConcreteToScalar(v)
+		if err != nil {
+			return typeDef, err
+		}
+
+		typeDef.Value = val
+	}
+
 	// Extract constraints
 	constraints, err := g.declareStringConstraints(v)
 	if err != nil {
@@ -477,6 +487,16 @@ func (g *newGenerator) declareNumber(v cue.Value) (ast.ScalarType, error) {
 
 	typeDef := ast.ScalarType{
 		ScalarKind: numberType,
+	}
+
+	// v.IsConcrete() being true means we're looking at a constant/known value
+	if v.IsConcrete() {
+		val, err := cueConcreteToScalar(v)
+		if err != nil {
+			return typeDef, err
+		}
+
+		typeDef.Value = val
 	}
 
 	// If the default (all lists have a default, usually self, ugh) differs from the
