@@ -44,66 +44,46 @@ func (jenny TypescriptRawTypes) generateFile(file *ast.File) ([]byte, error) {
 }
 
 func (jenny TypescriptRawTypes) formatObject(def ast.Object, typesPkg string) ([]byte, error) {
+	var buffer strings.Builder
+
+	for _, commentLine := range def.Comments {
+		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
+	}
+
+	buffer.WriteString("export ")
+
 	switch def.Type.Kind() {
 	case ast.KindStruct:
-		return jenny.formatStructDef(def, typesPkg)
+		buffer.WriteString(fmt.Sprintf("interface %s ", def.Name))
+		buffer.WriteString(formatStructFields(def.Type.(ast.StructType).Fields, typesPkg))
+		buffer.WriteString("\n")
 	case ast.KindEnum:
-		return jenny.formatEnumDef(def)
+		buffer.WriteString(fmt.Sprintf("enum %s {\n", def.Name))
+		for _, val := range def.Type.(ast.EnumType).Values {
+			buffer.WriteString(fmt.Sprintf("\t%s = %s,\n", tools.UpperCamelCase(val.Name), formatScalar(val.Value)))
+		}
+		buffer.WriteString("}\n")
 	case ast.KindRef:
 		refType := def.Type.(ast.RefType)
 
-		return []byte(fmt.Sprintf("type %s = %s;", def.Name, refType.ReferredType)), nil
+		buffer.WriteString(fmt.Sprintf("type %s = %s;", def.Name, refType.ReferredType))
 	case ast.KindDisjunction, ast.KindMap:
-		return []byte(fmt.Sprintf("type %s = %s;\n", def.Name, formatType(def.Type, ""))), nil
+		buffer.WriteString(fmt.Sprintf("type %s = %s;\n", def.Name, formatType(def.Type, "")))
 	case ast.KindString,
 		ast.KindInt8, ast.KindInt16, ast.KindInt32, ast.KindInt64,
 		ast.KindUint8, ast.KindUint16, ast.KindUint32, ast.KindUint64,
 		ast.KindFloat32, ast.KindFloat64:
 		scalarType, ok := def.Type.(ast.ScalarType)
 		if ok && scalarType.Value != nil {
-			return []byte(fmt.Sprintf("const %s = %s;\n", def.Name, formatScalar(scalarType.Value))), nil
+			buffer.WriteString(fmt.Sprintf("const %s = %s;\n", def.Name, formatScalar(scalarType.Value)))
+		} else {
+			buffer.WriteString(fmt.Sprintf("type %s = %s;\n", def.Name, formatType(def.Type, "")))
 		}
-
-		return []byte(fmt.Sprintf("type %s = %s;\n", def.Name, formatType(def.Type, ""))), nil
 	case ast.KindAny:
-		return []byte(fmt.Sprintf("type %s = any;\n", def.Name)), nil
+		buffer.WriteString(fmt.Sprintf("type %s = any;\n", def.Name))
 	default:
 		return nil, fmt.Errorf("unhandled type def kind: %s", def.Type.Kind())
 	}
-}
-
-func (jenny TypescriptRawTypes) formatEnumDef(def ast.Object) ([]byte, error) {
-	var buffer strings.Builder
-
-	for _, commentLine := range def.Comments {
-		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
-	}
-
-	enumType := def.Type.(ast.EnumType)
-
-	buffer.WriteString(fmt.Sprintf("export enum %s {\n", def.Name))
-	for _, val := range enumType.Values {
-		buffer.WriteString(fmt.Sprintf("\t%s = %#v,\n", strings.Title(val.Name), val.Value))
-	}
-	buffer.WriteString("}\n")
-
-	return []byte(buffer.String()), nil
-}
-
-func (jenny TypescriptRawTypes) formatStructDef(def ast.Object, typesPkg string) ([]byte, error) {
-	var buffer strings.Builder
-
-	for _, commentLine := range def.Comments {
-		buffer.WriteString(fmt.Sprintf("// %s\n", commentLine))
-	}
-
-	buffer.WriteString(fmt.Sprintf("export interface %s ", tools.UpperCamelCase(def.Name)))
-
-	structType := def.Type.(ast.StructType)
-
-	body := formatStructFields(structType.Fields, typesPkg)
-
-	buffer.WriteString(body + "\n")
 
 	return []byte(buffer.String()), nil
 }
