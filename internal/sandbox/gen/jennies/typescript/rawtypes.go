@@ -53,12 +53,18 @@ func (jenny TypescriptRawTypes) formatObject(def ast.Object, typesPkg string) ([
 		refType := def.Type.(ast.RefType)
 
 		return []byte(fmt.Sprintf("type %s = %s;", def.Name, refType.ReferredType)), nil
-	case ast.KindDisjunction, ast.KindMap, ast.KindString:
+	case ast.KindDisjunction, ast.KindMap:
 		return []byte(fmt.Sprintf("type %s = %s;\n", def.Name, formatType(def.Type, ""))), nil
-	case ast.KindConstant:
-		constType := def.Type.(ast.Constant)
+	case ast.KindString,
+		ast.KindInt8, ast.KindInt16, ast.KindInt32, ast.KindInt64,
+		ast.KindUint8, ast.KindUint16, ast.KindUint32, ast.KindUint64,
+		ast.KindFloat32, ast.KindFloat64:
+		scalarType, ok := def.Type.(ast.ScalarType)
+		if ok && scalarType.Value != nil {
+			return []byte(fmt.Sprintf("const %s = %s;\n", def.Name, formatScalar(scalarType.Value))), nil
+		}
 
-		return []byte(fmt.Sprintf("const %s = %s;\n", def.Name, formatScalar(constType.Value))), nil
+		return []byte(fmt.Sprintf("type %s = %s;\n", def.Name, formatType(def.Type, ""))), nil
 	case ast.KindAny:
 		return []byte(fmt.Sprintf("type %s = any;\n", def.Name)), nil
 	default:
@@ -172,9 +178,6 @@ func formatType(def ast.Type, typesPkg string) string {
 	case ast.KindEnum:
 		return formatAnonymousEnum(def.(ast.EnumType))
 
-	case ast.KindLiteral:
-		return formatLiteral(def.(ast.Literal))
-
 	case ast.KindNull:
 		return "null"
 	case ast.KindAny:
@@ -187,7 +190,7 @@ func formatType(def ast.Type, typesPkg string) string {
 		return "number"
 	case ast.KindUint8, ast.KindUint16, ast.KindUint32, ast.KindUint64:
 		return "number"
-	case ast.KindInt8, ast.KintInt16, ast.KindInt32, ast.KindInt64:
+	case ast.KindInt8, ast.KindInt16, ast.KindInt32, ast.KindInt64:
 		return "number"
 
 	case ast.KindBool:
@@ -229,10 +232,6 @@ func formatAnonymousEnum(def ast.EnumType) string {
 	enumeration := strings.Join(values, " | ")
 
 	return enumeration
-}
-
-func formatLiteral(def ast.Literal) string {
-	return fmt.Sprintf("%#v", def.Value)
 }
 
 func prefixLinesWith(input string, prefix string) string {

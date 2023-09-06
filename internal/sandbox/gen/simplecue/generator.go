@@ -89,23 +89,6 @@ func (g *newGenerator) declareTopLevelString(name string, v cue.Value) (ast.Obje
 		return ast.Object{}, err
 	}
 
-	// v represents a constant string
-	if v.IsConcrete() {
-		stringVal, err := cueConcreteToScalar(v)
-		if err != nil {
-			return ast.Object{}, err
-		}
-
-		return ast.Object{
-			Name:     name,
-			Comments: commentsFromCueValue(v),
-			Type: ast.Constant{
-				ScalarType: strType,
-				Value:      stringVal,
-			},
-		}, nil
-	}
-
 	return ast.Object{
 		Name:     name,
 		Comments: commentsFromCueValue(v),
@@ -473,7 +456,7 @@ func (g *newGenerator) declareNumber(v cue.Value) (ast.ScalarType, error) {
 		numberType = ast.Kind(parts[0])
 	case ast.KindUint8, ast.KindUint16, ast.KindUint32, ast.KindUint64:
 		numberType = ast.Kind(parts[0])
-	case ast.KindInt8, ast.KintInt16, ast.KindInt32, ast.KindInt64:
+	case ast.KindInt8, ast.KindInt16, ast.KindInt32, ast.KindInt64:
 		numberType = ast.Kind(parts[0])
 	case "uint":
 		numberType = ast.KindUint64

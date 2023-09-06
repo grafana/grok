@@ -46,21 +46,29 @@ func (jenny GoRawTypes) generateFile(file *ast.File) ([]byte, error) {
 }
 
 func (jenny GoRawTypes) formatTypeDef(def ast.Object) ([]byte, error) {
+	defName := tools.UpperCamelCase(def.Name)
+
 	switch def.Type.Kind() {
 	case ast.KindStruct:
 		return jenny.formatStructDef(def)
 	case ast.KindEnum:
 		return jenny.formatEnumDef(def)
-	case ast.KindMap, ast.KindString, ast.KindBool:
-		return []byte(fmt.Sprintf("type %s %s", tools.UpperCamelCase(def.Name), formatType(def.Type, true, ""))), nil
-	case ast.KindConstant:
-		constType := def.Type.(ast.Constant)
+	case ast.KindString,
+		ast.KindInt8, ast.KindInt16, ast.KindInt32, ast.KindInt64,
+		ast.KindUint8, ast.KindUint16, ast.KindUint32, ast.KindUint64,
+		ast.KindFloat32, ast.KindFloat64:
+		scalarType, ok := def.Type.(ast.ScalarType)
+		if ok && scalarType.Value != nil {
+			return []byte(fmt.Sprintf("const %s = %s", defName, formatScalar(scalarType.Value))), nil
+		}
 
-		return []byte(fmt.Sprintf("const %s = %s", tools.UpperCamelCase(def.Name), formatScalar(constType.Value))), nil
+		return []byte(fmt.Sprintf("type %s %s", defName, formatType(def.Type, true, ""))), nil
+	case ast.KindMap, ast.KindBool:
+		return []byte(fmt.Sprintf("type %s %s", defName, formatType(def.Type, true, ""))), nil
 	case ast.KindRef:
-		return []byte(fmt.Sprintf("type %s %s", tools.UpperCamelCase(def.Name), def.Type.(ast.RefType).ReferredType)), nil
+		return []byte(fmt.Sprintf("type %s %s", defName, def.Type.(ast.RefType).ReferredType)), nil
 	case ast.KindAny:
-		return []byte(fmt.Sprintf("type %s any", tools.UpperCamelCase(def.Name))), nil
+		return []byte(fmt.Sprintf("type %s any", defName)), nil
 	default:
 		return nil, fmt.Errorf("unhandled type def kind: %s", def.Type.Kind())
 	}

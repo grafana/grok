@@ -24,17 +24,11 @@ const (
 	KindUint32 Kind = "uint32"
 	KindUint64 Kind = "uint64"
 	KindInt8   Kind = "int8"
-	KintInt16  Kind = "int16"
+	KindInt16  Kind = "int16"
 	KindInt32  Kind = "int32"
 	KindInt64  Kind = "int64"
 
 	KindBool Kind = "bool"
-
-	// Meant to be used for builders only: to turn a type to a value
-	// ex: editable bool → true, panelType string → "timeseries"
-	KindLiteral Kind = "lit"
-
-	KindConstant Kind = "const"
 )
 
 type TypeConstraint struct {
@@ -182,26 +176,4 @@ type ScalarType struct {
 
 func (scalarType ScalarType) Kind() Kind {
 	return scalarType.ScalarKind
-}
-
-var _ Type = (*Literal)(nil)
-
-type Literal struct {
-	ScalarType ScalarType
-	Value      any
-}
-
-func (literal Literal) Kind() Kind {
-	return KindLiteral
-}
-
-var _ Type = (*Constant)(nil)
-
-type Constant struct {
-	ScalarType ScalarType
-	Value      any
-}
-
-func (constant Constant) Kind() Kind {
-	return KindConstant
 }
