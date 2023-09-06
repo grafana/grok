@@ -280,13 +280,18 @@ func (jenny *GoBuilder) generateAssignment(builders ast.Builders, builder ast.Bu
 	valueType := assignment.ValueType
 
 	if builderPkg, found := jenny.typeHasBuilder(builders, builder, assignment.ValueType); found {
+		intoPointer := "*"
+		if assignment.IntoOptionalField {
+			intoPointer = ""
+		}
+
 		return fmt.Sprintf(`resource, err := %[2]s.New(opts...)
 		if err != nil {
 			return err
 		}
 
-		builder.internal.%[1]s = resource.Internal()
-`, fieldPath, builderPkg)
+		builder.internal.%[1]s = %[3]sresource.Internal()
+`, fieldPath, builderPkg, intoPointer)
 	}
 
 	if assignment.ArgumentName == "" {
