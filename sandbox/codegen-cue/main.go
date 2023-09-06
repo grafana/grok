@@ -20,7 +20,7 @@ import (
 
 func main() {
 	entrypoints := []string{
-		//"./schemas/cue/core/dashboard/",
+		"./schemas/cue/core/dashboard/",
 		//"./schemas/cue/core/playlist/",
 
 		"./schemas/cue/composable/timeseries/",

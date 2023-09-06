@@ -1,12 +1,13 @@
 package ast
 
 type Builder struct {
+	Package string
 	For     Object
 	Options []Option
 }
 
 type Option struct {
-	Title            string
+	Name             string
 	Comments         []string
 	Args             []Argument
 	Assignments      []Assignment
@@ -62,6 +63,7 @@ func (generator *BuilderGenerator) FromAST(files []*File) []Builder {
 
 func (generator *BuilderGenerator) structObjectToBuilder(file *File, object Object) Builder {
 	builder := Builder{
+		Package: file.Package,
 		For:     object,
 		Options: nil,
 	}
@@ -89,7 +91,7 @@ func (generator *BuilderGenerator) structFieldToOption(file *File, field StructF
 	}
 
 	opt := Option{
-		Title:    field.Name,
+		Name:     field.Name,
 		Comments: field.Comments,
 		Args: []Argument{
 			{

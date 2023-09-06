@@ -23,7 +23,7 @@ func (jenny TypescriptRawTypes) Generate(file *ast.File) (codejen.Files, error) 
 	}
 
 	return codejen.Files{
-		*codejen.NewFile(file.Package+"_types_gen.ts", output, jenny),
+		*codejen.NewFile("types/"+file.Package+"/types_gen.ts", output, jenny),
 	}, nil
 }
 

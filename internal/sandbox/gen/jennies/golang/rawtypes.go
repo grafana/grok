@@ -23,7 +23,7 @@ func (jenny GoRawTypes) Generate(file *ast.File) (codejen.Files, error) {
 	}
 
 	return codejen.Files{
-		*codejen.NewFile("types/"+file.Package+"_types_gen.go", output, jenny),
+		*codejen.NewFile("types/"+file.Package+"/types_gen.go", output, jenny),
 	}, nil
 }
 

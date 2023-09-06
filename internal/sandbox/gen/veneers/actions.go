@@ -9,7 +9,7 @@ type OptionRewriteAction func(option ast.Option) []ast.Option
 func RenameAction(newName string) OptionRewriteAction {
 	return func(option ast.Option) []ast.Option {
 		newOption := option
-		newOption.Title = newName
+		newOption.Name = newName
 
 		return []ast.Option{newOption}
 	}
@@ -87,7 +87,7 @@ func UnfoldBooleanAction(unfoldOpts BooleanUnfold) OptionRewriteAction {
 	return func(option ast.Option) []ast.Option {
 		return []ast.Option{
 			{
-				Title:    unfoldOpts.OptionTrue,
+				Name:     unfoldOpts.OptionTrue,
 				Comments: option.Comments,
 				Args:     nil,
 				Assignments: []ast.Assignment{
@@ -105,7 +105,7 @@ func UnfoldBooleanAction(unfoldOpts BooleanUnfold) OptionRewriteAction {
 			},
 
 			{
-				Title:    unfoldOpts.OptionFalse,
+				Name:     unfoldOpts.OptionFalse,
 				Comments: option.Comments,
 				Args:     nil,
 				Assignments: []ast.Assignment{

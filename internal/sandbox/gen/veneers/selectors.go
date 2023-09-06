@@ -8,7 +8,7 @@ type OptionSelector func(builder ast.Builder, option ast.Option) bool
 
 func ExactOption(objectName string, optionName string) OptionSelector {
 	return func(builder ast.Builder, option ast.Option) bool {
-		return builder.For.Name == objectName && option.Title == optionName
+		return builder.For.Name == objectName && option.Name == optionName
 	}
 }
 

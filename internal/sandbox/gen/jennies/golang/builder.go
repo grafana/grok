@@ -24,7 +24,7 @@ func (jenny *GoBuilder) Generate(builder ast.Builder) (codejen.Files, error) {
 	}
 
 	return codejen.Files{
-		*codejen.NewFile(strings.ToLower(builder.For.Name)+"/builder_gen.go", output, jenny),
+		*codejen.NewFile(builder.Package+"/"+strings.ToLower(builder.For.Name)+"/builder_gen.go", output, jenny),
 	}, nil
 }
 
@@ -34,7 +34,7 @@ func (jenny *GoBuilder) generateBuilder(builder ast.Builder) ([]byte, error) {
 	buffer.WriteString(fmt.Sprintf("package %s\n\n", strings.ToLower(builder.For.Name)))
 
 	// import generated types
-	buffer.WriteString("import \"github.com/grafana/grok/generated/types\"\n\n")
+	buffer.WriteString(fmt.Sprintf("import \"github.com/grafana/grok/generated/types/%s\"\n\n", builder.Package))
 
 	// Option type declaration
 	buffer.WriteString("type Option func(builder *Builder) error\n\n")
@@ -205,7 +205,7 @@ func (jenny *GoBuilder) generateOption(def ast.Option) string {
 	}
 
 	// Option name
-	optionName := tools.UpperCamelCase(def.Title)
+	optionName := tools.UpperCamelCase(def.Name)
 
 	// Arguments list
 	arguments := ""
@@ -303,7 +303,7 @@ func (jenny *GoBuilder) generateDefaultCall(option ast.Option) string {
 		args = append(args, formatScalar(arg))
 	}
 
-	return fmt.Sprintf("%s(%s)", tools.UpperCamelCase(option.Title), strings.Join(args, ", "))
+	return fmt.Sprintf("%s(%s)", tools.UpperCamelCase(option.Name), strings.Join(args, ", "))
 }
 
 func (jenny *GoBuilder) constraints(argumentName string, constraints []ast.TypeConstraint) []string {

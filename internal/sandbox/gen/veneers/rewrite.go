@@ -31,6 +31,7 @@ func (pass *Rewriter) processBuilder(builder ast.Builder) ast.Builder {
 	}
 
 	return ast.Builder{
+		Package: builder.Package,
 		For:     builder.For,
 		Options: processedOptions,
 	}
