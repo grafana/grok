@@ -13,8 +13,10 @@ func Jennies() *codejen.JennyList[[]*ast.File] {
 	})
 	targets.AppendManyToMany(
 		tools.Foreach[*ast.File](GoRawTypes{}),
-		codejen.AdaptManyToMany[[]ast.Builder, []*ast.File](
-			tools.Foreach[ast.Builder](&GoBuilder{}),
+	)
+	targets.AppendOneToMany(
+		codejen.AdaptOneToMany[[]ast.Builder, []*ast.File](
+			&GoBuilder{},
 			func(files []*ast.File) []ast.Builder {
 				generator := &ast.BuilderGenerator{}
 				builders := generator.FromAST(files)

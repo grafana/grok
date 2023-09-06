@@ -1,18 +1,18 @@
-package veneers
+package option
 
 import (
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
 )
 
-type OptionSelector func(builder ast.Builder, option ast.Option) bool
+type Selector func(builder ast.Builder, option ast.Option) bool
 
-func ExactOption(objectName string, optionName string) OptionSelector {
+func ExactOption(objectName string, optionName string) Selector {
 	return func(builder ast.Builder, option ast.Option) bool {
 		return builder.For.Name == objectName && option.Name == optionName
 	}
 }
 
-func EveryOption() OptionSelector {
+func EveryOption() Selector {
 	return func(builder ast.Builder, option ast.Option) bool {
 		return true
 	}

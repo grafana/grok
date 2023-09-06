@@ -6,6 +6,18 @@ type Builder struct {
 	Options []Option
 }
 
+type Builders []Builder
+
+func (builders Builders) LocateByObject(pkg string, name string) (Builder, bool) {
+	for _, builder := range builders {
+		if builder.Package == pkg && builder.For.Name == name {
+			return builder, true
+		}
+	}
+
+	return Builder{}, false
+}
+
 type Option struct {
 	Name             string
 	Comments         []string
@@ -20,9 +32,8 @@ type OptionDefault struct {
 }
 
 type Argument struct {
-	Name           string
-	Type           Type
-	TypeHasBuilder bool
+	Name string
+	Type Type
 }
 
 type Assignment struct {
@@ -38,7 +49,6 @@ type Assignment struct {
 
 	// Some more context on the what
 	IntoOptionalField bool
-	ValueHasBuilder   bool
 }
 
 type BuilderGenerator struct {
@@ -77,14 +87,6 @@ func (generator *BuilderGenerator) structObjectToBuilder(file *File, object Obje
 }
 
 func (generator *BuilderGenerator) structFieldToOption(file *File, field StructField) Option {
-	valueHasBuilder := false
-	if field.Type.Kind() == KindRef {
-		referredDef := file.LocateDefinition(field.Type.(RefType).ReferredType)
-		if referredDef.Type != nil {
-			valueHasBuilder = referredDef.Type.Kind() == KindStruct
-		}
-	}
-
 	var constraints []TypeConstraint
 	if scalarType, ok := field.Type.(ScalarType); ok {
 		constraints = scalarType.Constraints
@@ -95,9 +97,8 @@ func (generator *BuilderGenerator) structFieldToOption(file *File, field StructF
 		Comments: field.Comments,
 		Args: []Argument{
 			{
-				Name:           field.Name,
-				Type:           field.Type,
-				TypeHasBuilder: valueHasBuilder,
+				Name: field.Name,
+				Type: field.Type,
 			},
 		},
 		Assignments: []Assignment{
@@ -107,7 +108,6 @@ func (generator *BuilderGenerator) structFieldToOption(file *File, field StructF
 				ValueType:         field.Type,
 				Constraints:       constraints,
 				IntoOptionalField: !field.Required,
-				ValueHasBuilder:   valueHasBuilder,
 			},
 		},
 	}

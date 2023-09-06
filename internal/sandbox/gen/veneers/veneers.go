@@ -1,45 +1,59 @@
 package veneers
 
+import (
+	"github.com/grafana/grok/internal/sandbox/gen/veneers/builder"
+	"github.com/grafana/grok/internal/sandbox/gen/veneers/option"
+)
+
 func Engine() *Rewriter {
-	return NewRewrite([]OptionRewriteRule{
-		/********************************************
-		 * Dashboards
-		 ********************************************/
+	return NewRewrite(
+		[]builder.RewriteRule{
+			// We don't want that builder at all
+			builder.Omit(
+				builder.ExactBuilder("GridPos"),
+			),
+		},
 
-		// Let's make the dashboard constructor more friendly
-		PromoteToConstructor(
-			ExactOption("Dashboard", "title"),
-		),
+		[]option.RewriteRule{
+			/********************************************
+			 * Dashboards
+			 ********************************************/
 
-		// `Tooltip` looks better than `GraphTooltip`
-		Rename(
-			ExactOption("Dashboard", "graphTooltip"),
-			"tooltip",
-		),
+			// Let's make the dashboard constructor more friendly
+			option.PromoteToConstructor(
+				option.ExactOption("Dashboard", "title"),
+			),
 
-		// We don't want that option at all
-		Omit(
-			ExactOption("Dashboard", "schemaVersion"),
-		),
+			// `Tooltip` looks better than `GraphTooltip`
+			option.Rename(
+				option.ExactOption("Dashboard", "graphTooltip"),
+				"tooltip",
+			),
 
-		// Editable() + Readonly() instead of Editable(val bool)
-		UnfoldBoolean(
-			ExactOption("Dashboard", "editable"),
-			BooleanUnfold{OptionTrue: "editable", OptionFalse: "readonly"},
-		),
+			// We don't want that option at all
+			option.Omit(
+				option.ExactOption("Dashboard", "schemaVersion"),
+			),
 
-		// Time(from, to) instead of time(struct {From string `json:"from"`, To   string `json:"to"`}{From: "lala", To: "lala})
-		StructFieldsAsArguments(
-			ExactOption("Dashboard", "time"),
-		),
+			// Editable() + Readonly() instead of Editable(val bool)
+			option.UnfoldBoolean(
+				option.ExactOption("Dashboard", "editable"),
+				option.BooleanUnfold{OptionTrue: "editable", OptionFalse: "readonly"},
+			),
 
-		/********************************************
-		 * Rows
-		 ********************************************/
+			// Time(from, to) instead of time(struct {From string `json:"from"`, To   string `json:"to"`}{From: "lala", To: "lala})
+			option.StructFieldsAsArguments(
+				option.ExactOption("Dashboard", "time"),
+			),
 
-		// Let's make the row constructor more friendly
-		PromoteToConstructor(
-			ExactOption("RowPanel", "title"),
-		),
-	})
+			/********************************************
+			 * Rows
+			 ********************************************/
+
+			// Let's make the row constructor more friendly
+			option.PromoteToConstructor(
+				option.ExactOption("RowPanel", "title"),
+			),
+		},
+	)
 }

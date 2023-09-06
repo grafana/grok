@@ -1,12 +1,12 @@
-package veneers
+package option
 
 import (
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
 )
 
-type OptionRewriteAction func(option ast.Option) []ast.Option
+type RewriteAction func(option ast.Option) []ast.Option
 
-func RenameAction(newName string) OptionRewriteAction {
+func RenameAction(newName string) RewriteAction {
 	return func(option ast.Option) []ast.Option {
 		newOption := option
 		newOption.Name = newName
@@ -15,13 +15,13 @@ func RenameAction(newName string) OptionRewriteAction {
 	}
 }
 
-func OmitAction() OptionRewriteAction {
+func OmitAction() RewriteAction {
 	return func(_ ast.Option) []ast.Option {
 		return nil
 	}
 }
 
-func PromoteToConstructorAction() OptionRewriteAction {
+func PromoteToConstructorAction() RewriteAction {
 	return func(option ast.Option) []ast.Option {
 		newOpt := option
 		newOpt.IsConstructorArg = true
@@ -31,7 +31,7 @@ func PromoteToConstructorAction() OptionRewriteAction {
 }
 
 // FIXME: looks at the first arg only, no way to configure that right now
-func StructFieldsAsArgumentsAction() OptionRewriteAction {
+func StructFieldsAsArgumentsAction() RewriteAction {
 	return func(option ast.Option) []ast.Option {
 		// do nothing if we can't do anything.
 		if len(option.Args) < 1 || option.Args[0].Type.Kind() != ast.KindStruct {
@@ -54,9 +54,8 @@ func StructFieldsAsArgumentsAction() OptionRewriteAction {
 			}
 
 			newOpt.Args = append(newOpt.Args, ast.Argument{
-				Name:           field.Name,
-				Type:           field.Type,
-				TypeHasBuilder: false, // we assume/hope that none of the types for that struct is a ref to a builder
+				Name: field.Name,
+				Type: field.Type,
 			})
 
 			newOpt.Assignments = append(newOpt.Assignments, ast.Assignment{
@@ -65,7 +64,6 @@ func StructFieldsAsArgumentsAction() OptionRewriteAction {
 				ValueType:         field.Type,
 				Constraints:       constraints,
 				IntoOptionalField: !field.Required,
-				ValueHasBuilder:   false, // we assume/hope that none of the types for that struct is a ref to a builder
 			})
 		}
 
@@ -83,7 +81,7 @@ type BooleanUnfold struct {
 	OptionFalse string
 }
 
-func UnfoldBooleanAction(unfoldOpts BooleanUnfold) OptionRewriteAction {
+func UnfoldBooleanAction(unfoldOpts BooleanUnfold) RewriteAction {
 	return func(option ast.Option) []ast.Option {
 		return []ast.Option{
 			{
@@ -94,11 +92,8 @@ func UnfoldBooleanAction(unfoldOpts BooleanUnfold) OptionRewriteAction {
 					{
 						Path:              option.Assignments[0].Path,
 						ValueType:         option.Assignments[0].ValueType,
-						ArgumentName:      "",
+						IntoOptionalField: option.Assignments[0].IntoOptionalField,
 						Value:             true,
-						Constraints:       nil,
-						IntoOptionalField: false,
-						ValueHasBuilder:   false,
 					},
 				},
 				// TODO: default
@@ -112,11 +107,8 @@ func UnfoldBooleanAction(unfoldOpts BooleanUnfold) OptionRewriteAction {
 					{
 						Path:              option.Assignments[0].Path,
 						ValueType:         option.Assignments[0].ValueType,
-						ArgumentName:      "",
+						IntoOptionalField: option.Assignments[0].IntoOptionalField,
 						Value:             false,
-						Constraints:       nil,
-						IntoOptionalField: false,
-						ValueHasBuilder:   false,
 					},
 				},
 				// TODO: default

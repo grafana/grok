@@ -16,8 +16,10 @@ func Jennies() *codejen.JennyList[[]*ast.File] {
 	)
 	targets.AppendManyToMany(
 		tools.Foreach[*ast.File](TypescriptRawTypes{}),
-		codejen.AdaptManyToMany[[]ast.Builder, []*ast.File](
-			tools.Foreach[ast.Builder](&TypescriptBuilder{}),
+	)
+	targets.AppendOneToMany(
+		codejen.AdaptOneToMany[[]ast.Builder, []*ast.File](
+			&TypescriptBuilder{},
 			func(files []*ast.File) []ast.Builder {
 				generator := &ast.BuilderGenerator{}
 				builders := generator.FromAST(files)
