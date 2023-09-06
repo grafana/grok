@@ -11,3 +11,10 @@ func Omit(selector Selector) RewriteRule {
 		Action:   OmitAction(),
 	}
 }
+
+func MergeInto(selector Selector, sourceBuilderName string, underPath string, excludeOptions []string) RewriteRule {
+	return RewriteRule{
+		Selector: selector,
+		Action:   MergeIntoAction(sourceBuilderName, underPath, excludeOptions),
+	}
+}

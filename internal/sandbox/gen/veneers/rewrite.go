@@ -22,7 +22,7 @@ func (engine *Rewriter) ApplyTo(builders []ast.Builder) []ast.Builder {
 	newBuilders := make([]ast.Builder, 0, len(builders))
 
 	for _, b := range builders {
-		processed := engine.processBuilder(b)
+		processed := engine.processBuilder(builders, b)
 		// the builder was dismissed
 		if len(processed.Options) == 0 {
 			continue
@@ -34,12 +34,14 @@ func (engine *Rewriter) ApplyTo(builders []ast.Builder) []ast.Builder {
 	return newBuilders
 }
 
-func (engine *Rewriter) processBuilder(builder ast.Builder) ast.Builder {
+func (engine *Rewriter) processBuilder(builders ast.Builders, builder ast.Builder) ast.Builder {
 	processedBuilder := builder
 
 	for _, rule := range engine.builderRules {
 		if rule.Selector(processedBuilder) {
-			processedBuilder = rule.Action(processedBuilder)
+			// FIXME: passing `builders` here means that rules only get access to a "pre modification"
+			// set of builders. We should probably pass the most up-to-date list of builders
+			processedBuilder = rule.Action(builders, processedBuilder)
 		}
 
 		// this builder is dismissed, let's return early
@@ -49,8 +51,8 @@ func (engine *Rewriter) processBuilder(builder ast.Builder) ast.Builder {
 	}
 
 	processedOptions := make([]ast.Option, 0, len(processedBuilder.Options))
-	for _, opt := range builder.Options {
-		processedOptions = append(processedOptions, engine.processOption(builder, opt)...)
+	for _, opt := range processedBuilder.Options {
+		processedOptions = append(processedOptions, engine.processOption(processedBuilder, opt)...)
 	}
 
 	processedBuilder.Options = processedOptions

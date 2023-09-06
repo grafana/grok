@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
-	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
+	"github.com/grafana/grok/internal/sandbox/gen/tools"
 )
 
 var _ Pass = (*DisjunctionToType)(nil)

@@ -4,7 +4,7 @@ import (
 	"embed"
 	"html/template"
 
-	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
+	"github.com/grafana/grok/internal/sandbox/gen/tools"
 )
 
 var templates *template.Template

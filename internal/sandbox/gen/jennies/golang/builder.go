@@ -7,7 +7,7 @@ import (
 
 	"github.com/grafana/codejen"
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
-	"github.com/grafana/grok/internal/sandbox/gen/jennies/tools"
+	"github.com/grafana/grok/internal/sandbox/gen/tools"
 )
 
 type GoBuilder struct {

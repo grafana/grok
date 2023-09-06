@@ -6,7 +6,7 @@ import (
 
 type Selector func(builder ast.Builder, option ast.Option) bool
 
-func ExactOption(objectName string, optionName string) Selector {
+func ByName(objectName string, optionName string) Selector {
 	return func(builder ast.Builder, option ast.Option) bool {
 		return builder.For.Name == objectName && option.Name == optionName
 	}

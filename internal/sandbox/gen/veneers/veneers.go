@@ -8,10 +8,23 @@ import (
 func Engine() *Rewriter {
 	return NewRewrite(
 		[]builder.RewriteRule{
-			// We don't want that builder at all
-			builder.Omit(
-				builder.ExactBuilder("GridPos"),
+			// We don't want these builders at all
+			builder.Omit(builder.ByName("GridPos")),
+			builder.Omit(builder.ByName("DataSourceRef")),
+			builder.Omit(builder.ByName("LibraryPanelRef")),
+
+			// rearrange things a bit
+			builder.MergeInto(
+				builder.ByName("Panel"),
+				"FieldConfig",
+				"fieldConfig.defaults",
+				// don't copy these over as they clash with a similarly named option from Panel
+				[]string{"description", "links"},
 			),
+
+			// remove builders that were previously merged into something else
+			builder.Omit(builder.ByName("FieldConfig")),
+			builder.Omit(builder.ByName("FieldConfigSource")),
 		},
 
 		[]option.RewriteRule{
@@ -21,30 +34,36 @@ func Engine() *Rewriter {
 
 			// Let's make the dashboard constructor more friendly
 			option.PromoteToConstructor(
-				option.ExactOption("Dashboard", "title"),
+				option.ByName("Dashboard", "title"),
 			),
 
 			// `Tooltip` looks better than `GraphTooltip`
 			option.Rename(
-				option.ExactOption("Dashboard", "graphTooltip"),
+				option.ByName("Dashboard", "graphTooltip"),
 				"tooltip",
-			),
-
-			// We don't want that option at all
-			option.Omit(
-				option.ExactOption("Dashboard", "schemaVersion"),
 			),
 
 			// Editable() + Readonly() instead of Editable(val bool)
 			option.UnfoldBoolean(
-				option.ExactOption("Dashboard", "editable"),
+				option.ByName("Dashboard", "editable"),
 				option.BooleanUnfold{OptionTrue: "editable", OptionFalse: "readonly"},
 			),
 
 			// Time(from, to) instead of time(struct {From string `json:"from"`, To   string `json:"to"`}{From: "lala", To: "lala})
 			option.StructFieldsAsArguments(
-				option.ExactOption("Dashboard", "time"),
+				option.ByName("Dashboard", "time"),
 			),
+
+			// We don't want these options at all
+			option.Omit(option.ByName("Dashboard", "schemaVersion")),
+
+			/********************************************
+			 * Panels
+			 ********************************************/
+
+			option.Omit(option.ByName("Panel", "fieldConfig")),
+			option.Omit(option.ByName("Panel", "options")), // comes from a panel plugin
+			option.Omit(option.ByName("Panel", "custom")),  // comes from a panel plugin
 
 			/********************************************
 			 * Rows
@@ -52,7 +71,7 @@ func Engine() *Rewriter {
 
 			// Let's make the row constructor more friendly
 			option.PromoteToConstructor(
-				option.ExactOption("RowPanel", "title"),
+				option.ByName("RowPanel", "title"),
 			),
 		},
 	)
