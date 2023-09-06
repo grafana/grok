@@ -65,7 +65,7 @@ func (jenny *TypescriptBuilder) generateBuilder(builders ast.Builders, builder a
 
 	// Define options
 	for _, option := range builder.Options {
-		opt, err := jenny.generateOption(builders, option)
+		opt, err := jenny.generateOption(builders, builder, option)
 		if err != nil {
 			return nil, err
 		}
@@ -92,17 +92,17 @@ func (jenny *TypescriptBuilder) generateConstructor(builders ast.Builders, build
 		}
 
 		// FIXME: this is assuming that there's only one argument for that option
-		argsList = append(argsList, jenny.generateArgument(builders, opt.Args[0]))
+		argsList = append(argsList, jenny.generateArgument(builders, builder, opt.Args[0]))
 		fieldsInitList = append(
 			fieldsInitList,
-			jenny.generateInitAssignment(builders, opt.Assignments[0]),
+			jenny.generateInitAssignment(builders, builder, opt.Assignments[0]),
 		)
 	}
 
 	for _, init := range builder.Initializations {
 		fieldsInitList = append(
 			fieldsInitList,
-			jenny.generateInitAssignment(builders, init),
+			jenny.generateInitAssignment(builders, builder, init),
 		)
 	}
 
@@ -118,7 +118,7 @@ func (jenny *TypescriptBuilder) generateConstructor(builders ast.Builders, build
 	return buffer.String()
 }
 
-func (jenny *TypescriptBuilder) typeHasBuilder(builders ast.Builders, t ast.Type) (string, bool) {
+func (jenny *TypescriptBuilder) typeHasBuilder(builders ast.Builders, builder ast.Builder, t ast.Type) (string, bool) {
 	if t.Kind() != ast.KindRef {
 		return "", false
 	}
@@ -126,15 +126,15 @@ func (jenny *TypescriptBuilder) typeHasBuilder(builders ast.Builders, t ast.Type
 	referredTypeName := t.(ast.RefType).ReferredType
 	referredTypePkg := strings.ToLower(referredTypeName)
 
-	_, builderFound := builders.LocateByObject(referredTypePkg, referredTypeName)
+	_, builderFound := builders.LocateByObject(builder.Package, referredTypeName)
 
 	return referredTypePkg, builderFound
 }
 
-func (jenny *TypescriptBuilder) generateInitAssignment(builders ast.Builders, assignment ast.Assignment) string {
+func (jenny *TypescriptBuilder) generateInitAssignment(builders ast.Builders, builder ast.Builder, assignment ast.Assignment) string {
 	fieldPath := assignment.Path
 
-	if _, valueHasBuilder := jenny.typeHasBuilder(builders, assignment.ValueType); valueHasBuilder {
+	if _, valueHasBuilder := jenny.typeHasBuilder(builders, builder, assignment.ValueType); valueHasBuilder {
 		return "constructor init assignment with type that has a builder is not supported yet"
 	}
 
@@ -152,7 +152,7 @@ func (jenny *TypescriptBuilder) generateInitAssignment(builders ast.Builders, as
 	return generatedConstraints + fmt.Sprintf("\t\tthis.internal.%[1]s = %[2]s;", fieldPath, argName)
 }
 
-func (jenny *TypescriptBuilder) generateOption(builders ast.Builders, def ast.Option) (string, error) {
+func (jenny *TypescriptBuilder) generateOption(builders ast.Builders, builder ast.Builder, def ast.Option) (string, error) {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
@@ -164,7 +164,7 @@ func (jenny *TypescriptBuilder) generateOption(builders ast.Builders, def ast.Op
 	if len(def.Args) != 0 {
 		argsList := make([]string, 0, len(def.Args))
 		for _, arg := range def.Args {
-			argsList = append(argsList, jenny.generateArgument(builders, arg))
+			argsList = append(argsList, jenny.generateArgument(builders, builder, arg))
 		}
 
 		arguments = strings.Join(argsList, ", ")
@@ -173,7 +173,7 @@ func (jenny *TypescriptBuilder) generateOption(builders ast.Builders, def ast.Op
 	// Assignments
 	assignmentsList := make([]string, 0, len(def.Assignments))
 	for _, assignment := range def.Assignments {
-		assignmentsList = append(assignmentsList, jenny.generateAssignment(builders, assignment))
+		assignmentsList = append(assignmentsList, jenny.generateAssignment(builders, builder, assignment))
 	}
 	assignments := strings.Join(assignmentsList, "\n")
 
@@ -189,10 +189,10 @@ func (jenny *TypescriptBuilder) generateOption(builders ast.Builders, def ast.Op
 	return buffer.String(), nil
 }
 
-func (jenny *TypescriptBuilder) generateArgument(builders ast.Builders, arg ast.Argument) string {
+func (jenny *TypescriptBuilder) generateArgument(builders ast.Builders, builder ast.Builder, arg ast.Argument) string {
 	typeName := formatType(arg.Type, "types")
 
-	if builderPkg, found := jenny.typeHasBuilder(builders, arg.Type); found {
+	if builderPkg, found := jenny.typeHasBuilder(builders, builder, arg.Type); found {
 		return fmt.Sprintf(`%[1]s: OptionsBuilder<types.%[2]s>`, arg.Name, builderPkg)
 	}
 
@@ -201,10 +201,10 @@ func (jenny *TypescriptBuilder) generateArgument(builders ast.Builders, arg ast.
 	return fmt.Sprintf("%s: %s", name, typeName)
 }
 
-func (jenny *TypescriptBuilder) generateAssignment(builders ast.Builders, assignment ast.Assignment) string {
+func (jenny *TypescriptBuilder) generateAssignment(builders ast.Builders, builder ast.Builder, assignment ast.Assignment) string {
 	fieldPath := assignment.Path
 
-	if _, found := jenny.typeHasBuilder(builders, assignment.ValueType); found {
+	if _, found := jenny.typeHasBuilder(builders, builder, assignment.ValueType); found {
 		return fmt.Sprintf("\t\tthis.internal.%[1]s = %[2]s.build();", fieldPath, assignment.ArgumentName)
 	}
 

@@ -75,7 +75,7 @@ func (builder *Builder) Internal() *types.%s {
 
 	// Define options
 	for _, option := range builder.Options {
-		buffer.WriteString(jenny.generateOption(builders, option) + "\n")
+		buffer.WriteString(jenny.generateOption(builders, builder, option) + "\n")
 	}
 
 	// add calls to set default values
@@ -131,17 +131,17 @@ func (jenny *GoBuilder) generateConstructor(builders ast.Builders, builder ast.B
 		}
 
 		// FIXME: this is assuming that there's only one argument for that option
-		argsList = append(argsList, jenny.generateArgument(builders, opt.Args[0]))
+		argsList = append(argsList, jenny.generateArgument(builders, builder, opt.Args[0]))
 		fieldsInitList = append(
 			fieldsInitList,
-			jenny.generateInitAssignment(builders, opt.Assignments[0]),
+			jenny.generateInitAssignment(builders, builder, opt.Assignments[0]),
 		)
 	}
 
 	for _, init := range builder.Initializations {
 		fieldsInitList = append(
 			fieldsInitList,
-			jenny.generateInitAssignment(builders, init),
+			jenny.generateInitAssignment(builders, builder, init),
 		)
 	}
 
@@ -183,11 +183,11 @@ func (jenny *GoBuilder) formatFieldPath(fieldPath string) string {
 	return strings.Join(formatted, ".")
 }
 
-func (jenny *GoBuilder) generateInitAssignment(builders ast.Builders, assignment ast.Assignment) string {
+func (jenny *GoBuilder) generateInitAssignment(builders ast.Builders, builder ast.Builder, assignment ast.Assignment) string {
 	fieldPath := jenny.formatFieldPath(assignment.Path)
 	valueType := assignment.ValueType
 
-	if _, valueHasBuilder := jenny.typeHasBuilder(builders, assignment.ValueType); valueHasBuilder {
+	if _, valueHasBuilder := jenny.typeHasBuilder(builders, builder, assignment.ValueType); valueHasBuilder {
 		return "constructor init assignment with type that has a builder is not supported yet"
 	}
 
@@ -211,7 +211,7 @@ func (jenny *GoBuilder) generateInitAssignment(builders ast.Builders, assignment
 	return generatedConstraints + fmt.Sprintf("%[1]s: %[3]s%[2]s", fieldPath, argName, asPointer)
 }
 
-func (jenny *GoBuilder) generateOption(builders ast.Builders, def ast.Option) string {
+func (jenny *GoBuilder) generateOption(builders ast.Builders, builder ast.Builder, def ast.Option) string {
 	var buffer strings.Builder
 
 	for _, commentLine := range def.Comments {
@@ -226,7 +226,7 @@ func (jenny *GoBuilder) generateOption(builders ast.Builders, def ast.Option) st
 	if len(def.Args) != 0 {
 		argsList := make([]string, 0, len(def.Args))
 		for _, arg := range def.Args {
-			argsList = append(argsList, jenny.generateArgument(builders, arg))
+			argsList = append(argsList, jenny.generateArgument(builders, builder, arg))
 		}
 
 		arguments = strings.Join(argsList, ", ")
@@ -235,7 +235,7 @@ func (jenny *GoBuilder) generateOption(builders ast.Builders, def ast.Option) st
 	// Assignments
 	assignmentsList := make([]string, 0, len(def.Assignments))
 	for _, assignment := range def.Assignments {
-		assignmentsList = append(assignmentsList, jenny.generateAssignment(builders, assignment))
+		assignmentsList = append(assignmentsList, jenny.generateAssignment(builders, builder, assignment))
 	}
 	assignments := strings.Join(assignmentsList, "\n")
 
@@ -251,23 +251,22 @@ func (jenny *GoBuilder) generateOption(builders ast.Builders, def ast.Option) st
 	return buffer.String()
 }
 
-func (jenny *GoBuilder) typeHasBuilder(builders ast.Builders, t ast.Type) (string, bool) {
+func (jenny *GoBuilder) typeHasBuilder(builders ast.Builders, builder ast.Builder, t ast.Type) (string, bool) {
 	if t.Kind() != ast.KindRef {
 		return "", false
 	}
 
 	referredTypeName := t.(ast.RefType).ReferredType
 	referredTypePkg := strings.ToLower(referredTypeName)
-
-	_, builderFound := builders.LocateByObject(referredTypePkg, referredTypeName)
+	_, builderFound := builders.LocateByObject(builder.Package, referredTypeName)
 
 	return referredTypePkg, builderFound
 }
 
-func (jenny *GoBuilder) generateArgument(builders ast.Builders, arg ast.Argument) string {
+func (jenny *GoBuilder) generateArgument(builders ast.Builders, builder ast.Builder, arg ast.Argument) string {
 	typeName := formatType(arg.Type, true, "types")
 
-	if builderPkg, found := jenny.typeHasBuilder(builders, arg.Type); found {
+	if builderPkg, found := jenny.typeHasBuilder(builders, builder, arg.Type); found {
 		return fmt.Sprintf(`opts ...%[1]s.Option`, builderPkg)
 	}
 
@@ -276,11 +275,11 @@ func (jenny *GoBuilder) generateArgument(builders ast.Builders, arg ast.Argument
 	return fmt.Sprintf("%s %s", name, typeName)
 }
 
-func (jenny *GoBuilder) generateAssignment(builders ast.Builders, assignment ast.Assignment) string {
+func (jenny *GoBuilder) generateAssignment(builders ast.Builders, builder ast.Builder, assignment ast.Assignment) string {
 	fieldPath := jenny.formatFieldPath(assignment.Path)
 	valueType := assignment.ValueType
 
-	if builderPkg, found := jenny.typeHasBuilder(builders, assignment.ValueType); found {
+	if builderPkg, found := jenny.typeHasBuilder(builders, builder, assignment.ValueType); found {
 		return fmt.Sprintf(`resource, err := %[2]s.New(opts...)
 		if err != nil {
 			return err
