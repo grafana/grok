@@ -1,7 +1,6 @@
 package golang
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -57,13 +56,6 @@ func (jenny *GoBuilder) generateBuilder(builders ast.Builders, builder ast.Build
 	constructorCode := jenny.generateConstructor(builders, builder)
 	buffer.WriteString(constructorCode)
 
-	// Add JSON (un)marshaling shortcuts
-	jsonMarshal, err := jenny.veneer("json_marshal", builder.For)
-	if err != nil {
-		return nil, err
-	}
-	buffer.WriteString(jsonMarshal)
-
 	// Allow builders to expose the resource they're building
 	// TODO: do we want to do this?
 	// TODO: better name, with less conflict chance
@@ -91,30 +83,6 @@ func (builder *Builder) Internal() *types.%s {
 	buffer.WriteString("}\n")
 
 	return []byte(buffer.String()), nil
-}
-
-func (jenny *GoBuilder) veneer(veneerType string, def ast.Object) (string, error) {
-	// First, see if there is a definition-specific veneer
-	templateFile := fmt.Sprintf("%s.builder.%s.go.tmpl", strings.ToLower(def.Name), veneerType)
-	tmpl := templates.Lookup(templateFile)
-
-	// If not, get the generic one
-	if tmpl == nil {
-		tmpl = templates.Lookup(fmt.Sprintf("builder.%s.go.tmpl", veneerType))
-	}
-	// If not, something went wrong.
-	if tmpl == nil {
-		return "", fmt.Errorf("veneer '%s' not found", veneerType)
-	}
-
-	buf := bytes.Buffer{}
-	if err := tmpl.Execute(&buf, map[string]any{
-		"def": def,
-	}); err != nil {
-		return "", fmt.Errorf("failed executing veneer template: %w", err)
-	}
-
-	return buf.String(), nil
 }
 
 func (jenny *GoBuilder) generateConstructor(builders ast.Builders, builder ast.Builder) string {

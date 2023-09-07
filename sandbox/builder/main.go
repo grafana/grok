@@ -3,15 +3,19 @@ package main
 import (
 	"fmt"
 
-	"github.com/grafana/grok/newgen/dashboard/dashboard"
-	"github.com/grafana/grok/newgen/dashboard/timepicker"
-	"github.com/grafana/grok/newgen/dashboard/types"
+	"github.com/grafana/grok/generated/dashboard/dashboard"
+	"github.com/grafana/grok/generated/dashboard/timepicker"
+	types "github.com/grafana/grok/generated/types/dashboard"
 )
 
 func main() {
+	refresh := "1m"
+
 	builder, err := dashboard.New(
 		"Some title",
+		dashboard.Uid("test-dashboard-codegen"),
 		dashboard.Description("Some description"),
+		dashboard.Time("now-3h", "now"),
 		dashboard.Timepicker(
 			timepicker.RefreshIntervals([]string{"30s", "1m", "5m"}),
 		),
@@ -27,12 +31,14 @@ func main() {
 				TargetBlank: true,
 			},
 		}),
+
+		dashboard.Refresh(types.StringOrBool{ValString: &refresh}),
 	)
 	if err != nil {
 		panic(err)
 	}
 
-	dashboardJson, err := builder.MarshalIndentJSON()
+	dashboardJson, err := builder.Internal().MarshalIndentJSON()
 	if err != nil {
 		panic(err)
 	}

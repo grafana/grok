@@ -2,6 +2,7 @@ package option
 
 import (
 	"github.com/grafana/grok/internal/sandbox/gen/ast"
+	"github.com/grafana/grok/internal/sandbox/gen/tools"
 )
 
 type RewriteAction func(option ast.Option) []ast.Option
@@ -31,9 +32,9 @@ func PromoteToConstructorAction() RewriteAction {
 }
 
 // FIXME: looks at the first arg only, no way to configure that right now
-func StructFieldsAsArgumentsAction() RewriteAction {
+func StructFieldsAsArgumentsAction(explicitFields ...string) RewriteAction {
 	return func(option ast.Option) []ast.Option {
-		// do nothing if we can't do anything.
+		// TODO: handle the case where option.Args[0].Type is a KindRef. Follow the ref and keep working.
 		if len(option.Args) < 1 || option.Args[0].Type.Kind() != ast.KindStruct {
 			return []ast.Option{option}
 		}
@@ -48,6 +49,10 @@ func StructFieldsAsArgumentsAction() RewriteAction {
 		newOpt.Assignments = nil
 
 		for _, field := range structType.Fields {
+			if explicitFields != nil && !tools.ItemInList(field.Name, explicitFields) {
+				continue
+			}
+
 			var constraints []ast.TypeConstraint
 			if scalarType, ok := field.Type.(ast.ScalarType); ok {
 				constraints = scalarType.Constraints

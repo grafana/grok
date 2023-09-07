@@ -33,9 +33,9 @@ func PromoteToConstructor(selector Selector) RewriteRule {
 	}
 }
 
-func StructFieldsAsArguments(selector Selector) RewriteRule {
+func StructFieldsAsArguments(selector Selector, explicitFields ...string) RewriteRule {
 	return RewriteRule{
 		Selector: selector,
-		Action:   StructFieldsAsArgumentsAction(),
+		Action:   StructFieldsAsArgumentsAction(explicitFields...),
 	}
 }

@@ -1,6 +1,7 @@
 package golang
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
@@ -32,20 +33,29 @@ func (jenny GoRawTypes) generateFile(file *ast.File) ([]byte, error) {
 
 	buffer.WriteString("package types\n\n")
 
-	for _, typeDef := range file.Definitions {
-		typeDefGen, err := jenny.formatTypeDef(typeDef)
+	for _, object := range file.Definitions {
+		objectOutput, err := jenny.formatObject(object)
 		if err != nil {
 			return nil, err
 		}
 
-		buffer.Write(typeDefGen)
+		buffer.Write(objectOutput)
 		buffer.WriteString("\n")
+
+		// Add JSON (un)marshaling shortcuts
+		if object.Type.Kind() != ast.KindAny {
+			jsonMarshal, err := jenny.veneer("json_marshal", object)
+			if err != nil {
+				return nil, err
+			}
+			buffer.WriteString(jsonMarshal)
+		}
 	}
 
 	return []byte(buffer.String()), nil
 }
 
-func (jenny GoRawTypes) formatTypeDef(def ast.Object) ([]byte, error) {
+func (jenny GoRawTypes) formatObject(def ast.Object) ([]byte, error) {
 	defName := tools.UpperCamelCase(def.Name)
 
 	switch def.Type.Kind() {
@@ -121,6 +131,30 @@ func (jenny GoRawTypes) formatMapDef(def ast.Object) ([]byte, error) {
 	buffer.WriteString("\n")
 
 	return []byte(buffer.String()), nil
+}
+
+func (jenny GoRawTypes) veneer(veneerType string, def ast.Object) (string, error) {
+	// First, see if there is a definition-specific veneer
+	templateFile := fmt.Sprintf("%s.types.%s.go.tmpl", strings.ToLower(def.Name), veneerType)
+	tmpl := templates.Lookup(templateFile)
+
+	// If not, get the generic one
+	if tmpl == nil {
+		tmpl = templates.Lookup(fmt.Sprintf("types.%s.go.tmpl", veneerType))
+	}
+	// If not, something went wrong.
+	if tmpl == nil {
+		return "", fmt.Errorf("veneer '%s' not found", veneerType)
+	}
+
+	buf := bytes.Buffer{}
+	if err := tmpl.Execute(&buf, map[string]any{
+		"def": def,
+	}); err != nil {
+		return "", fmt.Errorf("failed executing veneer template: %w", err)
+	}
+
+	return buf.String(), nil
 }
 
 func formatStructBody(def ast.StructType, typesPkg string) string {
