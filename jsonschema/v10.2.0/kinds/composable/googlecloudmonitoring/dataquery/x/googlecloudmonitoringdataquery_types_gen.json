@@ -1,0 +1,505 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "GoogleCloudMonitoringDataQuery",
+    "version": "0.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "AlignmentTypes": {
+        "type": "string",
+        "enum": [
+          "ALIGN_DELTA",
+          "ALIGN_RATE",
+          "ALIGN_INTERPOLATE",
+          "ALIGN_NEXT_OLDER",
+          "ALIGN_MIN",
+          "ALIGN_MAX",
+          "ALIGN_MEAN",
+          "ALIGN_COUNT",
+          "ALIGN_SUM",
+          "ALIGN_STDDEV",
+          "ALIGN_COUNT_TRUE",
+          "ALIGN_COUNT_FALSE",
+          "ALIGN_FRACTION_TRUE",
+          "ALIGN_PERCENTILE_99",
+          "ALIGN_PERCENTILE_95",
+          "ALIGN_PERCENTILE_50",
+          "ALIGN_PERCENTILE_05",
+          "ALIGN_PERCENT_CHANGE",
+          "ALIGN_NONE"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "CloudMonitoringQuery": {
+        "type": "object",
+        "properties": {
+          "aliasBy": {
+            "description": "Aliases can be set to modify the legend labels. e.g. {{metric.label.xxx}}. See docs for more detail.",
+            "type": "string"
+          },
+          "timeSeriesList": {
+            "$ref": "#/components/schemas/TimeSeriesList"
+          },
+          "timeSeriesQuery": {
+            "$ref": "#/components/schemas/TimeSeriesQuery"
+          },
+          "sloQuery": {
+            "$ref": "#/components/schemas/SLOQuery"
+          },
+          "promQLQuery": {
+            "$ref": "#/components/schemas/PromQLQuery"
+          },
+          "intervalMs": {
+            "description": "Time interval in milliseconds.",
+            "type": "number"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/DataQuery"
+          }
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "DataQuery": {
+        "description": "These are the common properties available to all queries in all datasources.\nSpecific implementations will *extend* this interface, adding the required\nproperties for the given context.",
+        "type": "object",
+        "required": [
+          "refId"
+        ],
+        "properties": {
+          "refId": {
+            "description": "A unique identifier for the query within the list of targets.\nIn server side expressions, the refId is used as a variable name to identify results.\nBy default, the UI will assign A-\u003eZ; however setting meaningful names may be useful.",
+            "type": "string"
+          },
+          "hide": {
+            "description": "true if query is disabled (ie should not be returned to the dashboard)\nNote this does not always imply that the query should not be executed since\nthe results from a hidden query may be used as the input to other queries (SSE etc)",
+            "type": "boolean"
+          },
+          "queryType": {
+            "description": "Specify the query flavor\nTODO make this required and give it a default",
+            "type": "string"
+          },
+          "datasource": {
+            "description": "For mixed data sources the selected datasource is on the query level.\nFor non mixed scenarios this is undefined.\nTODO find a better way to do this ^ that's friendly to schema\nTODO this shouldn't be unknown but DataSourceRef | null"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "Filter": {
+        "description": "Query filter representation.",
+        "type": "object",
+        "required": [
+          "key",
+          "operator",
+          "value"
+        ],
+        "properties": {
+          "key": {
+            "description": "Filter key.",
+            "type": "string"
+          },
+          "operator": {
+            "description": "Filter operator.",
+            "type": "string"
+          },
+          "value": {
+            "description": "Filter value.",
+            "type": "string"
+          },
+          "condition": {
+            "description": "Filter condition.",
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "GoogleCloudMonitoringDataQuery": {
+        "type": "object",
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "LegacyCloudMonitoringAnnotationQuery": {
+        "description": "@deprecated Use TimeSeriesList instead. Legacy annotation query properties for migration purposes.",
+        "type": "object",
+        "required": [
+          "projectName",
+          "metricType",
+          "refId",
+          "filters",
+          "metricKind",
+          "valueType",
+          "title",
+          "text"
+        ],
+        "properties": {
+          "projectName": {
+            "description": "GCP project to execute the query against.",
+            "type": "string"
+          },
+          "metricType": {
+            "type": "string"
+          },
+          "refId": {
+            "description": "Query refId.",
+            "type": "string"
+          },
+          "filters": {
+            "description": "Array of filters to query data by. Labels that can be filtered on are defined by the metric.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metricKind": {
+            "$ref": "#/components/schemas/MetricKind"
+          },
+          "valueType": {
+            "type": "string"
+          },
+          "title": {
+            "description": "Annotation title.",
+            "type": "string"
+          },
+          "text": {
+            "description": "Annotation text.",
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "MetricFindQueryTypes": {
+        "type": "string",
+        "enum": [
+          "projects",
+          "services",
+          "defaultProject",
+          "metricTypes",
+          "labelKeys",
+          "labelValues",
+          "resourceTypes",
+          "aggregations",
+          "aligners",
+          "alignmentPeriods",
+          "selectors",
+          "sloServices",
+          "slo"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "MetricKind": {
+        "type": "string",
+        "enum": [
+          "METRIC_KIND_UNSPECIFIED",
+          "GAUGE",
+          "DELTA",
+          "CUMULATIVE"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "MetricQuery": {
+        "description": "@deprecated This type is for migration purposes only. Replaced by TimeSeriesList Metric sub-query properties.",
+        "type": "object",
+        "required": [
+          "projectName",
+          "editorMode",
+          "metricType",
+          "crossSeriesReducer",
+          "query"
+        ],
+        "properties": {
+          "projectName": {
+            "description": "GCP project to execute the query against.",
+            "type": "string"
+          },
+          "perSeriesAligner": {
+            "description": "Alignment function to be used. Defaults to ALIGN_MEAN.",
+            "type": "string"
+          },
+          "alignmentPeriod": {
+            "description": "Alignment period to use when regularizing data. Defaults to cloud-monitoring-auto.",
+            "type": "string"
+          },
+          "aliasBy": {
+            "description": "Aliases can be set to modify the legend labels. e.g. {{metric.label.xxx}}. See docs for more detail.",
+            "type": "string"
+          },
+          "editorMode": {
+            "type": "string"
+          },
+          "metricType": {
+            "type": "string"
+          },
+          "crossSeriesReducer": {
+            "description": "Reducer applied across a set of time-series values. Defaults to REDUCE_NONE.",
+            "type": "string"
+          },
+          "groupBys": {
+            "description": "Array of labels to group data by.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "filters": {
+            "description": "Array of filters to query data by. Labels that can be filtered on are defined by the metric.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metricKind": {
+            "$ref": "#/components/schemas/MetricKind"
+          },
+          "valueType": {
+            "type": "string"
+          },
+          "view": {
+            "type": "string"
+          },
+          "query": {
+            "description": "MQL query to be executed.",
+            "type": "string"
+          },
+          "preprocessor": {
+            "$ref": "#/components/schemas/PreprocessorType"
+          },
+          "graphPeriod": {
+            "description": "To disable the graphPeriod, it should explictly be set to 'disabled'.",
+            "type": "string",
+            "oneOf": [
+              {
+                "enum": [
+                  "disabled"
+                ]
+              },
+              {}
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "PreprocessorType": {
+        "description": "Types of pre-processor available. Defined by the metric.",
+        "type": "string",
+        "enum": [
+          "none",
+          "rate",
+          "delta"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "PromQLQuery": {
+        "description": "PromQL sub-query properties.",
+        "type": "object",
+        "required": [
+          "projectName",
+          "expr",
+          "step"
+        ],
+        "properties": {
+          "projectName": {
+            "description": "GCP project to execute the query against.",
+            "type": "string"
+          },
+          "expr": {
+            "description": "PromQL expression/query to be executed.",
+            "type": "string"
+          },
+          "step": {
+            "description": "PromQL min step",
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "QueryType": {
+        "description": "Defines the supported queryTypes.",
+        "type": "string",
+        "enum": [
+          "timeSeriesList",
+          "timeSeriesQuery",
+          "slo",
+          "annotation",
+          "promQL"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "SLOQuery": {
+        "description": "SLO sub-query properties.",
+        "type": "object",
+        "required": [
+          "projectName",
+          "selectorName",
+          "serviceId",
+          "serviceName",
+          "sloId",
+          "sloName"
+        ],
+        "properties": {
+          "projectName": {
+            "description": "GCP project to execute the query against.",
+            "type": "string"
+          },
+          "perSeriesAligner": {
+            "description": "Alignment function to be used. Defaults to ALIGN_MEAN.",
+            "type": "string"
+          },
+          "alignmentPeriod": {
+            "description": "Alignment period to use when regularizing data. Defaults to cloud-monitoring-auto.",
+            "type": "string"
+          },
+          "selectorName": {
+            "description": "SLO selector.",
+            "type": "string"
+          },
+          "serviceId": {
+            "description": "ID for the service the SLO is in.",
+            "type": "string"
+          },
+          "serviceName": {
+            "description": "Name for the service the SLO is in.",
+            "type": "string"
+          },
+          "sloId": {
+            "description": "ID for the SLO.",
+            "type": "string"
+          },
+          "sloName": {
+            "description": "Name of the SLO.",
+            "type": "string"
+          },
+          "goal": {
+            "description": "SLO goal value.",
+            "type": "number"
+          },
+          "lookbackPeriod": {
+            "description": "Specific lookback period for the SLO.",
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TimeSeriesList": {
+        "description": "Time Series List sub-query properties.",
+        "type": "object",
+        "required": [
+          "projectName",
+          "crossSeriesReducer"
+        ],
+        "properties": {
+          "projectName": {
+            "description": "GCP project to execute the query against.",
+            "type": "string"
+          },
+          "crossSeriesReducer": {
+            "description": "Reducer applied across a set of time-series values. Defaults to REDUCE_NONE.",
+            "type": "string"
+          },
+          "alignmentPeriod": {
+            "description": "Alignment period to use when regularizing data. Defaults to cloud-monitoring-auto.",
+            "type": "string"
+          },
+          "perSeriesAligner": {
+            "description": "Alignment function to be used. Defaults to ALIGN_MEAN.",
+            "type": "string"
+          },
+          "groupBys": {
+            "description": "Array of labels to group data by.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "filters": {
+            "description": "Array of filters to query data by. Labels that can be filtered on are defined by the metric.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "view": {
+            "description": "Data view, defaults to FULL.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Annotation title.",
+            "type": "string"
+          },
+          "text": {
+            "description": "Annotation text.",
+            "type": "string"
+          },
+          "secondaryCrossSeriesReducer": {
+            "description": "Only present if a preprocessor is selected. Reducer applied across a set of time-series values. Defaults to REDUCE_NONE.",
+            "type": "string"
+          },
+          "secondaryAlignmentPeriod": {
+            "description": "Only present if a preprocessor is selected. Alignment period to use when regularizing data. Defaults to cloud-monitoring-auto.",
+            "type": "string"
+          },
+          "secondaryPerSeriesAligner": {
+            "description": "Only present if a preprocessor is selected. Alignment function to be used. Defaults to ALIGN_MEAN.",
+            "type": "string"
+          },
+          "secondaryGroupBys": {
+            "description": "Only present if a preprocessor is selected. Array of labels to group data by.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "preprocessor": {
+            "$ref": "#/components/schemas/PreprocessorType"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TimeSeriesQuery": {
+        "description": "Time Series sub-query properties.",
+        "type": "object",
+        "required": [
+          "projectName",
+          "query"
+        ],
+        "properties": {
+          "projectName": {
+            "description": "GCP project to execute the query against.",
+            "type": "string"
+          },
+          "query": {
+            "description": "MQL query to be executed.",
+            "type": "string"
+          },
+          "graphPeriod": {
+            "description": "To disable the graphPeriod, it should explictly be set to 'disabled'.",
+            "type": "string",
+            "oneOf": [
+              {
+                "enum": [
+                  "disabled"
+                ]
+              },
+              {}
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "ValueTypes": {
+        "type": "string",
+        "enum": [
+          "VALUE_TYPE_UNSPECIFIED",
+          "BOOL",
+          "INT64",
+          "DOUBLE",
+          "STRING",
+          "DISTRIBUTION",
+          "MONEY"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      }
+    }
+  }
+}
