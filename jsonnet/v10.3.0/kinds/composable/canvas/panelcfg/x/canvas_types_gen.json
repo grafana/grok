@@ -1,0 +1,566 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "CanvasPanelCfg",
+    "version": "0.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "BackgroundConfig": {
+        "type": "object",
+        "properties": {
+          "color": {
+            "$ref": "#/components/schemas/ColorDimensionConfig"
+          },
+          "image": {
+            "$ref": "#/components/schemas/ResourceDimensionConfig"
+          },
+          "size": {
+            "$ref": "#/components/schemas/BackgroundImageSize"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "BackgroundImageSize": {
+        "type": "string",
+        "enum": [
+          "original",
+          "contain",
+          "cover",
+          "fill",
+          "tile"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "BaseDimensionConfig": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "description": "fixed: T -- will be added by each element",
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "CanvasConnection": {
+        "type": "object",
+        "required": [
+          "source",
+          "target",
+          "path"
+        ],
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/ConnectionCoordinates"
+          },
+          "target": {
+            "$ref": "#/components/schemas/ConnectionCoordinates"
+          },
+          "targetName": {
+            "type": "string"
+          },
+          "path": {
+            "$ref": "#/components/schemas/ConnectionPath"
+          },
+          "color": {
+            "$ref": "#/components/schemas/ColorDimensionConfig"
+          },
+          "size": {
+            "$ref": "#/components/schemas/ScaleDimensionConfig"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "CanvasElementOptions": {
+        "type": "object",
+        "required": [
+          "name",
+          "type"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "config": {
+            "description": "TODO: figure out how to define this (element config(s))"
+          },
+          "constraint": {
+            "$ref": "#/components/schemas/Constraint"
+          },
+          "placement": {
+            "$ref": "#/components/schemas/Placement"
+          },
+          "background": {
+            "$ref": "#/components/schemas/BackgroundConfig"
+          },
+          "border": {
+            "$ref": "#/components/schemas/LineConfig"
+          },
+          "connections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CanvasConnection"
+            }
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "CanvasPanelCfg": {
+        "type": "object",
+        "required": [
+          "HorizontalConstraint",
+          "VerticalConstraint",
+          "Constraint",
+          "Placement",
+          "BackgroundImageSize",
+          "BackgroundConfig",
+          "LineConfig",
+          "HttpRequestMethod",
+          "ConnectionCoordinates",
+          "ConnectionPath",
+          "CanvasConnection",
+          "CanvasElementOptions",
+          "Options"
+        ],
+        "properties": {
+          "HorizontalConstraint": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right",
+              "leftright",
+              "center",
+              "scale"
+            ]
+          },
+          "VerticalConstraint": {
+            "type": "string",
+            "enum": [
+              "top",
+              "bottom",
+              "topbottom",
+              "center",
+              "scale"
+            ]
+          },
+          "Constraint": {
+            "type": "object",
+            "properties": {
+              "horizontal": {
+                "$ref": "#/components/schemas/HorizontalConstraint"
+              },
+              "vertical": {
+                "$ref": "#/components/schemas/VerticalConstraint"
+              }
+            }
+          },
+          "Placement": {
+            "type": "object",
+            "properties": {
+              "top": {
+                "type": "number",
+                "format": "double"
+              },
+              "left": {
+                "type": "number",
+                "format": "double"
+              },
+              "right": {
+                "type": "number",
+                "format": "double"
+              },
+              "bottom": {
+                "type": "number",
+                "format": "double"
+              },
+              "width": {
+                "type": "number",
+                "format": "double"
+              },
+              "height": {
+                "type": "number",
+                "format": "double"
+              }
+            }
+          },
+          "BackgroundImageSize": {
+            "type": "string",
+            "enum": [
+              "original",
+              "contain",
+              "cover",
+              "fill",
+              "tile"
+            ]
+          },
+          "BackgroundConfig": {
+            "type": "object",
+            "properties": {
+              "color": {
+                "$ref": "#/components/schemas/ColorDimensionConfig"
+              },
+              "image": {
+                "$ref": "#/components/schemas/ResourceDimensionConfig"
+              },
+              "size": {
+                "$ref": "#/components/schemas/BackgroundImageSize"
+              }
+            }
+          },
+          "LineConfig": {
+            "type": "object",
+            "properties": {
+              "color": {
+                "$ref": "#/components/schemas/ColorDimensionConfig"
+              },
+              "width": {
+                "type": "number",
+                "format": "double"
+              }
+            }
+          },
+          "HttpRequestMethod": {
+            "type": "string",
+            "enum": [
+              "GET",
+              "POST",
+              "PUT"
+            ]
+          },
+          "ConnectionCoordinates": {
+            "type": "object",
+            "required": [
+              "x",
+              "y"
+            ],
+            "properties": {
+              "x": {
+                "type": "number",
+                "format": "double"
+              },
+              "y": {
+                "type": "number",
+                "format": "double"
+              }
+            }
+          },
+          "ConnectionPath": {
+            "type": "string",
+            "enum": [
+              "straight"
+            ]
+          },
+          "CanvasConnection": {
+            "type": "object",
+            "required": [
+              "source",
+              "target",
+              "path"
+            ],
+            "properties": {
+              "source": {
+                "$ref": "#/components/schemas/ConnectionCoordinates"
+              },
+              "target": {
+                "$ref": "#/components/schemas/ConnectionCoordinates"
+              },
+              "targetName": {
+                "type": "string"
+              },
+              "path": {
+                "$ref": "#/components/schemas/ConnectionPath"
+              },
+              "color": {
+                "$ref": "#/components/schemas/ColorDimensionConfig"
+              },
+              "size": {
+                "$ref": "#/components/schemas/ScaleDimensionConfig"
+              }
+            }
+          },
+          "CanvasElementOptions": {
+            "type": "object",
+            "required": [
+              "name",
+              "type"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "config": {
+                "description": "TODO: figure out how to define this (element config(s))"
+              },
+              "constraint": {
+                "$ref": "#/components/schemas/Constraint"
+              },
+              "placement": {
+                "$ref": "#/components/schemas/Placement"
+              },
+              "background": {
+                "$ref": "#/components/schemas/BackgroundConfig"
+              },
+              "border": {
+                "$ref": "#/components/schemas/LineConfig"
+              },
+              "connections": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CanvasConnection"
+                }
+              }
+            }
+          },
+          "Options": {
+            "type": "object",
+            "required": [
+              "inlineEditing",
+              "showAdvancedTypes",
+              "panZoom",
+              "root"
+            ],
+            "properties": {
+              "inlineEditing": {
+                "description": "Enable inline editing",
+                "type": "boolean",
+                "default": true
+              },
+              "showAdvancedTypes": {
+                "description": "Show all available element types",
+                "type": "boolean",
+                "default": true
+              },
+              "panZoom": {
+                "description": "Enable pan and zoom",
+                "type": "boolean",
+                "default": true
+              },
+              "root": {
+                "description": "The root element of canvas (frame), where all canvas elements are nested\nTODO: Figure out how to define a default value for this",
+                "type": "object",
+                "required": [
+                  "name",
+                  "type",
+                  "elements"
+                ],
+                "properties": {
+                  "name": {
+                    "description": "Name of the root element",
+                    "type": "string"
+                  },
+                  "type": {
+                    "description": "Type of root element (frame)",
+                    "type": "string",
+                    "enum": [
+                      "frame"
+                    ]
+                  },
+                  "elements": {
+                    "description": "The list of canvas elements attached to the root element",
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/CanvasElementOptions"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "ColorDimensionConfig": {
+        "type": "object",
+        "properties": {
+          "fixed": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseDimensionConfig"
+          }
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "ConnectionCoordinates": {
+        "type": "object",
+        "required": [
+          "x",
+          "y"
+        ],
+        "properties": {
+          "x": {
+            "type": "number",
+            "format": "double"
+          },
+          "y": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "ConnectionPath": {
+        "type": "string",
+        "enum": [
+          "straight"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "Constraint": {
+        "type": "object",
+        "properties": {
+          "horizontal": {
+            "$ref": "#/components/schemas/HorizontalConstraint"
+          },
+          "vertical": {
+            "$ref": "#/components/schemas/VerticalConstraint"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "HorizontalConstraint": {
+        "type": "string",
+        "enum": [
+          "left",
+          "right",
+          "leftright",
+          "center",
+          "scale"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "LineConfig": {
+        "type": "object",
+        "properties": {
+          "color": {
+            "$ref": "#/components/schemas/ColorDimensionConfig"
+          },
+          "width": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "Placement": {
+        "type": "object",
+        "properties": {
+          "top": {
+            "type": "number",
+            "format": "double"
+          },
+          "left": {
+            "type": "number",
+            "format": "double"
+          },
+          "right": {
+            "type": "number",
+            "format": "double"
+          },
+          "bottom": {
+            "type": "number",
+            "format": "double"
+          },
+          "width": {
+            "type": "number",
+            "format": "double"
+          },
+          "height": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "ResourceDimensionConfig": {
+        "description": "Links to a resource (image/svg path)",
+        "type": "object",
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/ResourceDimensionMode"
+          },
+          "fixed": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseDimensionConfig"
+          },
+          {
+            "required": [
+              "mode"
+            ]
+          }
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "ResourceDimensionMode": {
+        "type": "string",
+        "enum": [
+          "fixed",
+          "field",
+          "mapping"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "ScaleDimensionConfig": {
+        "type": "object",
+        "properties": {
+          "min": {
+            "type": "number"
+          },
+          "max": {
+            "type": "number"
+          },
+          "fixed": {
+            "type": "number"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ScaleDimensionMode"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseDimensionConfig"
+          },
+          {
+            "required": [
+              "min",
+              "max"
+            ]
+          }
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "ScaleDimensionMode": {
+        "type": "string",
+        "enum": [
+          "linear",
+          "quad"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "VerticalConstraint": {
+        "type": "string",
+        "enum": [
+          "top",
+          "bottom",
+          "topbottom",
+          "center",
+          "scale"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      }
+    }
+  }
+}
