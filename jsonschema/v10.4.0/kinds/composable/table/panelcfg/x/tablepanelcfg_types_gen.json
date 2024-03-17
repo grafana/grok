@@ -1,0 +1,926 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "TablePanelCfg",
+    "version": "0.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "AxisColorMode": {
+        "description": "TODO docs",
+        "type": "string",
+        "enum": [
+          "text",
+          "series"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "AxisConfig": {
+        "description": "TODO docs",
+        "type": "object",
+        "properties": {
+          "axisPlacement": {
+            "$ref": "#/components/schemas/AxisPlacement"
+          },
+          "axisColorMode": {
+            "$ref": "#/components/schemas/AxisColorMode"
+          },
+          "axisLabel": {
+            "type": "string"
+          },
+          "axisWidth": {
+            "type": "number"
+          },
+          "axisSoftMin": {
+            "type": "number"
+          },
+          "axisSoftMax": {
+            "type": "number"
+          },
+          "axisGridShow": {
+            "type": "boolean"
+          },
+          "scaleDistribution": {
+            "$ref": "#/components/schemas/ScaleDistributionConfig"
+          },
+          "axisCenteredZero": {
+            "type": "boolean"
+          },
+          "axisBorderShow": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "AxisPlacement": {
+        "description": "TODO docs",
+        "type": "string",
+        "enum": [
+          "auto",
+          "top",
+          "right",
+          "bottom",
+          "left",
+          "hidden"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "BarAlignment": {
+        "description": "TODO docs",
+        "type": "integer",
+        "enum": [
+          -1,
+          0,
+          1
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "BarConfig": {
+        "description": "TODO docs",
+        "type": "object",
+        "properties": {
+          "barAlignment": {
+            "$ref": "#/components/schemas/BarAlignment"
+          },
+          "barWidthFactor": {
+            "type": "number"
+          },
+          "barMaxWidth": {
+            "type": "number"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "BarGaugeDisplayMode": {
+        "description": "Enum expressing the possible display modes\nfor the bar gauge component of Grafana UI",
+        "type": "string",
+        "enum": [
+          "basic",
+          "lcd",
+          "gradient"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "BarGaugeValueMode": {
+        "description": "Allows for the table cell gauge display type to set the gauge mode.",
+        "type": "string",
+        "enum": [
+          "color",
+          "text",
+          "hidden"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "FieldTextAlignment": {
+        "description": "TODO -- should not be table specific!\nTODO docs",
+        "type": "string",
+        "enum": [
+          "auto",
+          "left",
+          "right",
+          "center"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "FillConfig": {
+        "description": "TODO docs",
+        "type": "object",
+        "properties": {
+          "fillColor": {
+            "type": "string"
+          },
+          "fillOpacity": {
+            "type": "number"
+          },
+          "fillBelowTo": {
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "GraphDrawStyle": {
+        "description": "TODO docs",
+        "type": "string",
+        "enum": [
+          "line",
+          "bars",
+          "points"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "GraphFieldConfig": {
+        "description": "TODO docs",
+        "type": "object",
+        "properties": {
+          "drawStyle": {
+            "$ref": "#/components/schemas/GraphDrawStyle"
+          },
+          "gradientMode": {
+            "$ref": "#/components/schemas/GraphGradientMode"
+          },
+          "thresholdsStyle": {
+            "$ref": "#/components/schemas/GraphThresholdsStyleConfig"
+          },
+          "transform": {
+            "$ref": "#/components/schemas/GraphTransform"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LineConfig"
+          },
+          {
+            "$ref": "#/components/schemas/FillConfig"
+          },
+          {
+            "$ref": "#/components/schemas/PointsConfig"
+          },
+          {
+            "$ref": "#/components/schemas/AxisConfig"
+          },
+          {
+            "$ref": "#/components/schemas/BarConfig"
+          },
+          {
+            "$ref": "#/components/schemas/StackableFieldConfig"
+          },
+          {
+            "$ref": "#/components/schemas/HideableFieldConfig"
+          }
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "GraphGradientMode": {
+        "description": "TODO docs",
+        "type": "string",
+        "enum": [
+          "none",
+          "opacity",
+          "hue",
+          "scheme"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "GraphThresholdsStyleConfig": {
+        "description": "TODO docs",
+        "type": "object",
+        "required": [
+          "mode"
+        ],
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/GraphThresholdsStyleMode"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "GraphThresholdsStyleMode": {
+        "description": "TODO docs",
+        "type": "string",
+        "enum": [
+          "off",
+          "line",
+          "dashed",
+          "area",
+          "line+area",
+          "dashed+area",
+          "series"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "GraphTransform": {
+        "description": "TODO docs",
+        "type": "string",
+        "enum": [
+          "constant",
+          "negative-Y"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "HideSeriesConfig": {
+        "description": "TODO docs",
+        "type": "object",
+        "required": [
+          "tooltip",
+          "legend",
+          "viz"
+        ],
+        "properties": {
+          "tooltip": {
+            "type": "boolean"
+          },
+          "legend": {
+            "type": "boolean"
+          },
+          "viz": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "HideableFieldConfig": {
+        "description": "TODO docs",
+        "type": "object",
+        "properties": {
+          "hideFrom": {
+            "$ref": "#/components/schemas/HideSeriesConfig"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "LineConfig": {
+        "description": "TODO docs",
+        "type": "object",
+        "properties": {
+          "lineColor": {
+            "type": "string"
+          },
+          "lineWidth": {
+            "type": "number"
+          },
+          "lineInterpolation": {
+            "$ref": "#/components/schemas/LineInterpolation"
+          },
+          "lineStyle": {
+            "$ref": "#/components/schemas/LineStyle"
+          },
+          "spanNulls": {
+            "description": "Indicate if null values should be treated as gaps or connected.\nWhen the value is a number, it represents the maximum delta in the\nX axis that should be considered connected.  For timeseries, this is milliseconds",
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "LineInterpolation": {
+        "description": "TODO docs",
+        "type": "string",
+        "enum": [
+          "linear",
+          "smooth",
+          "stepBefore",
+          "stepAfter"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "LineStyle": {
+        "description": "TODO docs",
+        "type": "object",
+        "properties": {
+          "fill": {
+            "type": "string",
+            "enum": [
+              "solid",
+              "dash",
+              "dot",
+              "square"
+            ]
+          },
+          "dash": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "PointsConfig": {
+        "description": "TODO docs",
+        "type": "object",
+        "properties": {
+          "showPoints": {
+            "$ref": "#/components/schemas/VisibilityMode"
+          },
+          "pointSize": {
+            "type": "number"
+          },
+          "pointColor": {
+            "type": "string"
+          },
+          "pointSymbol": {
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "ScaleDistribution": {
+        "description": "TODO docs",
+        "type": "string",
+        "enum": [
+          "linear",
+          "log",
+          "ordinal",
+          "symlog"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "ScaleDistributionConfig": {
+        "description": "TODO docs",
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ScaleDistribution"
+          },
+          "log": {
+            "type": "number"
+          },
+          "linearThreshold": {
+            "type": "number"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "StackableFieldConfig": {
+        "description": "TODO docs",
+        "type": "object",
+        "properties": {
+          "stacking": {
+            "$ref": "#/components/schemas/StackingConfig"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "StackingConfig": {
+        "description": "TODO docs",
+        "type": "object",
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/StackingMode"
+          },
+          "group": {
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "StackingMode": {
+        "description": "TODO docs",
+        "type": "string",
+        "enum": [
+          "none",
+          "normal",
+          "percent"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableAutoCellOptions": {
+        "description": "Auto mode table cell options",
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TableCellDisplayMode"
+              },
+              {
+                "enum": [
+                  "auto"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableBarGaugeCellOptions": {
+        "description": "Gauge cell options",
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TableCellDisplayMode"
+              },
+              {
+                "enum": [
+                  "gauge"
+                ]
+              }
+            ]
+          },
+          "mode": {
+            "$ref": "#/components/schemas/BarGaugeDisplayMode"
+          },
+          "valueDisplayMode": {
+            "$ref": "#/components/schemas/BarGaugeValueMode"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableCellBackgroundDisplayMode": {
+        "description": "Display mode to the \"Colored Background\" display\nmode for table cells. Either displays a solid color (basic mode)\nor a gradient.",
+        "type": "string",
+        "enum": [
+          "basic",
+          "gradient"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableCellDisplayMode": {
+        "description": "Internally, this is the \"type\" of cell that's being displayed\nin the table such as colored text, JSON, gauge, etc.\nThe color-background-solid, gradient-gauge, and lcd-gauge\nmodes are deprecated in favor of new cell subOptions",
+        "type": "string",
+        "enum": [
+          "auto",
+          "color-text",
+          "color-background",
+          "color-background-solid",
+          "gradient-gauge",
+          "lcd-gauge",
+          "json-view",
+          "basic",
+          "image",
+          "gauge",
+          "sparkline",
+          "data-links",
+          "custom"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableCellHeight": {
+        "description": "Height of a table cell",
+        "type": "string",
+        "enum": [
+          "sm",
+          "md",
+          "lg"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableCellOptions": {
+        "description": "Table cell options. Each cell has a display mode\nand other potential options for that display.",
+        "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/TableAutoCellOptions"
+          },
+          {
+            "$ref": "#/components/schemas/TableSparklineCellOptions"
+          },
+          {
+            "$ref": "#/components/schemas/TableBarGaugeCellOptions"
+          },
+          {
+            "$ref": "#/components/schemas/TableColoredBackgroundCellOptions"
+          },
+          {
+            "$ref": "#/components/schemas/TableColorTextCellOptions"
+          },
+          {
+            "$ref": "#/components/schemas/TableImageCellOptions"
+          },
+          {
+            "$ref": "#/components/schemas/TableDataLinksCellOptions"
+          },
+          {
+            "$ref": "#/components/schemas/TableJsonViewCellOptions"
+          }
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableColorTextCellOptions": {
+        "description": "Colored text cell options",
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TableCellDisplayMode"
+              },
+              {
+                "enum": [
+                  "color-text"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableColoredBackgroundCellOptions": {
+        "description": "Colored background cell options",
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TableCellDisplayMode"
+              },
+              {
+                "enum": [
+                  "color-background"
+                ]
+              }
+            ]
+          },
+          "mode": {
+            "$ref": "#/components/schemas/TableCellBackgroundDisplayMode"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableDataLinksCellOptions": {
+        "description": "Show data links in the cell",
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TableCellDisplayMode"
+              },
+              {
+                "enum": [
+                  "data-links"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableFooterOptions": {
+        "description": "Footer options",
+        "type": "object",
+        "required": [
+          "show",
+          "reducer"
+        ],
+        "properties": {
+          "show": {
+            "type": "boolean"
+          },
+          "reducer": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enablePagination": {
+            "type": "boolean"
+          },
+          "countRows": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableImageCellOptions": {
+        "description": "Json view cell options",
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TableCellDisplayMode"
+              },
+              {
+                "enum": [
+                  "image"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableJsonViewCellOptions": {
+        "description": "Json view cell options",
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TableCellDisplayMode"
+              },
+              {
+                "enum": [
+                  "json-view"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TablePanelCfg": {
+        "type": "object",
+        "required": [
+          "Options",
+          "FieldConfig"
+        ],
+        "properties": {
+          "Options": {
+            "type": "object",
+            "required": [
+              "frameIndex",
+              "showHeader"
+            ],
+            "properties": {
+              "frameIndex": {
+                "description": "Represents the index of the selected frame",
+                "type": "number",
+                "default": 0
+              },
+              "showHeader": {
+                "description": "Controls whether the panel should show the header",
+                "type": "boolean",
+                "default": true
+              },
+              "showTypeIcons": {
+                "description": "Controls whether the header should show icons for the column types",
+                "type": "boolean",
+                "default": false
+              },
+              "sortBy": {
+                "description": "Used to control row sorting",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TableSortByFieldState"
+                }
+              },
+              "footer": {
+                "description": "Controls footer options",
+                "type": "object",
+                "default": {
+                  "show": false,
+                  "countRows": false,
+                  "reducer": []
+                },
+                "oneOf": [
+                  {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/TableFooterOptions"
+                      },
+                      {
+                        "not": {
+                          "anyOf": [
+                            {
+                              "required": [
+                                "show",
+                                "countRows",
+                                "reducer"
+                              ],
+                              "properties": {
+                                "show": {
+                                  "description": "Controls whether the footer should be shown",
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "countRows": {
+                                  "description": "Controls whether the footer should show the total number of rows on Count calculation",
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                },
+                                "reducer": {
+                                  "description": "Represents the selected calculations",
+                                  "type": "array",
+                                  "enum": [
+                                    []
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "required": [
+                      "show",
+                      "countRows",
+                      "reducer"
+                    ],
+                    "properties": {
+                      "show": {
+                        "description": "Controls whether the footer should be shown",
+                        "type": "boolean",
+                        "enum": [
+                          false
+                        ]
+                      },
+                      "countRows": {
+                        "description": "Controls whether the footer should show the total number of rows on Count calculation",
+                        "type": "boolean",
+                        "enum": [
+                          false
+                        ]
+                      },
+                      "reducer": {
+                        "description": "Represents the selected calculations",
+                        "type": "array",
+                        "enum": [
+                          []
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "cellHeight": {
+                "description": "Controls the height of the rows",
+                "type": "string",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TableCellHeight"
+                  }
+                ]
+              }
+            }
+          },
+          "FieldConfig": {
+            "type": "object",
+            "required": [
+              "align",
+              "cellOptions",
+              "inspect"
+            ],
+            "properties": {
+              "width": {
+                "type": "number"
+              },
+              "minWidth": {
+                "type": "number"
+              },
+              "align": {
+                "type": "string",
+                "$ref": "#/components/schemas/FieldTextAlignment"
+              },
+              "displayMode": {
+                "$ref": "#/components/schemas/TableCellDisplayMode"
+              },
+              "cellOptions": {
+                "$ref": "#/components/schemas/TableCellOptions"
+              },
+              "hidden": {
+                "type": "boolean"
+              },
+              "inspect": {
+                "type": "boolean",
+                "default": false
+              },
+              "filterable": {
+                "type": "boolean"
+              },
+              "hideHeader": {
+                "description": "Hides any header for a column, useful for columns that show some static content or buttons.",
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableSortByFieldState": {
+        "description": "Sort by field state",
+        "type": "object",
+        "required": [
+          "displayName"
+        ],
+        "properties": {
+          "displayName": {
+            "description": "Sets the display name of the field to sort by",
+            "type": "string"
+          },
+          "desc": {
+            "description": "Flag used to indicate descending sort order",
+            "type": "boolean"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "TableSparklineCellOptions": {
+        "description": "Sparkline cell options",
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TableCellDisplayMode"
+              },
+              {
+                "enum": [
+                  "sparkline"
+                ]
+              }
+            ]
+          },
+          "hideValue": {
+            "type": "boolean"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GraphFieldConfig"
+          },
+          {
+            "required": [
+              "type"
+            ]
+          }
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "VisibilityMode": {
+        "description": "TODO docs",
+        "type": "string",
+        "enum": [
+          "auto",
+          "never",
+          "always"
+        ],
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      }
+    }
+  }
+}
