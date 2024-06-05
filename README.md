@@ -1,4 +1,8 @@
 # grok
+
+> [!CAUTION]
+> This repository has been archived, this project has been superseeded by the [grafana-foundation-sdk](https://github.com/grafana/grafana-foundation-sdk). It contains the JSON schemas as well as builders for Go, Python and Typescript.
+
 Grok (**Gr**afana **O**bject development **K**it) is a CLI tool and Go library for working with Grafana objects from code, primarily dashboards.
 
 # Maturity
